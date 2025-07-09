@@ -8,6 +8,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
+import Layout from '../Layout/Layout';
 
 
 function App() {
@@ -30,7 +31,7 @@ function App() {
     setSubscribers([...subcribers, response.data]);
   }
   return(
-    <Container maxWidth="sm" style={{ marginTop: '2rem' }}>
+      <Container maxWidth="lg" sx={{ mt: 4, px: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Prueba
       </Typography>

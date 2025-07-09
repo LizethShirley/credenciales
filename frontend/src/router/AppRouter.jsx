@@ -1,18 +1,39 @@
-// src/router/AppRouter.jsx
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import SubscritorPage from '../services/App'; // asegúrate que este componente retorne JSX
-import LoginForm from '../components/LoginForm/LoginForm';
+// src/App.jsx
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Layout from '../Layout/Layout';
+import Inicio from '../pages/Inicio';
+import Usuarios from '../pages/Usuario';
+import Organizaciones from '../pages/Organizaciones';
+import Prueba from '../services/App'
 
-const AppRouter = () => {
+import ListaCredenciales from '../pages/Usuarios/ListaCredenciales'
+import CredencialMasivo from '../pages/Usuarios/CredencialMasivo'
+import CredencialIndividual from '../pages/Usuarios/CredencialIndividual'
+
+import GestionarUnidad from '../pages/Organizacion/GestionarUnidad'
+import GestionarCargo from '../pages/Organizacion/GestionarCargo'
+import GestionarExterno from '../pages/Organizacion/GestionarExterno'
+
+const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/prueba" element={<SubscritorPage />} />
-        <Route path="/login" element={<LoginForm />} />
+        <Route path="/Credenciales/" element={<Layout />}>
+          <Route index element={<Navigate to="/Credenciales/Inicio" />} />
+          <Route path="Inicio" element={<Inicio />} />
+          <Route path="Prueba" element={<Prueba/>} />
+
+          <Route path="Usuarios/Lista_Credenciales" element={<ListaCredenciales/>}/> 
+          <Route path="Usuarios/Credencial_Masivo" element={<CredencialMasivo/>}/> 
+          <Route path="Usuarios/Credencial_Individual" element={<CredencialIndividual/>}/> 
+
+          <Route path="Organización/Gestionar_Unidad" element={<GestionarUnidad/>}/> 
+          <Route path="Organización/Gestionar_Cargo" element={<GestionarCargo/>}/> 
+          <Route path="Organización/Gestionar_Externo" element={<GestionarExterno/>}/> 
+        </Route>
       </Routes>
     </BrowserRouter>
   );
 };
 
-export default AppRouter;
+export default App;
