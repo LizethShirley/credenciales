@@ -9,12 +9,12 @@ const LateralBar = ({anchoCaja}) => {
   return (
     <Box id='lateral-bar-box'
       component='nav'
-      sx={{ width: { sm: anchoCaja }, flexShrink: { sm: 0 } }}>
+      sx={{ width: { sm: anchoCaja }, flexShrink: { sm: 0 }}}>
     <Drawer variant='permanent'
         open={true}
         sx={{
           display: { xs: 'block' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: anchoCaja, marginTop: 12.5 }
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: anchoCaja, marginTop: 12.5, backgroundColor: '#FBCC00' }
         }}>
       <List sx={{color: 'primary.main', top:40}}>
         <ListItemButton

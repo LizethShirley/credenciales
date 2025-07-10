@@ -15,7 +15,7 @@ export const colorTheme = createTheme({
         },
         background: {
             default: '#FAFAFA',
-            paper: '#FBCC00'
+            paper: '#F7F7F7'
         },
         typography:{
             fontFamily: 'Roboto, sans-serif',

@@ -8,12 +8,12 @@ const anchoCaja = 200;
 
 const Layout = () => {
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', width:'100%' }}>
       <NavBar anchoCaja={anchoCaja} />
       <LateralBar anchoCaja={anchoCaja} />
-      <Box component="main" sx={{ flexGrow: 1, p: 4, mt: 4 }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 2.5, mt: 2.5 }}>
         <Toolbar />
-        <Outlet /> {/* Aquí se muestran los hijos, como Inicio */}
+        <Outlet />
       </Box>
     </Box>
   );

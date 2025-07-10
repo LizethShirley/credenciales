@@ -18,6 +18,9 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Layout/>}>
+          <Route index element={<Navigate to="/Credenciales/Inicio" />} />
+        </Route>
         <Route path="/Credenciales/" element={<Layout />}>
           <Route index element={<Navigate to="/Credenciales/Inicio" />} />
           <Route path="Inicio" element={<Inicio />} />
