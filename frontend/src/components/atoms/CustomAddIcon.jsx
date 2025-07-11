@@ -17,6 +17,10 @@ const CustomAddIcon = ({onClick}) =>{
         '&:hover': {
           backgroundColor: 'primary.main',
         },
+        '&:focus': {
+          outline: 'none',
+          boxShadow: 'none',
+        }
       }}
     >
       <AddIcon/> 

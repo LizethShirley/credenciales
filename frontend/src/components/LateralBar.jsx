@@ -16,15 +16,15 @@ const LateralBar = ({anchoCaja}) => {
           display: { xs: 'block' },
           '& .MuiDrawer-paper': { boxSizing: 'border-box', width: anchoCaja, marginTop: 12.5, backgroundColor: '#FBCC00' }
         }}>
-      <List sx={{color: 'primary.main', top:40}}>
+      <List sx={{color: '#4F4F4F', top:40}}>
         <ListItemButton
           onClick={() => navigate('/Credenciales/Inicio')}
           sx={{
             '& .MuiListItemText-primary': {
-              fontWeight: 'bold', fontSize: 18 
+              fontWeight: 'bold', fontSize: 15 
             },
             '&:hover .MuiListItemText-primary': {
-              color: '#FFFFFF',
+              color: 'primary.main',
             },
           }}
         >
@@ -48,10 +48,10 @@ const LateralBar = ({anchoCaja}) => {
           onClick={() => navigate('/Credenciales/Prueba')}
           sx={{
             '& .MuiListItemText-primary': {
-              fontWeight: 'bold', fontSize: 18 
+              fontWeight: 'bold', fontSize: 15 
             },
             '&:hover .MuiListItemText-primary': {
-              color: '#FFFFFF',
+              color: 'primary.main',
             },
           }}
         >

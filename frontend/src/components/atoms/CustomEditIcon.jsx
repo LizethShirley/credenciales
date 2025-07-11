@@ -7,7 +7,12 @@ const CustomEditIcon = ({ onClick}) => {
       sx={{backgroundColor: '#FBCC00', color: '#FFFFFF', 
         '&:hover': {
           backgroundColor: 'primary.main',
-      }}}
+        },
+        '&:focus': {
+          outline: 'none',
+          boxShadow: 'none',
+        }
+      }}
     >
       <EditIcon/>
     </IconButton>

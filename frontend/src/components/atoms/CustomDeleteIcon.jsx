@@ -5,8 +5,13 @@ const CustomDeleteIcon = ({onClick}) => {
   return (
     <IconButton sx={{backgroundColor: 'red', color: '#FFFFFF',
       '&:hover': {
-          backgroundColor: 'primary.main',
-      }}}
+        backgroundColor: 'primary.main',
+      },
+        '&:focus': {
+          outline: 'none',
+          boxShadow: 'none',
+        }
+      }}
     >
       <DeleteIcon/>
     </IconButton>

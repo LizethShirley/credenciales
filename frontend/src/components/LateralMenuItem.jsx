@@ -18,25 +18,25 @@ const LateralMenuItem = ({ titulo, subItems = [] }) => {
       <ListItemButton
         onClick={toggleOpen}
         sx={{
-          '& .MuiListItemText-primary': { fontWeight: 'bold', fontSize: 18 },
-          '&:hover .MuiListItemText-primary': { color: '#FFFFFF' }
+          '& .MuiListItemText-primary': { fontWeight: 'bold', fontSize: 15 },
+          '&:hover .MuiListItemText-primary': { color: 'primary.main' }
         }}
       >
         <ListItemText primary={titulo} />
         {open ? <ExpandLess /> : <ExpandMore />}
       </ListItemButton>
 
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding>
+      <Collapse in={open} timeout="auto" unmountOnExit >
+        <List component="div" disablePadding >
           {subItems.map((item, index) => (
             <ListItemButton
               key={index}
               sx={{ pl: 4, '&:hover .MuiListItemText-primary': {
-              color: '#FFFFFF',
+              color: 'primary.main',
               } }}
               onClick={() => handleClickSubItem(item.path)}
             >
-              <ListItemText primary={item.label} />
+              <ListItemText primary={item.label}/>
             </ListItemButton>
           ))}
         </List>
