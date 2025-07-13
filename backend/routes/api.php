@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CargoController;
+use App\Http\Controllers\Api\PersonalController;
 use App\Http\Controllers\Api\SeccionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Auth\AuthController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\SuscriberController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('auth/register', [AuthController::class, 'register']);
+Route::post('registrarPersonal', [PersonalController::class, 'storePublic']);
 Route::post('auth/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -37,11 +39,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('secciones/secciones-cargos/{seccion}', [SeccionController::class, 'getCargos']);
     Route::put('secciones/{seccion}', [SeccionController::class, 'update']);
     Route::delete('secciones/{seccion}', [SeccionController::class, 'destroy']);
+
+    //Personal
+    Route::get('list/personal', [PersonalController::class, 'list']);
+    Route::post('personal', [PersonalController::class, 'store']);
+    Route::get('personal/{personal}', [PersonalController::class, 'show']);
+    Route::put('personal/{personal}', [PersonalController::class, 'update']);
+    Route::delete('personal/{personal}', [PersonalController::class, 'destroy']);
+    Route::post('list/personal-ids', [PersonalController::class, 'getByIds']);
+
 });
-
-
-
-
-Route::get('suscribers',[SuscriberController::class, 'index']);
-//store Almacenar
-Route::post('suscribers',[SuscriberController::class, 'store']);
