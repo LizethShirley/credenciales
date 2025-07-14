@@ -71,9 +71,18 @@ const GestionarCargo = () => {
   }, []);
 
   const obtenerListaCargos = async () => {
-    const response = await axios.get('/api/cargos');
-    setCargos(response.data);
-  }
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/list/cargos`);
+      if (!response.ok) {
+        throw new Error('Error al obtener la lista de cargos');
+      }
+      const data = await response.json();
+      console.log("Datos recibidos:", data);
+      setCargos(data);
+    } catch (error) {
+      console.error("Error al obtener cargos:", error);
+    }
+  };
   
 
   return (

@@ -14,27 +14,6 @@ import CustomEditIcon from '../../components/atoms/CustomEditIcon';
 import CustomDeleteIcon from '../../components/atoms/CustomDeleteIcon';
 import CustomAddIcon from '../../components/atoms/CustomAddIcon';
 
-import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
-
-const mock = new MockAdapter(axios);
-
-mock.onGet("/api/unidad").reply(200, [
-  { id: 1, nombre: "ADM II TÉCNICO UGLE", abreviatura :	"Plomo", estado:	"Activo"},
-  { id: 2, nombre: "ADMINISTRATIVO-CONTRATACIONES", abreviatura :	"Plomo", estado:	"Inactivo"},
-  { id: 3, nombre: "ADMINISTRATIVO POA-RRHH", abreviatura :	"Plomo", estado:	"Activo"},
-  { id: 4, nombre: "ADMINISTRATIVO FINANCIERO - POA-RRHH", abreviatura :	"Plomo", estado:	"Inactivo"},
-  { id: 5, nombre: "ADMINISTRATIVO DE CONTRATACIONES", abreviatura :	"Plomo", estado:	"Inactivo"},
-  { id: 6, nombre: "ADMINISTRATIVO CONTRATACIONES", abreviatura :	"Plomo", estado:	"Activo"},
-  { id: 7, nombre: "ADM III COORDINADOR ELECTORAL UGLE", abreviatura :	"Plomo", estado:	"Activo"},
-  { id: 8, nombre: "TECNICO DE MONITOREO A NOTARIOS", abreviatura :	"Plomo", estado:	"Activo"},
-  { id: 9, nombre: "TECNICO DE MONITOREO", abreviatura :	"Plomo", estado:	"Activo"},
-  { id: 10, nombre: "TECNICO ADMINISTRATIVO", abreviatura :	"Plomo", estado:	"Activo"},
-  { id: 11, nombre: "TECNICO - INSTALACION DE CAMARAS", abreviatura :	"Plomo", estado:	"Activo"},
-  { id: 12, nombre: "TECNICO - INFRAESTRUCTURA DE REDES", abreviatura :	"Plomo", estado:	"Inactivo"},
-  { id: 13, nombre: "APOYO ADMINISTRATIVO-CONTABILIDAD", abreviatura :	"Plomo", estado:	"Activo"},
-]);
-
 const GestionarUnidad = () => {
   const [filtroGeneral, setFiltroGeneral] = useState('');
   
@@ -59,22 +38,24 @@ const GestionarUnidad = () => {
   ];
     
   const [unidad, setUnidad] = useState([]);
-  const [selectedRow, setSelectedRow] = useState({
-    id : 0,
-    nombre : '',
-    color : '',
-    descripcion : '',
-    seccion : ''
-  });
   
   useEffect(() => {
     obtenerListaUnidad();
   }, []);
   
   const obtenerListaUnidad = async () => {
-    const response = await axios.get('/api/unidad');
-    setUnidad(response.data);
-  }
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/list/secciones`);
+      if (!response.ok) {
+        throw new Error('Error al obtener la lista de cargos');
+      }
+      const data = await response.json();
+      console.log("Datos recibidos:", data);
+      setUnidad(data);
+    } catch (error) {
+      console.error("Error al obtener cargos:", error);
+    }
+  };
     
   
   return (
