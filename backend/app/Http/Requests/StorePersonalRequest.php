@@ -22,7 +22,7 @@ class StorePersonalRequest extends FormRequest
             'complemento' => 'nullable|string|max:5',
             'extencion' => 'required|string|max:25',
             'email' => 'nullable|email|max:255',
-            'celular' => 'nullable|digits_between:7,11',
+            'celular' => 'required|digits_between:7,11',
             'id_cargo' => 'required|exists:cargos,id',
             'id_recinto' => [
                 'nullable',

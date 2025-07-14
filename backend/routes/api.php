@@ -47,6 +47,6 @@ Route::post('auth/login', [AuthController::class, 'login']);
     Route::put('personal/{personal}', [PersonalController::class, 'update']);
     Route::delete('personal/{personal}', [PersonalController::class, 'destroy']);
     Route::post('list/personal-ids', [PersonalController::class, 'getByIds']);
-    Route::get('list/personal-date/{date_ini}/{date_fin}/{cargo}/{circun}', [PersonalController::class, 'filtroFechas']);
+    Route::get('list/personal-filter', [PersonalController::class, 'filtroFechas']);
 
 //});

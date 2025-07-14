@@ -372,14 +372,18 @@ class PersonalController extends Controller
         }
     }
 
-
     /**
-     * Listar todo el personal
+     * @param Request $request
+     * @return mixed
      */
-    public function filtroFechas($date_ini, $date_fin, $cargo,$circunscripcion)
+    public function filtroFechas(Request $request)
     {
-        try {
+        $date_ini = $request->query('fecha_inicio');
+        $date_fin = $request->query('fecha_fin');
+        $cargo = $request->query('cargo');
+        $circunscripcion = $request->query('circunscripcion');
 
+        try {
             $personal = \DB::table('personal as p')
                 ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
                 ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
@@ -436,15 +440,15 @@ class PersonalController extends Controller
                 'msg' => 'Lista de personal con recinto, cargo y sección obtenida exitosamente',
                 'status' => 200,
                 'personal' => $personalsArray,
-            ], 200);
-
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
                 'msg' => 'Error al listar personal',
                 'error' => $e->getMessage(),
                 'status' => 500,
-            ], 500);
+            ]);
         }
     }
+
 }
