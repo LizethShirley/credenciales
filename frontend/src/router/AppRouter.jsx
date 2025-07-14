@@ -4,7 +4,8 @@ import Layout from '../Layout/Layout';
 import Inicio from '../pages/Inicio';
 import Usuarios from '../pages/Usuario';
 import Organizaciones from '../pages/Organizaciones';
-import Prueba from '../services/App'
+import Prueba from '../services/App';
+import CredencialesPage from '../pages/CredencialPage';
 
 import ListaCredenciales from '../pages/Usuarios/ListaCredenciales'
 import CredencialMasivo from '../pages/Usuarios/CredencialMasivo'
@@ -23,7 +24,7 @@ const App = () => {
         </Route>
         <Route path="/Credenciales/" element={<Layout />}>
           <Route index element={<Navigate to="/Credenciales/Inicio" />} />
-          <Route path="Inicio" element={<Inicio />} />
+          <Route path="Inicio" element={<CredencialesPage/>} />
           <Route path="Prueba" element={<Prueba/>} />
 
           <Route path="Usuarios/Lista_Credenciales" element={<ListaCredenciales/>}/> 

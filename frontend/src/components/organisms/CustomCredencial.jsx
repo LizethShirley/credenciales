@@ -19,22 +19,34 @@ const CustomCredencial = ({ persona, lado }) => {
     >
       {lado === 'anverso' && (
         <>
+          <Typography
+            sx={{
+              position: "absolute",
+              top: "2.7cm",
+              left: 0,
+              width: "100%",
+              textAlign: "center",
+              fontSize: "8pt"
+            }}
+          >
+            {persona.cargo}
+          </Typography>
           <img
             src={persona.foto}
             alt="foto"
             style={{
               position: "absolute",
-              top: "2.9cm",
-              left: "1.6cm",
-              width: "2cm",
-              height: "2cm",
+              top: "3.1cm",
+              left: "1.7cm",
+              width: "1.9cm",
+              height: "1.9cm",
               objectFit: "cover"
             }}
           />
           <Typography
             sx={{
               position: "absolute",
-              bottom: "0.6cm",
+              bottom: "2.6cm",
               left: 0,
               width: "100%",
               textAlign: "center",
@@ -46,14 +58,28 @@ const CustomCredencial = ({ persona, lado }) => {
           <Typography
             sx={{
               position: "absolute",
-              bottom: "0.2cm",
-              left: 0,
+              bottom: "0.52cm",
+              left: "4.25cm",
               width: "100%",
-              textAlign: "center",
+              fontSize: "7pt"
+            }}
+          >
+            {persona.ci}
+          </Typography>
+        </>
+      )}
+      {lado === 'reverso' && (
+        <>
+          <Typography
+            sx={{
+              position: "absolute",
+              top: "2.6cm",
+              left: "1.6cm",
+              width: "100%",
               fontSize: "8pt"
             }}
           >
-            CI: {persona.ci}
+            {persona.cargo}
           </Typography>
         </>
       )}

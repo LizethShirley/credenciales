@@ -66,3 +66,16 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    margin: 0;
+  }
+  .MuiStack-root, .MuiToggleButtonGroup-root, .MuiButton-root {
+    display: none; 
+  }
+  .print-page {
+    page-break-after: always;
+  }
+}
