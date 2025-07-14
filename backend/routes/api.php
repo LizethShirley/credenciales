@@ -12,7 +12,7 @@ Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('registrarPersonal', [PersonalController::class, 'storePublic']);
 Route::post('auth/login', [AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
+//Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
 
     // Rutas para Users que manejaran el sistema
@@ -24,7 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rutas para cargos
     Route::get('list/cargos', [CargoController::class, 'list']);
-    Route::get('list/cargos-secciones', [SeccionController::class, 'listarRelacionados']);
+    Route::get('list/cargos-secciones', [CargoController::class, 'listarRelacionados']);
     Route::post('cargos', [CargoController::class, 'store']);
     Route::get('cargos/{cargo}', [CargoController::class, 'show']);
     Route::get('cargos/cargo-secciones/{cargo}', [CargoController::class, 'getSecciones']);
@@ -48,4 +48,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('personal/{personal}', [PersonalController::class, 'destroy']);
     Route::post('list/personal-ids', [PersonalController::class, 'getByIds']);
 
-});
+//});

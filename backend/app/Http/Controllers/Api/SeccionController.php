@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateSeccionRequest;
 use App\Models\Seccion;
 use App\Http\Requests\StoreSeccionRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SeccionController extends Controller
 {
@@ -85,14 +86,36 @@ class SeccionController extends Controller
     public function getCargos($id)
     {
         try {
-            $seccion = Seccion::with('cargos')->findOrFail($id);
+            $seccion = DB::table('secciones')->where('id', $id)->first();
+
+            if (!$seccion) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'Sección no encontrada'
+                ], 404);
+            }
+
+            $cargos = DB::table('cargos as c')
+                ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
+                ->where('s.id', $id)
+                ->select(
+                    'c.id as id_cargo',
+                    'c.nombre as nombre_cargo',
+                    'c.estado',
+                    's.id as id_seccion',
+                    's.nombre as nombre_seccion'
+                )
+                ->get();
 
             return response()->json([
-                'data' => $seccion,
+                'data' => [
+                    'seccion' => $seccion,
+                    'cargos' => $cargos
+                ],
                 'status' => 200,
                 'res' => true,
                 'msg' => 'Cargos de la sección: ' . $seccion->nombre
-            ], 200);
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
@@ -139,12 +162,45 @@ class SeccionController extends Controller
     public function listarRelacionados()
     {
         try {
-            $secciones = Seccion::with('cargos')->get();
+            $resultados = DB::table('secciones as s')
+                ->leftJoin('cargos as c', 's.id', '=', 'c.idseccion')
+                ->select(
+                    's.id as id_seccion',
+                    's.nombre as nombre_seccion',
+                    'c.id as id_cargo',
+                    'c.nombre as nombre_cargo',
+                    'c.color as color_cargo',
+                    'c.estado as estado_cargo'
+                )
+                ->orderBy('s.id')
+                ->get();
+
+            // Agrupar resultados por sección
+            $agrupados = [];
+            foreach ($resultados as $fila) {
+                $idSeccion = $fila->id_seccion;
+                if (!isset($agrupados[$idSeccion])) {
+                    $agrupados[$idSeccion] = [
+                        'id' => $idSeccion,
+                        'nombre' => $fila->nombre_seccion,
+                        'cargos' => []
+                    ];
+                }
+
+                if ($fila->id_cargo !== null) {
+                    $agrupados[$idSeccion]['cargos'][] = [
+                        'id' => $fila->id_cargo,
+                        'nombre' => $fila->nombre_cargo,
+                        'color' => $fila->color_cargo,
+                        'estado' => $fila->estado_cargo
+                    ];
+                }
+            }
 
             return response()->json([
                 'status' => 200,
                 'success' => true,
-                'data' => $secciones,
+                'data' => array_values($agrupados)
             ], 200);
 
         } catch (\Exception $e) {

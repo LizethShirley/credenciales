@@ -58,7 +58,7 @@ class PersonalController extends Controller
                 'res' => true,
                 'msg' => 'Lista de personal con recinto, cargo y sección obtenida exitosamente',
                 'status' => 200,
-                'datos' => $personalsArray,
+                'personal' => $personalsArray,
             ], 200);
 
         } catch (\Exception $e) {
@@ -213,7 +213,7 @@ class PersonalController extends Controller
                 'res' => true,
                 'msg' => 'Personal encontrado exitosamente',
                 'status' => 200,
-                'datos' => $personal
+                'personal' => $personal
             ], 200);
 
         } catch (\Exception $e) {
@@ -260,7 +260,7 @@ class PersonalController extends Controller
                 'res' => true,
                 'msg' => 'Personal actualizado exitosamente',
                 'status' => 200,
-                'datos' => $personal
+                'personal' => $personal
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -296,7 +296,7 @@ class PersonalController extends Controller
                 'res' => true,
                 'msg' => 'Personal eliminado exitosamente',
                 'status' => 200,
-                'datos' => $responseData
+                'personal' => $responseData
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -359,7 +359,7 @@ class PersonalController extends Controller
                 'res' => true,
                 'msg' => 'Personal encontrados exitosamente',
                 'status' => 200,
-                'datos' => $personals
+                'personal' => $personals
             ], 200);
 
         } catch (\Exception $e) {

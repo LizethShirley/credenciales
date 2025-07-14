@@ -7,6 +7,7 @@ use App\Models\Cargo;
 use App\Http\Requests\StoreCargoRequest;
 use App\Http\Requests\UpdateCargoRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CargoController extends Controller
 {
@@ -31,14 +32,21 @@ class CargoController extends Controller
     public function listarRelacionados()
     {
         try {
-            $cargos = Cargo::with('seccion')->get();
+            $cargos = DB::table('cargos as c')
+                ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
+                ->select(
+                    'c.*',
+                    's.nombre as seccion',
+                    's.id as id_seccion',
+                )
+                ->get();
 
             return response()->json([
-                'data' => $cargos,
+                'cargos' => $cargos,
                 'status' => 200,
                 'res' => true,
-                'msg' => 'Lista de cargos con sus secciones'
-            ], 200);
+                'msg' => 'Lista de cargos con sus secciones (LEFT JOIN)'
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
@@ -107,18 +115,36 @@ class CargoController extends Controller
     public function getSecciones($id)
     {
         try {
-            $cargo = Cargo::with('seccion')->findOrFail($id);
+            $cargo = DB::table('cargos as c')
+                ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
+                ->where('c.id', $id)
+                ->select(
+                    'c.id',
+                    'c.nombre as cargo',
+                    'c.estado',
+                    's.id as id_seccion',
+                    's.nombre as seccion'
+                )
+                ->first();
+
+            if (!$cargo) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'Cargo no encontrado'
+                ], 404);
+            }
+
             return response()->json([
-                'cargo' => $cargo,
+                'cargos' => $cargo,
                 'status' => 200,
                 'res' => true,
                 'msg' => 'Cargo con su sección encontrado exitosamente'
-            ], 200);
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
-                'msg' => 'Cargo no encontrado o error: ' . $e->getMessage()
-            ], 404);
+                'msg' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
     }
 
