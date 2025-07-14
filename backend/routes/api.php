@@ -40,12 +40,13 @@ Route::post('auth/login', [AuthController::class, 'login']);
     Route::put('secciones/{seccion}', [SeccionController::class, 'update']);
     Route::delete('secciones/{seccion}', [SeccionController::class, 'destroy']);
 
-    //Personal
+    //Rutas para Personal
     Route::get('list/personal', [PersonalController::class, 'list']);
     Route::post('personal', [PersonalController::class, 'store']);
     Route::get('personal/{personal}', [PersonalController::class, 'show']);
     Route::put('personal/{personal}', [PersonalController::class, 'update']);
     Route::delete('personal/{personal}', [PersonalController::class, 'destroy']);
     Route::post('list/personal-ids', [PersonalController::class, 'getByIds']);
+    Route::get('list/personal-date/{date_ini}/{date_fin}/{cargo}/{circun}', [PersonalController::class, 'filtroFechas']);
 
 //});

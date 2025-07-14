@@ -34,6 +34,7 @@ class StorePersonalRequest extends FormRequest
                     }
                 }
             ],
+            'token' => 'required',
             'estado' => 'required|integer|in:0,1',
             'accesoComputo' => 'nullable|integer|in:0,1',
             'ciexterno' => 'nullable|string|max:45',
