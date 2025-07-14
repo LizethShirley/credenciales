@@ -11,10 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('recintos', function (Blueprint $table) {
+        Schema::create('secciones', function (Blueprint $table) {
             $table->id();
+            $table->string('nombre', 200);
+            $table->string('abreviatura', 5);
+            $table->integer('estado');
             $table->timestamps();
         });
+
+        $sqlFile = resource_path('db/secciones.sql');
+
+        if (file_exists($sqlFile)) {
+            DB::unprepared(file_get_contents($sqlFile));
+        }
     }
 
     /**
@@ -22,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('recintos');
+        Schema::dropIfExists('secciones');
     }
 };

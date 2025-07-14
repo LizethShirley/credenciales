@@ -12,13 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cargos', function (Blueprint $table) {
-            $table->id(); // Equivalente a int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT
+            $table->id();
             $table->string('nombre', 150);
             $table->integer('color')->default(1);
             $table->integer('estado');
-            $table->integer('idseccion')->default(1);
+            $table->unsignedBigInteger('idseccion');
             $table->timestamps();
+
+            $table->foreign('idseccion')->references('id')->on('secciones')->onDelete('restrict');
         });
+
+        $sqlFile = resource_path('db/cargos.sql');
+
+        if (file_exists($sqlFile)) {
+            DB::unprepared(file_get_contents($sqlFile));
+        }
     }
 
     /**

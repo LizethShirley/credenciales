@@ -27,9 +27,8 @@ class CreatePersonalsTable extends Migration
             $table->string('ciexterno', 45)->nullable();
             $table->timestamps();
 
-            // Opcional: claves foráneas (descomenta si ya tienes las tablas)
-            // $table->foreign('id_cargo')->references('id')->on('cargos')->onDelete('restrict');
-            // $table->foreign('id_recinto')->references('id')->on('recintos')->onDelete('set null');
+             $table->foreign('id_cargo')->references('id')->on('cargos')->onDelete('restrict');
+             $table->foreign('id_recinto')->references('id')->on('recintos')->onDelete('set null');
         });
     }
 
