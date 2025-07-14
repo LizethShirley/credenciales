@@ -8,21 +8,14 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  MenuList
 } from '@mui/material';
-import axios from 'axios';
 
 import CustomSendIcon from '../../components/atoms/CustomSendIcon';
 
 const GestionarExterno = () => {
-  const [cargos, setCargos] = useState([]);
   const [cargoSeleccionado, setCargoSeleccionado] = useState('');
-  useEffect(() => {
-    const obtenerCargos = async () => {
-      const { data } = await axios.get('/api/cargos');
-      setCargos(data);
-    };
-    obtenerCargos();
-  }, []);
+  
 
   const handleChangeCargo = (event) => {
     setCargoSeleccionado(event.target.value);
@@ -56,7 +49,7 @@ const GestionarExterno = () => {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100hv'}}>
-            <Typography sx={{ minWidth: 240 }}>Cargo Externo:</Typography>
+            <Typography sx={{ minWidth: 218 }}>Cargo Externo:</Typography>
             <FormControl fullWidth>
               <InputLabel id="cargo-label">Cargo Externo</InputLabel>
               <Select
@@ -65,11 +58,9 @@ const GestionarExterno = () => {
                 label="Cargo Externo"
                 onChange={handleChangeCargo}
               >
-                {cargos.map((cargo) => (
-                  <MenuItem key={cargo.id} value={cargo.nombre}>
-                  {cargo.nombre}
-                  </MenuItem>
-                ))}
+                <MenuItem value="prensa">Prensa</MenuItem>
+                <MenuItem value="observadores">Observadores</MenuItem>
+                <MenuItem value="delegados">Delegados</MenuItem>
               </Select>
             </FormControl>
           </Box>

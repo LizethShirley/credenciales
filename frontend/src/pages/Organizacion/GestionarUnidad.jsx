@@ -47,13 +47,13 @@ const GestionarUnidad = () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/list/secciones`);
       if (!response.ok) {
-        throw new Error('Error al obtener la lista de cargos');
+        throw new Error('Error al obtener la lista de secciones');
       }
       const data = await response.json();
       console.log("Datos recibidos:", data);
       setUnidad(data);
     } catch (error) {
-      console.error("Error al obtener cargos:", error);
+      console.error("Error al obtener secciones:", error);
     }
   };
     
@@ -106,9 +106,8 @@ const GestionarUnidad = () => {
               const texto = filtroGeneral.toLowerCase();
               return (
                 unidad.nombre.toLowerCase().includes(texto) ||
-                unidad.seccion.toLowerCase().includes(texto) ||
-                unidad.descripcion.toLowerCase().includes(texto) ||
-                unidad.color.toLowerCase().includes(texto)
+                unidad.abreviatura.toLowerCase().includes(texto) ||
+                unidad.estado.toLowerCase().includes(texto)
               );
             })}
             onClickRow={(row) => console.log(row)}
