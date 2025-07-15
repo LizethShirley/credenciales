@@ -381,7 +381,7 @@ class PersonalController extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function filtroFechas(Request $request)
+    public function filtroPesonal(Request $request)
     {
         $date_ini = $request->query('fecha_inicio');
         $date_fin = $request->query('fecha_fin');

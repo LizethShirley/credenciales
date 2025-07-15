@@ -5,9 +5,9 @@ import CredentialPrintPage from "../components/molecules/CredentialPrintPage";
 const CredencialesPage = () => {
   const [data, setData] = useState([]);
 
-  const fetchData = async (fecha_inicio, fecha_fin) => {
+  const fetchData = async (inicio, fin,cargo, circunscripcion) => {
     try {
-      const queryParams = new URLSearchParams({ fecha_inicio, fecha_fin }).toString();
+      const queryParams = new URLSearchParams({ inicio, fin, cargo, circunscripcion }).toString();
       const response = await fetch(`${import.meta.env.VITE_API_URL}/list/personal-filter?${queryParams}`);
 
       if (!response.ok) {

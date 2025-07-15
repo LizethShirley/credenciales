@@ -1,4 +1,7 @@
 import React, { useState, useRef } from "react";
+import { Select, MenuItem } from "@mui/material";
+import Autocomplete from '@mui/material/Autocomplete';
+
 import {
   Box,
   Button,
@@ -16,6 +19,8 @@ import { es } from "date-fns/locale";
 import { useReactToPrint } from "react-to-print";
 
 import CustomCredencial from "../organisms/CustomCredencial";
+import {useEffect } from "react";
+
 
 /** Divide array en grupos de 9 para hojas A4 */
 const chunkArray = (array, size) => {
@@ -71,8 +76,9 @@ const A4Page = ({ children }) => (
       boxSizing: "border-box",
       display: "flex",
       flexWrap: "wrap",
-      gap: "0.5cm",
+      gap: "0.49cm",
       backgroundColor: "#fff",
+      marginTop:"20px",
     }}
   >
     {children}
@@ -92,6 +98,29 @@ const CredentialPrintPage = ({ data = [], fetchData }) => {
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [side, setSide] = useState("anverso");
   const [resultadosFiltrados, setResultadosFiltrados] = useState([]);
+    const [cargos, setCargos] = useState([]);
+    const [selectedCargo, setSelectedCargo] = useState(null);
+    const [selectedRecinto, setSelectedRecinto] = useState("");
+
+
+    useEffect(() => {
+        const fetchCargos = async () => {
+            try {
+                const resp = await fetch(`${import.meta.env.VITE_API_URL}/list/cargos`);
+                if (!resp.ok) throw new Error("Error al obtener cargos");
+                const data = await resp.json();
+                const opciones = data.map((c) => ({
+                    id: c.id,
+                    nombre: c.nombre,
+                }));
+                setCargos(opciones);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchCargos();
+    }, []);
 
   const printRef = useRef();
   const handlePrint = useReactToPrint({
@@ -105,35 +134,88 @@ const CredentialPrintPage = ({ data = [], fetchData }) => {
       return;
     }
 
-    const inicio = dateRange.start.toISOString().slice(0, 10);
-    const fin = dateRange.end.toISOString().slice(0, 10);
+      if (!selectedCargo) {
+          alert("Por favor selecciona un cargo.");
+          return;
+      }
 
-    await fetchData(inicio, fin); // Llama a la función del componente padre
-    setResultadosFiltrados(data); // Actualiza con los datos ya filtrados por la API
+      if (selectedCargo.nombre === "NOTARIO ELECTORAL" && !selectedRecinto) {
+          alert("Por favor selecciona una circunscripción.");
+          return;
+      }
+
+      const inicio = dateRange.start.toISOString().slice(0, 10);
+      const fin = dateRange.end.toISOString().slice(0, 10);
+      const cargo = selectedCargo.id;
+      const circunscripcion = selectedCargo.nombre === "NOTARIO ELECTORAL" ? selectedRecinto : "";
+
+      await fetchData(inicio, fin, cargo, circunscripcion);
+    setResultadosFiltrados(data);
   };
 
   const pages = chunkArray(resultadosFiltrados, 9);
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 5 }}>
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} mb={2}>
         <DateRangeFilter
           startDate={dateRange.start}
           endDate={dateRange.end}
           onChange={setDateRange}
         />
-        <SideToggle side={side} onChange={setSide} />
+
+          <Autocomplete
+              disablePortal
+              options={cargos}
+              getOptionLabel={(option) => option.nombre || ""}
+              value={selectedCargo}
+              onChange={(_, value) => {
+                  setSelectedCargo(value);
+                  if (value?.nombre !== "NOTARIO ELECTORAL") {
+                      setSelectedRecinto(""); // limpia si se cambia a otro cargo
+                  }
+              }}
+              renderInput={(params) => (
+                  <TextField {...params} label="Seleccione un cargo" size="small" />
+              )}
+              sx={{ width: 300 }}
+          />
+
+          {selectedCargo?.nombre === "NOTARIO ELECTORAL" && (
+              <Select
+                  size="small"
+                  value={selectedRecinto}
+                  onChange={(e) => setSelectedRecinto(e.target.value)}
+                  displayEmpty
+                  sx={{ width: 200, mt: 1 }}
+              >
+                  <MenuItem value="" disabled>Seleccione circunscripción</MenuItem>
+                  {[
+                      "c-2", "C-20", "C-21", "c-22", "c-23",
+                      "c-24", "c-25", "c-26", "c-27", "c-28"
+                  ].map((circun) => (
+                      <MenuItem key={circun} value={circun}>
+                          {circun}
+                      </MenuItem>
+                  ))}
+              </Select>
+          )}
+
         <Button variant="outlined" onClick={handleFiltrar}>
           Filtrar
         </Button>
-        {resultadosFiltrados.length > 0 && (
-          <Button variant="contained" onClick={handlePrint}>
-            Imprimir
-          </Button>
-        )}
+
       </Stack>
 
-      <Grid container spacing={2}>
+        <Grid container justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+            <SideToggle side={side} onChange={setSide} />
+            {resultadosFiltrados.length > 0 && (
+                <Button variant="contained" onClick={handlePrint}>
+                    Imprimir
+                </Button>
+            )}
+        </Grid>
+      <Grid container spacing={2} justifyContent="center">
         <Grid item xs={12} md={8}>
           {resultadosFiltrados.length > 0 ? (
             <Box ref={printRef}>

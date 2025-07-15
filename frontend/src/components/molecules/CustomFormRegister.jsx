@@ -115,7 +115,7 @@ const CustomFormRegister = () => {
       formData.append("photo", values.imagen);
     }
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/personal`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/registrarPersonal`, {
       method: "POST",
       headers: {
         "Accept": "application/json"

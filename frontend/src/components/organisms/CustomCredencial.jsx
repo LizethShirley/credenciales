@@ -5,11 +5,11 @@ const CustomCredencial = ({ persona, lado }) => {
     <Box
       className="credencial"
       sx={{
-        width: "5.5cm",
-        height: "8cm",
+        width: "6.2cm",
+        height: "8.5cm",
         position: "relative",
         backgroundImage: `url(${lado === 'anverso' 
-          ? '/credenciales/CARA_EVENTUAL_EG2020_4.png'
+          ? '/credenciales/CARA_EVENTUAL_EG2020_4-.png'
           : '/credenciales/ATRAS_EVENTUAL_EG2020_4.png'})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -22,11 +22,13 @@ const CustomCredencial = ({ persona, lado }) => {
           <Typography
             sx={{
               position: "absolute",
-              top: "2.7cm",
+              lineHeight:"1",
+              top: "2.9cm",
               left: 0,
               width: "100%",
+              fontWeight:780,
               textAlign: "center",
-              fontSize: "8pt"
+              fontSize: "6pt"
             }}
           >
             {persona.cargo_nombre}
@@ -36,8 +38,8 @@ const CustomCredencial = ({ persona, lado }) => {
             alt="foto"
             style={{
               position: "absolute",
-              top: "3.1cm",
-              left: "1.7cm",
+              top: "3.3cm",
+              left: "2.1cm",
               width: "1.9cm",
               height: "1.9cm",
               objectFit: "cover"
@@ -46,7 +48,7 @@ const CustomCredencial = ({ persona, lado }) => {
           <Typography
             sx={{
               position: "absolute",
-              bottom: "2.6cm",
+              bottom: "2.9cm",
               left: 0,
               width: "100%",
               textAlign: "center",
@@ -58,14 +60,41 @@ const CustomCredencial = ({ persona, lado }) => {
           <Typography
             sx={{
               position: "absolute",
-              bottom: "0.52cm",
-              left: "4.25cm",
+              bottom: "0.56cm",
+              left: "4.7cm",
               width: "100%",
               fontSize: "7pt"
             }}
           >
             {persona.ci}
           </Typography>
+            <img
+                src={`/EleccionesLogo.png`}
+                alt="foto"
+                style={{
+                    position: "absolute",
+                    top: "6.3cm",
+                    left: "auto",
+                    right: "0.7cm",
+                    width: "100%",
+                    height: "1.5cm",
+                    objectFit: "scale-down"
+                }}
+            />
+            <Typography
+                sx={{
+                    position: "absolute",
+                    bottom: "0.05cm",
+                    left: "0.5cm",
+                    width: "70%",
+                    lineHeight:"1.3",
+                    fontWeight:"700",
+                    fontSize: "6pt",
+                    color:"white"
+                }}
+            >
+                {"Válido Elecciones Generales 2025"}
+            </Typography>
         </>
       )}
       {lado === 'reverso' && (
@@ -73,14 +102,43 @@ const CustomCredencial = ({ persona, lado }) => {
           <Typography
             sx={{
               position: "absolute",
-              top: "2.6cm",
-              left: "1.6cm",
-              width: "100%",
-              fontSize: "8pt"
+              top: "2.9cm",
+              left: "1.8cm",
+              width: "70%",
+              lineHeight:"1.3",
+              fontWeight:"800",
+              fontSize: "6pt"
             }}
           >
             {persona.cargo_nombre}
           </Typography>
+            <img
+                src={`/credenciales/qr.png`}
+                alt="foto"
+                style={{
+                    position: "absolute",
+                    top: "5.5cm",
+                    left: "4.1cm",
+                    width: "1.8cm",
+                    height: "1.8cm",
+                    objectFit: "cover"
+                }}
+            />
+
+            <Typography
+                sx={{
+                    position: "absolute",
+                    bottom: "0.05cm",
+                    left: "0.5cm",
+                    width: "70%",
+                    lineHeight:"1.3",
+                    fontWeight:"700",
+                    fontSize: "6pt",
+                    color:"white"
+                }}
+            >
+                {"C"+persona.recinto_circun+" - "+persona.recinto_nombre}
+            </Typography>
         </>
       )}
     </Box>

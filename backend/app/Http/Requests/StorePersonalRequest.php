@@ -20,7 +20,7 @@ class StorePersonalRequest extends FormRequest
             'materno' => 'required|string|max:56',
             'ci' => 'required|string|max:25',
             'complemento' => 'nullable|string|max:5',
-            'extencion' => 'required|string|max:25',
+            'extencion' => 'nullable|string|max:25',
             'email' => 'nullable|email|max:255',
             'celular' => 'required|digits_between:7,11',
             'id_cargo' => 'required|exists:cargos,id',

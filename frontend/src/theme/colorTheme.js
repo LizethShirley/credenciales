@@ -14,7 +14,7 @@ export const colorTheme = createTheme({
             main:red.A400
         },
         background: {
-            default: '#FAFAFA',
+            default: 'rgba(241,240,240,0.89)',
             paper: '#F7F7F7'
         },
         typography:{
