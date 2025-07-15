@@ -33,6 +33,7 @@ const CustomTextField = ({ label, required = false, onlyNumbers = false, onlyLet
       )}
 
       <TextField
+        size="small"
         {...field}
         {...props}
         type={onlyNumbers ? 'number' : 'text'}
