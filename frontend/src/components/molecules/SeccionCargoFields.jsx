@@ -16,7 +16,7 @@ const SeccionCargoFields = ({ seccionOptions, cargoOptions, setCargoOptions }) =
     }
     try {
       const resp = await fetch(
-        `http://127.0.0.1:8000/api/secciones/secciones-cargos/${values.secciones}`
+        `${import.meta.env.VITE_API_URL}/secciones/secciones-cargos/${values.secciones}`
       );
       if (!resp.ok) throw new Error("Error al obtener cargos");
 
