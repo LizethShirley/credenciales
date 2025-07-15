@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\PersonalController;
 use App\Http\Controllers\Api\SeccionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Api\RecintoController;
 use App\Http\Controllers\SuscriberController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,4 +50,11 @@ Route::post('auth/login', [AuthController::class, 'login']);
     Route::post('list/personal-ids', [PersonalController::class, 'getByIds']);
     Route::get('list/personal-filter', [PersonalController::class, 'filtroFechas']);
 
+
+    //Rutas recintos
+    Route::get('list/recintos', [RecintoController::class, 'list']);
+    Route::post('recintos', [RecintoController::class, 'store']);
+    Route::get('recintos/{id}', [RecintoController::class, 'show']);
+    Route::put('recintos/{id}', [RecintoController::class, 'update']);
+    Route::delete('recintos/{id}', [RecintoController::class, 'destroy']);
 //});
