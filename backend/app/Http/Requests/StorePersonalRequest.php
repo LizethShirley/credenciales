@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Cargo;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StorePersonalRequest extends FormRequest
 {
@@ -28,9 +28,11 @@ class StorePersonalRequest extends FormRequest
                 'nullable',
                 'exists:recintos,id',
                 function ($attribute, $value, $fail) {
-                    $cargoNombre = optional(\App\Models\Cargo::find($this->id_cargo))->nombre;
-                    if ($cargoNombre && strtolower($cargoNombre) === 'notario' && !$value) {
-                        $fail('El campo id_recinto es obligatorio cuando el cargo es Notario.');
+                    $cargo = Cargo::find($this->id_cargo);
+                    $cargoNombre = $cargo ? strtoupper(trim($cargo->nombre)) : null;
+
+                    if ($cargoNombre === 'NOTARIO ELECTORAL' && !$value) {
+                        $fail('El campo id_recinto es obligatorio cuando el cargo es NOTARIO ELECTORAL.');
                     }
                 }
             ],
@@ -38,7 +40,19 @@ class StorePersonalRequest extends FormRequest
             'estado' => 'required|integer|in:0,1',
             'accesoComputo' => 'nullable|integer|in:0,1',
             'ciexterno' => 'nullable|string|max:45',
-            'photo' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'photo' => 'required|image|mimes:jpg,jpeg|max:2048',
         ];
     }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $expectedToken = env('TOKEN_REGISTRO');
+
+            if ($this->token !== $expectedToken) {
+                $validator->errors()->add('token', 'El código de verificación es incorrecto.');
+            }
+        });
+    }
 }
+

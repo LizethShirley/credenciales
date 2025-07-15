@@ -42,6 +42,5 @@ class Recinto extends Model
         'fechaRegistro',
         'estadoRegistro',
         'observaciones',
-
     ];
 }
