@@ -1,6 +1,7 @@
 import { Typography, Grid, Box, Paper } from '@mui/material';
 
 import CustomFormRegister from '../../components/molecules/CustomFormRegister';
+import { useState, useEffect } from 'react';
 const CredencialIndividual= () => {
   return (
     <Grid container spacing={2} sx={{ width: '100%', padding: 2, margin: 0}}>
@@ -22,13 +23,13 @@ const CredencialIndividual= () => {
         }}
       >
          <Typography
-  variant="h5"
-  sx={{
-    textAlign: 'center',
-  }}
->
-  Datos Personales
-</Typography>
+          variant="h5"
+          sx={{
+            textAlign: 'center',
+          }}
+        >
+          Datos Personales
+        </Typography>
 
           <CustomFormRegister/>
 
