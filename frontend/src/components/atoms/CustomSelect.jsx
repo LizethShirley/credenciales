@@ -12,9 +12,9 @@ const CustomSelect = ({ label, options = [], required = false, ...props }) => {
           {label}
           {required && <span style={{ color: 'red', marginLeft: 4 }}>*</span>}
         </Typography>
-      <Select {...field} >
+      <Select size="small" {...field} sx={{ fontSize: '10pt', minHeight: '40px', height:'auto' }}>
         {options.map((opt) => (
-          <MenuItem key={opt.value} value={opt.value}>
+          <MenuItem key={opt.value} value={opt.value} sx={{ fontSize:'8pt' }}>
             {opt.label}
           </MenuItem>
         ))}
