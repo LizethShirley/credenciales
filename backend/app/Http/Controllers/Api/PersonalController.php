@@ -92,7 +92,12 @@ class PersonalController extends Controller
             $personal = Personal::create($validated);
 
             $responseData = $personal->toArray();
-            $responseData['photo'] = $personal->photo ? base64_encode($personal->photo) : null;
+            unset($responseData['photo']);
+            $responseData['photo'] = $personal->photo
+                ? base64_encode(is_resource($personal->photo)
+                    ? stream_get_contents($personal->photo)
+                    : $personal->photo)
+                : null;
 
             return response()->json([
                 'res' => true,

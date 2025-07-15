@@ -42,7 +42,7 @@ Route::post('auth/login', [AuthController::class, 'login']);
 
     //Rutas para Personal
     Route::get('list/personal', [PersonalController::class, 'list']);
-    Route::post('personal', [PersonalController::class, 'store']);
+    Route::post('personal', [PersonalController::class, 'store'])->withoutMiddleware(['auth:sanctum']);
     Route::get('personal/{personal}', [PersonalController::class, 'show']);
     Route::put('personal/{personal}', [PersonalController::class, 'update']);
     Route::delete('personal/{personal}', [PersonalController::class, 'destroy']);

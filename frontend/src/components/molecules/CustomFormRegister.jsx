@@ -98,7 +98,7 @@ const CustomFormRegister = () => {
     const formData = new FormData();
 
     // Añadir campos texto uno por uno
-    formData.append("nombres", values.nombres);
+    formData.append("nombre", values.nombres);
     formData.append("paterno", values.apellidoPaterno);
     formData.append("materno", values.apellidoMaterno);
     formData.append("ci", values.numeroCarnet);
@@ -107,7 +107,7 @@ const CustomFormRegister = () => {
     formData.append("celular", values.numeroCelular);
     formData.append("id_cargo", values.cargos);
     formData.append("token", values.codVerificacion);
-    formData.append("id_recinto", null);
+    formData.append("id_recinto", 1);
     formData.append("estado", 0);
     formData.append("accesoComputo", 0);
 
@@ -117,8 +117,8 @@ const CustomFormRegister = () => {
 
     const response = await fetch(`${import.meta.env.VITE_API_URL}/personal`, {
       method: "POST",
-      headers:{
-        'Content-Type': 'aplication/json'
+      headers: {
+        "Accept": "application/json"
       },
       body: formData,
     });
