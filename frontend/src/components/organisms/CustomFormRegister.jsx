@@ -26,6 +26,7 @@ const MostrarCargoNombre = ({ cargoId, cargoOptions = [] }) => {
 
 
 const CustomFormRegister = () => {
+  const [recintoSeleccionado, setRecintoSeleccionado] = useState(null);
   const [cargoOptions, setCargoOptions] = useState([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -69,6 +70,7 @@ const CustomFormRegister = () => {
     numeroCelular: "",
     secciones: "3",
     cargos: "",
+    recinto:"",
     codVerificacion: "",
     imagen: null,
   };
@@ -85,7 +87,7 @@ const CustomFormRegister = () => {
       formData.append("celular", values.numeroCelular);
       formData.append("id_cargo", values.cargos);
       formData.append("token", values.codVerificacion);
-      formData.append("id_recinto", "");
+      formData.append("id_recinto", recintoSeleccionado?.value);
       formData.append("estado", 0);
       formData.append("accesoComputo", 0);
       if (values.imagen) formData.append("photo", values.imagen);
@@ -149,7 +151,7 @@ const CustomFormRegister = () => {
                     <Typography variant="subtitle2">
                       Seleccione el recinto asignado
                     </Typography>
-                    <CustomAutocomplete />
+                    <CustomAutocomplete onChange={(item) => setRecintoSeleccionado(item)}/>
                   </Box>
                 )}
               </Grid>
