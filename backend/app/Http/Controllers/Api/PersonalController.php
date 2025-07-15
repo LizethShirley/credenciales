@@ -40,11 +40,11 @@ class PersonalController extends Controller
                     's.id as seccion_id',
                     's.nombre as seccion_nombre',
                     'r.id as recinto_id',
-                    'r.NombreRecinto as recinto_nombre',
-                    'r.NombreMunicipio as recinto_municipio',
-                    'r.NombreProvincia as recinto_provincia',
-                    'r.NombreLocalidad as recinto_localidad',
-                    'r.Circun as recinto_circun',
+                    'r.nombreRecinto as recinto_nombre',
+                    'r.nombreMunicipio as recinto_municipio',
+                    'r.nombreProvincia as recinto_provincia',
+                    'r.nombreLocalidad as recinto_localidad',
+                    'r.circun as recinto_circun',
                 )
                 ->get();
 
@@ -188,11 +188,11 @@ class PersonalController extends Controller
                     's.nombre as seccion_nombre',
                     // Campos específicos de recinto
                     'r.id as recinto_id',
-                    'r.NombreRecinto as recinto_nombre',
-                    'r.NombreMunicipio as recinto_municipio',
-                    'r.NombreProvincia as recinto_provincia',
-                    'r.NombreLocalidad as recinto_localidad',
-                    'r.Circun as recinto_circun',
+                    'r.nombreRecinto as recinto_nombre',
+                    'r.nombreMunicipio as recinto_municipio',
+                    'r.nombreProvincia as recinto_provincia',
+                    'r.nombreLocalidad as recinto_localidad',
+                    'r.circun as recinto_circun',
                 )
                 ->first();
 
@@ -346,7 +346,7 @@ class PersonalController extends Controller
                     's.id as seccion_id',
                     's.nombre as seccion_nombre',
                     'r.id as recinto_id',
-                    'r.NombreRecinto as recinto_nombre'
+                    'r.nombreRecinto as recinto_nombre'
                 )
                 ->get()
                 ->map(function ($item) {
@@ -369,6 +369,85 @@ class PersonalController extends Controller
                 'error' => $e->getMessage(),
                 'status' => 500
             ], 500);
+        }
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function filtroFechas(Request $request)
+    {
+        $date_ini = $request->query('fecha_inicio');
+        $date_fin = $request->query('fecha_fin');
+        $cargo = $request->query('cargo');
+        $circunscripcion = $request->query('circunscripcion');
+
+        try {
+            $personal = \DB::table('personal as p')
+                ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
+                ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
+                ->leftJoin('recintos as r', 'p.id_recinto', '=', 'r.id')
+                ->select(
+                    'p.id',
+                    'p.nombre',
+                    'p.paterno',
+                    'p.materno',
+                    'p.ci',
+                    'p.estado',
+                    'p.complemento',
+                    'p.extencion',
+                    'p.token',
+                    'p.email',
+                    'p.celular',
+                    'p.accesoComputo',
+                    'p.ciexterno',
+                    'p.photo',
+                    'c.id as cargo_id',
+                    'c.nombre as cargo_nombre',
+                    's.id as seccion_id',
+                    's.nombre as seccion_nombre',
+                    'r.id as recinto_id',
+                    'r.NombreRecinto as recinto_nombre',
+                    'r.NombreMunicipio as recinto_municipio',
+                    'r.NombreProvincia as recinto_provincia',
+                    'r.NombreLocalidad as recinto_localidad',
+                    'r.Circun as recinto_circun'
+                );
+
+            if (!empty($date_ini) && !empty($date_fin)) {
+                $personal->whereBetween('p.created_at', [$date_ini . ' 00:00:00', $date_fin . ' 23:59:59']);
+            }
+
+            if (!empty($cargo)) {
+                $personal->where('c.id', $cargo);
+            }
+
+            if (!empty($circunscripcion)) {
+                $personal->where('r.Circun', $circunscripcion);
+            }
+
+            $personal = $personal->get();
+
+            $personalsArray = $personal->map(function ($personal) {
+                $arrayPersonal = (array) $personal;
+                $arrayPersonal['photo'] = $personal->photo ? base64_encode($personal->photo) : null;
+                return $arrayPersonal;
+            });
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Lista de personal con recinto, cargo y sección obtenida exitosamente',
+                'status' => 200,
+                'personal' => $personalsArray,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al listar personal',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ]);
         }
     }
 

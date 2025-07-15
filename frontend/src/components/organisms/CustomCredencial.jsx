@@ -29,10 +29,10 @@ const CustomCredencial = ({ persona, lado }) => {
               fontSize: "8pt"
             }}
           >
-            {persona.cargo}
+            {persona.cargo_nombre}
           </Typography>
           <img
-            src={persona.foto}
+            src={`data:image/jpeg;base64,${persona.photo}`}
             alt="foto"
             style={{
               position: "absolute",
@@ -53,7 +53,7 @@ const CustomCredencial = ({ persona, lado }) => {
               fontSize: "8pt"
             }}
           >
-            {persona.nombre}
+            {persona.nombre+" "+persona.paterno+" "+persona.materno}
           </Typography>
           <Typography
             sx={{
@@ -79,7 +79,7 @@ const CustomCredencial = ({ persona, lado }) => {
               fontSize: "8pt"
             }}
           >
-            {persona.cargo}
+            {persona.cargo_nombre}
           </Typography>
         </>
       )}
