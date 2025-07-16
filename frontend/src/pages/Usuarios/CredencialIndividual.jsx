@@ -18,13 +18,14 @@ const CredencialIndividual = () => {
         position: 'relative',
       }}
     >
-      <Grid container justifyContent="center" spacing={2}>
+      {/*<Grid container justifyContent="center" spacing={2}>*/}
+      <Grid container spacing={2} justifyContent="center" sx={{ width: { xs: "100hv"}}}>
         <Box
         component="img"
         src="/TEDLogo.jpg"
         alt="Logo TED"
         sx={{
-          width: '7%',
+          width: '10%',
           height: 'auto',
           pointerEvents: 'none',
           opacity: 0.8
@@ -45,7 +46,7 @@ const CredencialIndividual = () => {
         }}
       />
       </Grid>
-      <Typography variant="h6" sx={{pt:2, textAlign: 'center', mb: 2, color:"#04465F", fontWeight:"bold" }}>
+      <Typography variant="h6" sx={{pt:0, textAlign: 'center', mb: 1, color:"#04465F", fontWeight:"bold" }}>
         Datos Personales
       </Typography>
 

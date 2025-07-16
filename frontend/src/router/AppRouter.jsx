@@ -18,26 +18,30 @@ import GestionarExterno from '../pages/Organizacion/GestionarExterno'
 const App = () => {
   return (
     <BrowserRouter>
-      <Routes>
+  <Routes>
+    {/* Redirección por defecto a /Credenciales */}
+    <Route path="/" element={<Navigate to="/Credenciales" replace />} />
+
     {/* Esto es como tu "página aparte", sin Layout */}
-    <Route path="/Credenciales" element={<CredencialIndividual/>} />
+    <Route path="/Credenciales" element={<CredencialIndividual />} />
 
     {/* Esto son las rutas internas que SI tienen Layout */}
     <Route path="/CredencialesTED" element={<Layout />}>
-          <Route index element={<Navigate to="/CredencialesTED/Inicio" />} />
-          <Route path="Inicio" element={<CredencialesPage/>} />
-          <Route path="Prueba" element={<Prueba/>} />
+      <Route index element={<Navigate to="/CredencialesTED/Inicio" />} />
+      <Route path="Inicio" element={<CredencialesPage />} />
+      <Route path="Prueba" element={<Prueba />} />
 
-          <Route path="Usuarios/Lista_Credenciales" element={<ListaCredenciales/>}/> 
-          <Route path="Usuarios/Credencial_Masivo" element={<CredencialMasivo/>}/> 
-          <Route path="Usuarios/Credencial_Individual" element={<CredencialIndividual/>}/> 
+      <Route path="Usuarios/Lista_Credenciales" element={<ListaCredenciales />} />
+      <Route path="Usuarios/Credencial_Masivo" element={<CredencialMasivo />} />
+      <Route path="Usuarios/Credencial_Individual" element={<CredencialIndividual />} />
 
-          <Route path="Organización/Gestionar_Unidad" element={<GestionarUnidad/>}/> 
-          <Route path="Organización/Gestionar_Cargo" element={<GestionarCargo/>}/> 
-          <Route path="Organización/Gestionar_Externo" element={<GestionarExterno/>}/> 
-        </Route>
-      </Routes>
-    </BrowserRouter>
+      <Route path="Organización/Gestionar_Unidad" element={<GestionarUnidad />} />
+      <Route path="Organización/Gestionar_Cargo" element={<GestionarCargo />} />
+      <Route path="Organización/Gestionar_Externo" element={<GestionarExterno />} />
+    </Route>
+  </Routes>
+</BrowserRouter>
+
   );
 };
 
