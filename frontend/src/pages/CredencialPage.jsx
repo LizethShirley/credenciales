@@ -16,6 +16,7 @@ const CredencialesPage = () => {
 
       const result = await response.json();
       setData(result.personal);
+      return result;
     } catch (err) {
       console.error("Error al cargar datos:", err);
     }

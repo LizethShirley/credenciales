@@ -18,7 +18,7 @@ const LateralBar = ({anchoCaja}) => {
         }}>
       <List sx={{color: '#4F4F4F', top:40}}>
         <ListItemButton
-          onClick={() => navigate('/Credenciales/Inicio')}
+          onClick={() => navigate('/CredencialesTED/Inicio')}
           sx={{
             '& .MuiListItemText-primary': {
               fontWeight: 'bold', fontSize: 15 

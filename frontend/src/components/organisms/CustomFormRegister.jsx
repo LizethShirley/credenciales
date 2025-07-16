@@ -87,7 +87,7 @@ const CustomFormRegister = () => {
       formData.append("celular", values.numeroCelular);
       formData.append("id_cargo", values.cargos);
       formData.append("token", values.codVerificacion);
-      formData.append("id_recinto", recintoSeleccionado?.value);
+      formData.append("id_recinto", values.cargos === 3 ? recintoSeleccionado?.value || "" : "");
       formData.append("estado", 0);
       formData.append("accesoComputo", 0);
       if (values.imagen) formData.append("photo", values.imagen);

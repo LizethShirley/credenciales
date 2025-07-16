@@ -107,14 +107,25 @@ const CustomFormRegister = () => {
     formData.append("celular", values.numeroCelular);
     formData.append("id_cargo", values.cargos);
     formData.append("token", values.codVerificacion);
-    formData.append("id_recinto", 1);
-    formData.append("estado", 0);
+    formData.append("estado", 1);
     formData.append("accesoComputo", 0);
+
+    const cargoSeleccionado = listCargos.find(c => c.value === values.cargos);
+
+    if (cargoSeleccionado?.label === "NOTARIO ELECTORAL") {
+      if (values.idRecinto) {
+        formData.append("id_recinto", values.idRecinto);
+      } else {
+        formData.append("id_recinto", "");
+      }
+    }
+
 
     if (values.imagen) {
       formData.append("photo", values.imagen);
     }
 
+    console.log(formData);
     const response = await fetch(`${import.meta.env.VITE_API_URL}/registrarPersonal`, {
       method: "POST",
       headers: {
