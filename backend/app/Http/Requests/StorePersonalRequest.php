@@ -28,7 +28,7 @@ class StorePersonalRequest extends FormRequest
             'estado' => 'required|integer|in:0,1',
             'accesoComputo' => 'nullable|integer|in:0,1',
             'ciexterno' => 'nullable|string|max:45',
-            'photo' => 'nullable|image|max:2048', // o 'required' si es para creación
+            'photo' => 'nullable|image', // o 'required' si es para creación
             'token' => 'required',
         ];
 

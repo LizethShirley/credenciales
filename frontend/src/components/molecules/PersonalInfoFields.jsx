@@ -40,7 +40,6 @@ const PersonalInfoFields = () => (
         <CustomTextField
           name="complemento"
           label="Complemento"
-          onlyLetters
         />
       </Grid>
     </Grid>

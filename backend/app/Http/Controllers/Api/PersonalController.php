@@ -7,6 +7,8 @@ use App\Models\Personal;
 use App\Http\Requests\StorePersonalRequest;
 use App\Http\Requests\UpdatePersonalRequest;
 use Illuminate\Http\Request;
+use Intervention\Image\ImageManager;
+use Illuminate\Support\Facades\DB;
 
 class PersonalController extends Controller
 {
@@ -16,7 +18,7 @@ class PersonalController extends Controller
     public function list()
     {
         try {
-            $personal = \DB::table('personal as p')
+            $personal = DB::table('personal as p')
                 ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
                 ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
                 ->leftJoin('recintos as r', 'p.id_recinto', '=', 'r.id')
@@ -71,12 +73,9 @@ class PersonalController extends Controller
         }
     }
 
-
-
     /**
-     * Guardar un nuevo personal
      * @param StorePersonalRequest $request
-     * @return
+     * @return mixed
      */
     public function store(StorePersonalRequest $request)
     {
@@ -85,9 +84,12 @@ class PersonalController extends Controller
 
             if ($request->hasFile('photo')) {
                 $file = $request->file('photo');
-                $photoData = file_get_contents($file->getRealPath());
-                $validated['photo'] = $photoData;
-            }
+                $manager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                $image = $manager->read($file->getPathname());
+                $compressed = $image->scale(width: 600)->toJpeg(quality: 70);
+
+            $validated['photo'] = $compressed->toString();
+        }
 
             $personal = Personal::create($validated);
 
@@ -114,6 +116,7 @@ class PersonalController extends Controller
             ], 500);
         }
     }
+
 
     /**
      * Guardar un nuevo personal
@@ -165,7 +168,7 @@ class PersonalController extends Controller
     public function show($id)
     {
         try {
-            $personal = \DB::table('personal as p')
+            $personal = DB::table('personal as p')
                 ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
                 ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
                 ->leftJoin('recintos as r', 'p.id_recinto', '=', 'r.id')
@@ -209,9 +212,9 @@ class PersonalController extends Controller
                 ], 404);
             }
 
-            $personal = (array) $personal; // Convertir stdClass a array para modificar
+            $personal = (array) $personal;
 
-            // Codificar la foto en base64
+
             $personal['photo'] = $personal['photo'] ? base64_encode($personal['photo']) : null;
 
             return response()->json([
@@ -326,7 +329,7 @@ class PersonalController extends Controller
                 ], 400);
             }
 
-            $personals = \DB::table('users as p')
+            $personals = DB::table('users as p')
                 ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
                 ->leftJoin('secciones as s', 'c.id_seccion', '=', 's.id')
                 ->leftJoin('recintos as r', 'p.id_recinto', '=', 'r.id')
@@ -389,7 +392,7 @@ class PersonalController extends Controller
         $circunscripcion = $request->query('circunscripcion');
 
         try {
-            $personal = \DB::table('personal as p')
+            $personal = DB::table('personal as p')
                 ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
                 ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
                 ->leftJoin('recintos as r', 'p.id_recinto', '=', 'r.id')
