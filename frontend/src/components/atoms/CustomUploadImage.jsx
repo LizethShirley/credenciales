@@ -57,11 +57,11 @@ const CustomUploadImage = ({ label, required = false, selectedFile, handleFileCh
         </IconButton>
       </label>
 
-      {selectedFile && (
-        <Typography variant="body1" sx={{ marginTop: 1, fontSize:"10pt" }}>
-          Archivo seleccionado: {selectedFile.name}
-        </Typography>
-      )}
+      {/*{selectedFile && (*/}
+      {/*  <Typography variant="body1" sx={{ marginTop: 1, fontSize:"10pt" }}>*/}
+      {/*    Archivo seleccionado: {selectedFile.name}*/}
+      {/*  </Typography>*/}
+      {/*)}*/}
     </div>
   );
 };
