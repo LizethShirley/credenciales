@@ -2,7 +2,7 @@ import * as Yup from "yup";
 
 const registerValidation = Yup.object({
   nombres: Yup.string().required("Campo obligatorio"),
-  apellidoPaterno: Yup.string().required("Campo obligatorio"),
+  apellidoPaterno: Yup.string(),
   apellidoMaterno: Yup.string(),
   numeroCarnet: Yup.string().required("Campo obligatorio"),
   complemento: Yup.string(),
@@ -13,12 +13,10 @@ const registerValidation = Yup.object({
   codVerificacion: Yup.string().required("Campo obligatorio"),
   imagen: Yup.mixed()
   .required("Campo obligatorio")
-  .test("fileType", "Solo se permiten archivos JPG o JPEG", (value) => {
-    return value && ["image/jpeg", "image/jpg"].includes(value.type);
+  .test("fileType", "Solo se permiten archivos de imagen", (value) => {
+    return value && value.type.startsWith("image/");
   })
-  .test("fileSize", "El archivo no debe superar los 2MB", (value) => {
-    return value && value.size <= 2 * 1024 * 1024;
-  }),
+
 
 });
 

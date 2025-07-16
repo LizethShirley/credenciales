@@ -16,7 +16,6 @@ const PersonalInfoFields = () => (
           name="apellidoPaterno"
           label="Apellido Paterno"
           onlyLetters
-          required
         />
       </Grid>
       <Grid item xs={12} md={6} sx={{width:"48%"}}>
