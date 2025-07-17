@@ -82,6 +82,7 @@ const CustomCredencial = ({ persona, lado }) => {
                     width: "3.5cm",
                     height: "1.7cm",
                     objectFit: "cover",
+                    backgroundColor: "transparent",
                 }}
             />
             <Typography
@@ -124,7 +125,7 @@ const CustomCredencial = ({ persona, lado }) => {
                     left: "4.1cm",
                     width: "1.8cm",
                     height: "1.8cm",
-                    objectFit: "cover"
+                    objectFit: "cover",
                 }}
             />
 

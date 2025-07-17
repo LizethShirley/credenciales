@@ -15,6 +15,13 @@ const chunkArray = (array, size) => {
 };
 
 const CredentialPrintPageV1 = ({ fetchData }) => {
+  // Abrir ventana nueva con las credenciales
+  const handleOpenWindow = () => {
+    // Guardar los datos en localStorage para la vista previa
+    localStorage.setItem('credenciales_preview_pages', JSON.stringify(pages));
+    localStorage.setItem('credenciales_preview_side', side);
+    window.open('/preview', '_blank', 'width=1200,height=1400');
+  };
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [side, setSide] = useState("anverso");
   const [resultadosFiltrados, setResultadosFiltrados] = useState([]);
@@ -113,9 +120,19 @@ const CredentialPrintPageV1 = ({ fetchData }) => {
       <Grid container justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <SideToggle side={side} onChange={setSide} />
         {resultadosFiltrados.length > 0 && (
-          <Button variant="contained" onClick={handleDownloadPDF}>
-            Descargar PDF
-          </Button>
+          <>
+            <Button variant="contained" onClick={handleDownloadPDF}>
+              Descargar PDF
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              sx={{ ml: 2 }}
+              onClick={handleOpenWindow}
+            >
+              Previsualizar credenciales
+            </Button>
+          </>
         )}
       </Grid>
 

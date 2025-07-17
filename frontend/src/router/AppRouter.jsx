@@ -1,5 +1,6 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import PreviewPage from '../pages/preview';
 import Layout from '../Layout/Layout';
 import Inicio from '../pages/Inicio';
 import Usuarios from '../pages/Usuario';
@@ -24,6 +25,7 @@ const App = () => {
 
     {/* Esto es como tu "página aparte", sin Layout */}
     <Route path="/" element={<CredencialPage />} />
+    <Route path="/preview" element={<PreviewPage />} />
 
     {/* Esto son las rutas internas que SI tienen Layout */}
     <Route path="/CredencialesTED" element={<Layout />}>
