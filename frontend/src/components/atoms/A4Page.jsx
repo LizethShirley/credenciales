@@ -8,15 +8,15 @@ const A4Page = forwardRef(({ children, style = {}, ...props }, ref) => {
       ref={ref}
       {...restProps}
       style={{
-        width: "21cm",
-        minHeight: "29.7cm",
+        width: "210mm",
+        height: "297mm",
         padding: "0.5cm",
-        backgroundColor: "white",
+        backgroundColor: "#fff",
         boxSizing: "border-box",
-        boxShadow: "0 0 5px rgba(0,0,0,0.1)",
+        overflow: "hidden",
         breakAfter: "page",
         pageBreakAfter: "always",
-        ...(forPrint ? {} : { margin: "0.5cm auto" }),
+        ...(forPrint ? { boxShadow: "none" } : { margin: "0.5cm auto", boxShadow: "0 0 5px rgba(0,0,0,0.1)" }),
         ...style,
       }}
     >

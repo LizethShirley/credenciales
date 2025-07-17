@@ -1,6 +1,10 @@
 import { Box, Typography } from "@mui/material";
 
 const CustomCredencial = ({ persona, lado }) => {
+  const safePersona = Object.fromEntries(
+    Object.entries(persona).map(([key, value]) => [key, value ?? ""])
+  );
+
   return (
     <Box
       className="credencial"
@@ -31,10 +35,10 @@ const CustomCredencial = ({ persona, lado }) => {
               fontSize: "6pt"
             }}
           >
-            {persona.cargo_nombre}
+            {safePersona.cargo_nombre}
           </Typography>
           <img
-            src={`data:image/jpeg;base64,${persona.photo}`}
+            src={`data:image/jpeg;base64,${safePersona.photo}`}
             alt="foto"
             style={{
               position: "absolute",
@@ -55,7 +59,7 @@ const CustomCredencial = ({ persona, lado }) => {
               fontSize: "8pt"
             }}
           >
-            {persona.nombre+" "+persona.paterno+" "+persona.materno}
+            {safePersona.nombre+" "+safePersona.paterno+" "+safePersona.materno}
           </Typography>
           <Typography
             sx={{
@@ -66,19 +70,18 @@ const CustomCredencial = ({ persona, lado }) => {
               fontSize: "7pt"
             }}
           >
-            {persona.ci}
+            {safePersona.ci}
           </Typography>
             <img
                 src={`/EleccionesLogo.png`}
                 alt="foto"
                 style={{
                     position: "absolute",
-                    top: "6.3cm",
-                    left: "auto",
-                    right: "0.7cm",
-                    width: "100%",
-                    height: "1.5cm",
-                    objectFit: "scale-down"
+                    top: "6.2cm",
+                    left: "0.2cm",
+                    width: "3.5cm",
+                    height: "1.7cm",
+                    objectFit: "cover",
                 }}
             />
             <Typography
@@ -93,7 +96,7 @@ const CustomCredencial = ({ persona, lado }) => {
                     color:"white"
                 }}
             >
-                {"Válido Elecciones Generales 2025"}
+                {"C"+safePersona.recinto_circun+" - "+safePersona.recinto_nombre}
             </Typography>
         </>
       )}
@@ -110,7 +113,7 @@ const CustomCredencial = ({ persona, lado }) => {
               fontSize: "6pt"
             }}
           >
-            {persona.cargo_nombre}
+            {safePersona.cargo_nombre}
           </Typography>
             <img
                 src={`/credenciales/qr.png`}
@@ -137,7 +140,7 @@ const CustomCredencial = ({ persona, lado }) => {
                     color:"white"
                 }}
             >
-                {"C"+persona.recinto_circun+" - "+persona.recinto_nombre}
+                {"Válido Elecciones Generales 2025"}
             </Typography>
         </>
       )}
