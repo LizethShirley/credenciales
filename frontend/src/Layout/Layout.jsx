@@ -10,7 +10,7 @@ const Layout = () => {
   return (
     <Box sx={{ display: 'flex', width:'100%' }}>
       <NavBar anchoCaja={anchoCaja} />
-      <LateralBar anchoCaja={anchoCaja} />
+      {/* <LateralBar anchoCaja={anchoCaja} /> */}
       <Box sx={{ flexGrow: 1, ml: 2.5, mt: 3}}>
         <Toolbar />
         <Outlet />

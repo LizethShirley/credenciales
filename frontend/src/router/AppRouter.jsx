@@ -5,7 +5,8 @@ import Inicio from '../pages/Inicio';
 import Usuarios from '../pages/Usuario';
 import Organizaciones from '../pages/Organizaciones';
 import Prueba from '../services/App';
-import CredencialesPage from '../pages/CredencialPage';
+import CredencialPage from '../pages/CredencialPage';
+import PrintPageWrapper from '../components/organisms/PrintPageWrapper';
 
 import ListaCredenciales from '../pages/Usuarios/ListaCredenciales'
 import CredencialMasivo from '../pages/Usuarios/CredencialMasivo'
@@ -20,16 +21,15 @@ const App = () => {
     <BrowserRouter>
   <Routes>
     {/* Redirección por defecto a /Credenciales */}
-    <Route path="/" element={<Navigate to="/Credenciales" replace />} />
 
     {/* Esto es como tu "página aparte", sin Layout */}
-    <Route path="/Credenciales" element={<CredencialIndividual />} />
+    <Route path="/" element={<CredencialPage />} />
 
     {/* Esto son las rutas internas que SI tienen Layout */}
     <Route path="/CredencialesTED" element={<Layout />}>
       <Route index element={<Navigate to="/CredencialesTED/Inicio" />} />
-      <Route path="Inicio" element={<CredencialesPage />} />
-      <Route path="Prueba" element={<Prueba />} />
+      <Route path="Inicio" element={<CredencialPage />} />
+      <Route path="Prueba" element={<CredencialPage />} />
 
       <Route path="Usuarios/Lista_Credenciales" element={<ListaCredenciales />} />
       <Route path="Usuarios/Credencial_Masivo" element={<CredencialMasivo />} />

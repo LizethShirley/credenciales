@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import CredentialPrintPage from "../components/molecules/CredentialPrintPage";
+import CredentialPrintPage from "../components/molecules/CredentialPrintPageV1";
 
 
 const CredencialesPage = () => {
