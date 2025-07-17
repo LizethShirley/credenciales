@@ -19,7 +19,10 @@ const LateralMenuItem = ({ titulo, subItems = [] }) => {
         onClick={toggleOpen}
         sx={{
           '& .MuiListItemText-primary': { fontWeight: 'bold', fontSize: 15 },
-          '&:hover .MuiListItemText-primary': { color: 'primary.main' }
+          '&:hover .MuiListItemText-primary': { color: 'primary.main' },
+          borderRadius: 2,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.10)', // Sombra botón
+              m: 1,
         }}
       >
         <ListItemText primary={titulo} />

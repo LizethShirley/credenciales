@@ -111,13 +111,14 @@ const CredentialPrintPageV1 = ({ fetchData }) => {
           setSelectedCargo={setSelectedCargo}
           selectedRecinto={selectedRecinto}
           setSelectedRecinto={setSelectedRecinto}
+          sx={{ minWidth: 220 }}
         />
-        <Button variant="outlined" onClick={handleFiltrar}>
+        <Button variant="contained" onClick={handleFiltrar} sx={{ height: 40, minWidth: 120 }}>
           Filtrar
         </Button>
       </Stack>
 
-      <Grid container justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+      <Grid container spacing={5} alignItems="center" sx={{ mb: 2 }}>
         <SideToggle side={side} onChange={setSide} />
         {resultadosFiltrados.length > 0 && (
           <>
@@ -126,11 +127,11 @@ const CredentialPrintPageV1 = ({ fetchData }) => {
             </Button>
             <Button
               variant="outlined"
-              color="secondary"
+              color="primary.main"
               sx={{ ml: 2 }}
               onClick={handleOpenWindow}
             >
-              Previsualizar credenciales
+              Previsualizar
             </Button>
           </>
         )}

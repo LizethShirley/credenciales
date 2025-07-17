@@ -91,10 +91,10 @@ const toggleSelectRow = (id) => {
     });
 
     return (
-        <Grid container spacing={2} sx={{ p: 2 }}>
-            <Grid item xs={12}>
+        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Box sx={{ width: '100%', maxWidth: 900 }}>
                 <Typography variant="h5" align="center">Lista de Personal</Typography>
-                <Box sx={{ my: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ my: 2, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
                     <TextField
                         label="Buscar..."
                         value={filtro}
@@ -110,8 +110,8 @@ const toggleSelectRow = (id) => {
                         onClickRow={(row) => console.log("Fila seleccionada:", row)}
                     />
                 </Paper>
-            </Grid>
-        </Grid>
+            </Box>
+        </Box>
     );
 };
 

@@ -65,16 +65,8 @@ const GestionarCargo = () => {
   
 
   return (
-    <Grid container spacing={2} sx={{ width: '100%', padding: 2, margin: 0}}>
-    <Grid span={12} sx={{width: '100%'}}>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-start',
-          minHeight: 'calc(100vh - 100px)', 
-        }}
-      >
+    <Box sx={{ width: '100%', minHeight: '100vh', bgcolor: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', py: 4 }}>
+      <Box sx={{ width: '100%', maxWidth: 900 }}>
         <Typography variant='h5' align='center' gutterBottom>
           Lista de Cargos
         </Typography>
@@ -121,8 +113,7 @@ const GestionarCargo = () => {
         />
       </Paper>
     </Box>
-  </Grid>
-</Grid>
+  </Box>
   )
 };
 

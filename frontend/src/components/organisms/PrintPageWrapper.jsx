@@ -9,8 +9,8 @@ export default function PrintPageWrapper({
     setSelectedRecinto
 }) {
     return (
-        <Box sx={{ minWidth: 200 }}>
-            <FormControl fullWidth>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <FormControl size="small" sx={{ minWidth: 220, width: 220 }}>
                 <InputLabel>Cargo</InputLabel>
                 <Select
                     value={selectedCargo ? selectedCargo.id : ""}
@@ -27,19 +27,19 @@ export default function PrintPageWrapper({
                 </Select>
             </FormControl>
             {selectedCargo?.nombre === "NOTARIO ELECTORAL" && (
+                <FormControl size="small" sx={{ minWidth: 170, width: 170 }}>
                     <Select
-                        size="small"
                         value={selectedRecinto}
-                        onChange={(e) => setSelectedRecinto(e.target.value)}
+                        onChange={e => setSelectedRecinto(e.target.value)}
                         displayEmpty
-                        sx={{ width: 200, mt: 1 }}
                     >
-                        <MenuItem value="" disabled>Seleccione circunscripción</MenuItem>
+                        <MenuItem value="" disabled>Circunscripción</MenuItem>
                         {["C-2", "C-20", "C-21", "C-22", "C-23", "C-24", "C-25", "C-26", "C-27", "C-28"].map((circun) => (
                             <MenuItem key={circun} value={circun.split("-")[1]}>{circun}</MenuItem>
                         ))}
                     </Select>
-                )}
+                </FormControl>
+            )}
         </Box>
     );
 }

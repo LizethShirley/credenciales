@@ -59,37 +59,29 @@ const GestionarUnidad = () => {
     
   
   return (
-    <Grid container spacing={2} sx={{ width: '100%', padding: 2, margin: 0}}>
-      <Grid span={12} sx={{width: '100%'}}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
-            minHeight: 'calc(100vh - 100px)', 
-          }}
-        >
-          <Typography variant='h5' align='center' gutterBottom>
-            Lista de Unidad
-          </Typography>
-          <Box sx={{
-            display: 'flex',
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            mb: 2,
-            flexWrap: 'wrap',
-          }} >
-            <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-              <Typography variant="body1">Buscar:</Typography>
-              <TextField
-                variant="outlined"
-                size="small"
-                placeholder="Buscar en la tabla..."
-                value={filtroGeneral}
-                onChange={(e) => setFiltroGeneral(e.target.value)}
-                sx={{ width: 300 }}
-              />
-            </Box>
+    <Box sx={{ width: '100%', minHeight: '100vh', bgcolor: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', py: 4 }}>
+      <Box sx={{ width: '100%', maxWidth: 900 }}>
+        <Typography variant='h5' align='center' gutterBottom>
+          Lista de Unidad
+        </Typography>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mb: 2,
+          flexWrap: 'wrap',
+        }} >
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+            <Typography variant="body1">Buscar:</Typography>
+            <TextField
+              variant="outlined"
+              size="small"
+              placeholder="Buscar en la tabla..."
+              value={filtroGeneral}
+              onChange={(e) => setFiltroGeneral(e.target.value)}
+              sx={{ width: 300 }}
+            />
+          </Box>
           <CustomAddIcon onClick={() => console.log("Añadir")}/>
         </Box>
         <Paper
@@ -114,8 +106,7 @@ const GestionarUnidad = () => {
           />
         </Paper>
       </Box>
-    </Grid>
-  </Grid>
-)};
-
+    </Box>
+  )
+};
 export default GestionarUnidad;

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { LateralBarContext } from "../Layout/Layout";
 import CredentialPrintPage from "../components/molecules/CredentialPrintPageV1";
 
 
@@ -22,7 +23,26 @@ const CredencialesPage = () => {
     }
   };
 
-  return <CredentialPrintPage data={data} fetchData={fetchData} />;
+  // Usar el contexto para saber si el lateralBar está abierto
+  const { lateralOpen } = useContext(LateralBarContext);
+
+  return (
+    <div
+      style={{
+        width: '100%',
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: lateralOpen ? 'flex-end' : 'center',
+        alignItems: 'flex-start',
+        paddingTop: 10,
+        paddingRight: lateralOpen ? 20 : 0,
+      }}
+    >
+      <div style={{ width: '100%', maxWidth: 1200 }}>
+        <CredentialPrintPage data={data} fetchData={fetchData} />
+      </div>
+    </div>
+  );
 };
 
 export default CredencialesPage;
