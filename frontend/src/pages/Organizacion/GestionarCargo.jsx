@@ -22,7 +22,7 @@ const GestionarCargo = () => {
     { id: 'nombre', label: 'Nombre Cargo', width: 180 },
     { id: 'color', label: 'Color', width: 20 },
     { id: 'estado', label: 'Estado', width: 50 },
-    { id: 'seccion', label: 'Sección', width: 180 },
+    { id: 'seccion', label: 'Sección', width: 100 },
     {
     id: 'opciones',
     label: 'Opciones',

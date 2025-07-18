@@ -71,7 +71,6 @@ const toggleSelectRow = (id) => {
             const date2 = '2025-07-31';
             const response = await fetch(`${import.meta.env.VITE_API_URL}/list/personal`);
             const data = await response.json();
-            console.log("Personal:", data.personal);
             setPersonal(data.personal);
         } catch (error) {
             console.error("Error al obtener personal:", error);
@@ -92,7 +91,7 @@ const toggleSelectRow = (id) => {
 
     return (
         <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Box sx={{ width: '100%', maxWidth: 900 }}>
+            <Box sx={{ width: '100%', maxWidth: 1010 }}>
                 <Typography variant="h5" align="center">Lista de Personal</Typography>
                 <Box sx={{ my: 2, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
                     <TextField

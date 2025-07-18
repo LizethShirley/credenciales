@@ -34,7 +34,7 @@ const CustomTable = ({
 
   return (
     <TableContainer component={Paper} sx={{ borderRadius: '.5rem' }}>
-      <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
+      <Table size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
         <TableHead>
           <TableRow>
             {columns.map((column) => (

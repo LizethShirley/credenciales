@@ -24,7 +24,7 @@ const GestionarUnidad = () => {
     {
       id: 'opciones',
       label: 'Opciones',
-      width: 100,
+      width: 90,
       render: (row) => (
         <Box sx={{ display: 'flex', gap: 2 }}>
           <IconButton>
@@ -60,7 +60,7 @@ const GestionarUnidad = () => {
   
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', bgcolor: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', py: 4 }}>
-      <Box sx={{ width: '100%', maxWidth: 900 }}>
+      <Box sx={{ width: '100%', maxWidth: 1000 }}>
         <Typography variant='h5' align='center' gutterBottom>
           Lista de Unidad
         </Typography>
