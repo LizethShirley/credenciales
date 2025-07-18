@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { LateralBarContext } from "../Layout/Layout";
-import CredentialPrintPage from "../components/molecules/CredentialPrintPageV1";
-
+import CredentialPrintPage from "../components/molecules/CredentialPrintPage";
+import {Typography } from "@mui/material";
 
 const CredencialesPage = () => {
   const [data, setData] = useState([]);
@@ -23,14 +23,13 @@ const CredencialesPage = () => {
     }
   };
 
-  // Usar el contexto para saber si el lateralBar está abierto
   const { lateralOpen } = useContext(LateralBarContext);
 
   return (
     <div
       style={{
         width: '100%',
-        minHeight: '100vh',
+        minHeight: '80vh',
         display: 'flex',
         justifyContent: lateralOpen ? 'flex-end' : 'center',
         alignItems: 'flex-start',
@@ -39,6 +38,7 @@ const CredencialesPage = () => {
       }}
     >
       <div style={{ width: '100%', maxWidth: 1200 }}>
+        <Typography variant="h5" align="center">Impresión de Credencial</Typography>
         <CredentialPrintPage data={data} fetchData={fetchData} />
       </div>
     </div>

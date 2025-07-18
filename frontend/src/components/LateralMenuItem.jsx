@@ -10,7 +10,7 @@ const LateralMenuItem = ({ titulo, subItems = [] }) => {
   const toggleOpen = () => setOpen(!open);
 
   const handleClickSubItem = (path) => {
-    navigate(titulo+'/'+path);
+    navigate(path);
   };
 
   return (

@@ -139,8 +139,9 @@ const CustomFormRegister = () => {
         {({ isValid, dirty, values }) => (
           <Form>
             <Grid
+              width="100%"
               container
-              spacing={2}
+              spacing={1}
               direction={{ xs: "column", md: "row" }}
               justifyContent="space-between"
             >

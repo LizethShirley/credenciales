@@ -1,4 +1,4 @@
-import { Drawer, ListItemButton, ListItemText, List, Box, Typography, Collapse, IconButton } from "@mui/material";
+import { Drawer, ListItemButton, ListItemText, List, IconButton } from "@mui/material";
 import { useState } from "react";
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -48,7 +48,7 @@ const LateralBar = ({anchoCaja, open, setOpen}) => {
       >
         <List sx={{ color: '#4d4d4dff', top: 40, minWidth: open ? anchoCaja : 0 }}>
           <ListItemButton
-            onClick={() => navigate('/CredencialesTED/Inicio')}
+            onClick={() => navigate('/Inicio')}
             sx={{
               '& .MuiListItemText-primary': {
                 fontWeight: 'bold',

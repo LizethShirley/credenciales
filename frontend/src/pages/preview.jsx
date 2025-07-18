@@ -13,28 +13,28 @@ export default function PreviewCredenciales() {
   }, []);
 
   if (!pages.length) {
-    return <h2 style={{textAlign:'center',marginTop:40}}>No hay credenciales para mostrar.</h2>;
+    return <h2 style={{textAlign:'center',marginTop:10}}>No hay credenciales para mostrar.</h2>;
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: 32 }}>
+    <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: 2 }}>
       {/* Estilos para impresión solo del área de credenciales */}
       <style>{`
         @media print {
-          body * { visibility: hidden !important; }
-          .print-area, .print-area * { visibility: visible !important; }
-          .print-area { position: absolute !important; left: 0; top: 0; width: 100vw; background: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+          body * { visibility: hidden !important;}
+          .print-area, .print-area * { visibility: visible !important;}
+          .print-area {position: absolute !important; left: 0; top:0;width: 100vw; background: "blue" !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
         }
       `}</style>
-      <div style={{ width: '100%', maxWidth: 900, display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
+      <div style={{ width: '100%', maxWidth: 800, display: 'flex', justifyContent: 'flex-end', marginTop: 24, marginRight:54 }}>
         <button
-          style={{ padding: '8px 20px', fontSize: 16, background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+          style={{ padding: '5px 10px', fontSize: 16, background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
           onClick={() => window.print()}
         >
           Imprimir
         </button>
       </div>
-      <div className="print-area" style={{ width: '100%', maxWidth: 900 }}>
+      <div className="print-area" style={{ width: '100%', maxWidth: 800 }}>
         <CredentialPageGroup pages={pages} side={side} />
       </div>
     </div>

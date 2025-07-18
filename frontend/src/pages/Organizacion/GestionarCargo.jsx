@@ -66,7 +66,7 @@ const GestionarCargo = () => {
 
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', bgcolor: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', py: 4 }}>
-      <Box sx={{ width: '100%', maxWidth: 900 }}>
+      <Box sx={{ width: '100%', maxWidth: 1100 }}>
         <Typography variant='h5' align='center' gutterBottom>
           Lista de Cargos
         </Typography>

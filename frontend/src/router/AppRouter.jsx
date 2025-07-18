@@ -4,37 +4,35 @@ import PreviewPage from '../pages/preview';
 import Layout from '../Layout/Layout';
 import CredencialPage from '../pages/CredencialPage';
 
-import ListaCredenciales from '../pages/Usuarios/ListaCredenciales'
-import CredencialIndividual from '../pages/Usuarios/CredencialIndividual'
+import ListaCredenciales from '../pages/Usuarios/ListaCredenciales';
+import CredencialIndividual from '../pages/Usuarios/CredencialIndividual';
 
-import GestionarUnidad from '../pages/Organizacion/GestionarUnidad'
-import GestionarCargo from '../pages/Organizacion/GestionarCargo'
-import GestionarExterno from '../pages/Organizacion/GestionarExterno'
+import GestionarUnidad from '../pages/Organizacion/GestionarUnidad';
+import GestionarCargo from '../pages/Organizacion/GestionarCargo';
+import GestionarExterno from '../pages/Organizacion/GestionarExterno';
 
 const App = () => {
   return (
     <BrowserRouter>
-  <Routes>
-    {/* Redirección por defecto a /Credenciales */}
+      <Routes>
+        {/* Esta es la única ruta fuera del Layout */}
+        <Route path="/preview" element={<PreviewPage />} />
 
-    {/* Esto es como tu "página aparte", sin Layout */}
-    <Route path="/" element={<CredencialPage />} />
-    <Route path="/preview" element={<PreviewPage />} />
+        {/* Todo lo demás dentro de Layout */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Navigate to="/Inicio" />} />
 
-    <Route path="/CredencialesTED" element={<Layout />}>
-      <Route index element={<Navigate to="/CredencialesTED/Inicio" />} />
-      <Route path="Inicio" element={<CredencialPage />} />
+          <Route path="/Inicio" element={<CredencialPage />} />
 
-      <Route path="Usuarios/Lista_Credenciales" element={<ListaCredenciales />} />
-      <Route path="Usuarios/Credencial_Individual" element={<CredencialIndividual />} />
+          <Route path="/Lista_Credenciales" element={<ListaCredenciales />} />
+          <Route path="/Credencial_Individual" element={<CredencialIndividual />} />
 
-      <Route path="Organización/Gestionar_Unidad" element={<GestionarUnidad />} />
-      <Route path="Organización/Gestionar_Cargo" element={<GestionarCargo />} />
-      <Route path="Organización/Gestionar_Externo" element={<GestionarExterno />} />
-    </Route>
-  </Routes>
-</BrowserRouter>
-
+          <Route path="/Gestionar_Unidad" element={<GestionarUnidad />} />
+          <Route path="/Gestionar_Cargo" element={<GestionarCargo />} />
+          <Route path="/Gestionar_Externo" element={<GestionarExterno />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 };
 

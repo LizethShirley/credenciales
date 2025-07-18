@@ -12,7 +12,7 @@ const CredentialPageGroup = ({ pages, side, printRef }) => {
           key={idx}
           ref={idx === 0 && isPrint ? printRef : null}
           forPrint={isPrint}
-          style={{ marginBottom: "16px" }}
+          style={{ marginBottom: "1px" }}
         >
           <CredentialSheet persons={grupo} side={side} />
         </A4Page>
