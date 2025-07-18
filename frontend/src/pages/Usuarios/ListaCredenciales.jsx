@@ -10,6 +10,7 @@ import {
 import CustomTable from '../../components/organisms/CustomTable';
 import CustomEditIcon from '../../components/atoms/CustomEditIcon';
 import CustomDeleteIcon from '../../components/atoms/CustomDeleteIcon';
+import CredencialesTable from '../../components/organisms/CredencialesTable';
 
 const ListaCredenciales = () => {
     const [filtro, setFiltro] = useState('');
@@ -103,11 +104,7 @@ const toggleSelectRow = (id) => {
                     />
                 </Box>
                 <Paper sx={{ p: 2 }}>
-                    <CustomTable
-                        columns={columnas}
-                        rows={personalFiltrado}
-                        onClickRow={(row) => console.log("Fila seleccionada:", row)}
-                    />
+                    <CredencialesTable data={personalFiltrado} />
                 </Paper>
             </Box>
         </Box>
