@@ -8,7 +8,7 @@ const A4Page = forwardRef(({ children, style = {}, ...props }, ref) => {
     ref={ref}
     {...restProps}
     style={{
-      width: "210mm",
+      width: "208mm",
       height: "271mm",
       backgroundColor: "#fff",
       boxSizing: "border-box",

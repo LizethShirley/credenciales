@@ -97,7 +97,7 @@ const CustomCredencial = ({ persona, lado }) => {
                     color:"white"
                 }}
             >
-                {"C"+safePersona.recinto_circun+" - "+safePersona.recinto_nombre}
+                {"Válido Elecciones Generales 2025"}
             </Typography>
         </>
       )}
@@ -132,16 +132,16 @@ const CustomCredencial = ({ persona, lado }) => {
             <Typography
                 sx={{
                     position: "absolute",
-                    bottom: "0.05cm",
-                    left: "0.5cm",
+                    top: "0.5cm",
+                    left: "5cm",
                     width: "70%",
                     lineHeight:"1.3",
                     fontWeight:"700",
-                    fontSize: "6pt",
+                    fontSize: "12pt",
                     color:"white"
                 }}
             >
-                {"Válido Elecciones Generales 2025"}
+                {"C"+safePersona.ciexterno}
             </Typography>
         </>
       )}

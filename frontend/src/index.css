@@ -77,7 +77,6 @@ button:focus-visible {
 @media print {
   .a4-page {
     page-break-after: always;
-    background-color:"red";
   }
 }
 
