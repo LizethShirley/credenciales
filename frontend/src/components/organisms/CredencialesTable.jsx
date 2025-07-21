@@ -15,7 +15,6 @@ import {
 
 import CustomEditIcon from '../atoms/CustomEditIcon';
 import CustomDeleteIcon from '../atoms/CustomDeleteIcon';
-import EditFormModal from '../molecules/EditFormModel';
 
 const CredencialesTable = ({ data, onDeleteSuccess }) => {
   const [filters, setFilters] = useState({
@@ -227,14 +226,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
           labelRowsPerPage="Filas por página:"
         />
       </TableContainer>
-      {/* Modal */}
-      {selectedUser && (
-        <EditFormModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          initialValues={selectedUser}
-        />
-      )}
+      
     </Box>
   );
 };

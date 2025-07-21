@@ -5,6 +5,7 @@ import SideToggle from "../atoms/SideToggle";
 import PrintPageWrapper from "../organisms/PrintPageWrapper";
 import CredentialPages from "../organisms/CredenctialPageGroup";
 import html2pdf from "html2pdf.js";
+import CircularProgress from '@mui/material/CircularProgress';
 
 const chunkArray = (array, size) => {
   const chunks = [];
@@ -29,6 +30,7 @@ const CredentialPrintPage = ({ fetchData }) => {
   const [selectedCargo, setSelectedCargo] = useState(null);
   const [selectedRecinto, setSelectedRecinto] = useState("");
   const printRef = useRef();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchCargos = async () => {
@@ -45,6 +47,7 @@ const CredentialPrintPage = ({ fetchData }) => {
   }, []);
 
   const handleFiltrar = async () => {
+    setLoading(true);
     if (!dateRange.start || !dateRange.end) return alert("Selecciona fechas.");
     if (!selectedCargo) return alert("Selecciona un cargo.");
     if (
@@ -60,12 +63,15 @@ const CredentialPrintPage = ({ fetchData }) => {
 
     try {
       const result = await fetchData(inicio, fin, cargo, circunscripcion);
+      await new Promise((res) => setTimeout(res, 2000));
       if (result.res && Array.isArray(result.personal))
         setResultadosFiltrados(result.personal);
       else alert("No se encontraron resultados o hubo un error.");
     } catch (error) {
       console.error(error);
       alert("Error al filtrar los datos.");
+    } finally {
+    setLoading(false);
     }
   };
 
@@ -116,8 +122,8 @@ const CredentialPrintPage = ({ fetchData }) => {
           setSelectedRecinto={setSelectedRecinto}
           sx={{ minWidth: 220 }}
         />
-        <Button variant="contained" onClick={handleFiltrar} sx={{ height: 40, minWidth: 120 }}>
-          Filtrar
+        <Button variant="contained" onClick={handleFiltrar} sx={{ height: 40, minWidth: 120 }} disabled={loading}>
+          {loading ? <CircularProgress size={22} color="inherit" /> : "Filtrar"}
         </Button>
       </Stack>
 
@@ -144,7 +150,7 @@ const CredentialPrintPage = ({ fetchData }) => {
         <Grid item xs={12} md={8}>
           {resultadosFiltrados.length > 0 ? (
             <Box ref={printRef} sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}>
-              <CredentialPages pages={pages} side={side} printRef={printRef} />
+              <CredentialPages pages={pages} side={side} printRef={printRef} cargos={cargos}/>
             </Box>
           ) : (
             <Typography variant="body1" color="text.secondary">

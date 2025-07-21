@@ -3,7 +3,7 @@ import A4Page from "../atoms/A4Page";
 import CredentialSheet from "../organisms/CredencialSheet";
 
 
-const CredentialPageGroup = ({ pages, side, printRef }) => {
+const CredentialPageGroup = ({ pages, side, printRef, cargos }) => {
   const isPrint = !!printRef;
   return (
     <>
@@ -14,7 +14,7 @@ const CredentialPageGroup = ({ pages, side, printRef }) => {
           forPrint={isPrint}
           style={{ marginBottom: "1px" }}
         >
-          <CredentialSheet persons={grupo} side={side} />
+          <CredentialSheet persons={grupo} side={side} cargos={cargos}/>
         </A4Page>
       ))}
     </>

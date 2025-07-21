@@ -4,12 +4,27 @@ import CredentialPageGroup from "../components/organisms/CredenctialPageGroup";
 export default function PreviewCredenciales() {
   const [pages, setPages] = useState([]);
   const [side, setSide] = useState("anverso");
+  const [cargos, setCargos] = useState([]);
 
   useEffect(() => {
     const storedPages = localStorage.getItem("credenciales_preview_pages");
     const storedSide = localStorage.getItem("credenciales_preview_side");
     if (storedPages) setPages(JSON.parse(storedPages));
     if (storedSide) setSide(storedSide);
+  }, []);
+
+  useEffect(() => {
+    const fetchCargos = async () => {
+      try {
+        const resp = await fetch(`${import.meta.env.VITE_API_URL}/list/cargos`);
+        if (!resp.ok) throw new Error("Error al obtener cargos");
+        const data = await resp.json();
+        setCargos(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchCargos();
   }, []);
 
   if (!pages.length) {
@@ -35,7 +50,7 @@ export default function PreviewCredenciales() {
         </button>
       </div>
       <div className="print-area" style={{ width: '100%', maxWidth: 800 }}>
-        <CredentialPageGroup pages={pages} side={side} />
+        <CredentialPageGroup pages={pages} side={side} cargos={cargos} />
       </div>
     </div>
   );

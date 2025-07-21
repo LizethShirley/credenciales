@@ -1,8 +1,21 @@
 import React from "react";
 import { Grid } from "@mui/material";
 import CustomCredencial from "../molecules/CustomCredencial";
+import CustomCredencialVerde from "../molecules/CustomCredencialVerde";
 
-export default function CredentialSheet({ persons, side }) {
+export default function CredentialSheet({ persons, side, cargos = [] }) {
+  const getComponentePorColor = (persona) => {
+    const cargoPersona = cargos.find(c => c.id === persona.cargo_id);
+    const color = cargoPersona?.color?.toLowerCase();
+    console.log(color+" "+cargoPersona);
+
+    if (color === "verde") {
+      return <CustomCredencialVerde persona={persona} lado={side} />;
+    }
+
+    return <CustomCredencial persona={persona} lado={side} />;
+  };
+
   return (
     <Grid container spacing={2} justifyContent="center" alignItems="center">
       {persons.map((p, idx) => (
@@ -17,7 +30,7 @@ export default function CredentialSheet({ persons, side }) {
             height: "100%",
           }}
         >
-          <CustomCredencial persona={p} lado={side} />
+          {getComponentePorColor(p)}
         </Grid>
       ))}
     </Grid>
