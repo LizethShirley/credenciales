@@ -15,52 +15,6 @@ import CredencialesTable from '../../components/organisms/CredencialesTable';
 const ListaCredenciales = () => {
     const [filtro, setFiltro] = useState('');
     const [personal, setPersonal] = useState([]);
-    const [selectedRows, setSelectedRows] = useState([]);
-const toggleSelectRow = (id) => {
-    setSelectedRows(prev =>
-        prev.includes(id)
-            ? prev.filter(item => item !== id)
-            : [...prev, id]
-    );
-};
-
-
-    const columnas = [
-        {
-            id: 'photo',
-            label: 'Foto',
-            width: 60,
-            render: (row) =>
-                row.photo ? (
-                    <img
-                        src={`data:image/jpeg;base64,${row.photo}`}
-                        alt="foto"
-                        width={40}
-                        height={40}
-                        style={{ borderRadius: '50%' }}
-                    />
-                ) : (
-                    'Sin foto'
-                )
-        },
-        { id: 'nombre', label: 'Nombre', width: 150 },
-        { id: 'paterno', label: 'Apellido Paterno', width: 150 },
-        { id: 'materno', label: 'Apellido Materno', width: 150 },
-        { id: 'ci', label: 'CI', width: 100 },
-        { id: 'cargo_nombre', label: 'Cargo', width: 150 },
-        { id: 'seccion_nombre', label: 'Sección', width: 150 },
-        { id: 'recinto_nombre', label: 'Recinto', width: 180 },
-        {
-            id: 'opciones',
-            label: 'Opciones',
-            render: (row) => (
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <CustomEditIcon onClick={() => console.log("Editar", row)} />
-                    <CustomDeleteIcon onClick={() => console.log("Eliminar", row)} />
-                </Box>
-            )
-        }
-    ];
 
     useEffect(() => {
         obtenerPersonal();
@@ -68,8 +22,6 @@ const toggleSelectRow = (id) => {
 
     const obtenerPersonal = async () => {
         try {
-            const date1 = '2025-07-01';
-            const date2 = '2025-07-31';
             const response = await fetch(`${import.meta.env.VITE_API_URL}/list/personal`);
             const data = await response.json();
             setPersonal(data.personal);
@@ -104,7 +56,7 @@ const toggleSelectRow = (id) => {
                     />
                 </Box>
                 <Paper sx={{ p: 2 }}>
-                    <CredencialesTable data={personalFiltrado} />
+                    <CredencialesTable data={personalFiltrado} onDeleteSuccess={obtenerPersonal} />
                 </Paper>
             </Box>
         </Box>

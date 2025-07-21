@@ -12,10 +12,11 @@ const CustomDeleteIcon = ({onClick}) => {
           boxShadow: 'none',
         }
       }}
+      onClick={onClick}
     >
       <DeleteIcon/>
     </IconButton>
-  )
+  );
 }
 
 export default CustomDeleteIcon;

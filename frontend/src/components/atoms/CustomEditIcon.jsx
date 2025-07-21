@@ -13,6 +13,7 @@ const CustomEditIcon = ({ onClick}) => {
           boxShadow: 'none',
         }
       }}
+      onClick={onClick}
     >
       <EditIcon/>
     </IconButton>

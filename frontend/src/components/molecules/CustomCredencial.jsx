@@ -141,7 +141,7 @@ const CustomCredencial = ({ persona, lado }) => {
                     color:"white"
                 }}
             >
-                {"C"+safePersona.ciexterno}
+                {safePersona.cargo_nombre=="NOTARIO ELECTORAL"?"C"+safePersona.ciexterno:""}
             </Typography>
         </>
       )}

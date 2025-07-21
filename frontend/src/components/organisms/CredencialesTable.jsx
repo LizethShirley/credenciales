@@ -15,20 +15,80 @@ import {
 
 import CustomEditIcon from '../atoms/CustomEditIcon';
 import CustomDeleteIcon from '../atoms/CustomDeleteIcon';
+import EditFormModal from '../molecules/EditFormModel';
 
-const CredencialesTable = ({ data }) => {
+const CredencialesTable = ({ data, onDeleteSuccess }) => {
   const [filters, setFilters] = useState({
     cargo: '',
     recinto: '',
   });
-
-  // El orderBy lo dejamos para controlar nombre completo o cargo
-  // Para simplificar el ordenamiento, usaremos 'nombreCompleto' o 'cargo_nombre'
   const [orderBy, setOrderBy] = useState('nombreCompleto');
   const [order, setOrder] = useState('asc');
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const handleEditClick = async (id) => {
+    console.log("Editar");
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/personal/${id}`);
+      const result = await response.json();
+      const resultP =result.personal;
+      if (response.ok) {
+        setSelectedUser({
+          id: result.id,
+          nombres: resultP.nombre || "ko",
+          apellidoPaterno: resultP.paterno || "a",
+          apellidoMaterno: resultP.materno || "la",
+          numeroCarnet: resultP.ci || "",
+          complemento: resultP.complemento || "",
+          numeroCelular: resultP.celular || "",
+          secciones: resultP.id_seccion?.toString() || "", 
+          cargos: resultP.id_cargo?.toString() || "",
+          recinto: resultP.ciexterno || "",
+          codVerificacion: resultP.token || "",
+          imagen: null, 
+        });
+
+        setModalOpen(true);
+      } else {
+        console.error("Error al obtener datos del personal:", result);
+      }
+    } catch (error) {
+      console.error("Error al conectar con la API:", error);
+    }
+  };
+
+
+  const eliminarPersonal = async (id) => {
+    console.log("Eliminar");
+    const confirmar = window.confirm("¿Estás segura/o de eliminar este registro?");
+    if (!confirmar) return;
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/personal/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const res = await response.json();
+
+      if (response.ok && res.res) {
+        alert('Personal eliminado exitosamente');
+        if (onDeleteSuccess) onDeleteSuccess(); 
+      } else {
+        alert(res.msg || 'No se pudo eliminar');
+      }
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+      alert('Hubo un error inesperado');
+    }
+  };
 
   const handleSort = (field) => {
     const isAsc = orderBy === field && order === 'asc';
@@ -48,7 +108,6 @@ const CredencialesTable = ({ data }) => {
     );
   }, [data, filters]);
 
-  // Función para construir nombre completo
   const getNombreCompleto = (item) =>
     `${item.nombre || ''} ${item.paterno || ''} ${item.materno || ''}`.trim().toLowerCase();
 
@@ -119,7 +178,7 @@ const CredencialesTable = ({ data }) => {
                 </TableSortLabel>
               </TableCell>
               <TableCell>Sección</TableCell>
-              <TableCell>Recinto</TableCell>
+              <TableCell>Circunscripción</TableCell>
               <TableCell>Opciones</TableCell>
             </TableRow>
           </TableHead>
@@ -143,11 +202,11 @@ const CredencialesTable = ({ data }) => {
                 <TableCell>{item.ci}</TableCell>
                 <TableCell>{item.cargo_nombre}</TableCell>
                 <TableCell>{item.seccion_nombre}</TableCell>
-                <TableCell>{item.recinto_nombre}</TableCell>
+                <TableCell>{item.ciexterno}</TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <CustomEditIcon onClick={() => console.log('Editar', item)} />
-                    <CustomDeleteIcon onClick={() => console.log('Eliminar', item)} />
+                    <CustomEditIcon onClick={() => handleEditClick(item.id)}/>
+                    <CustomDeleteIcon onClick={() => eliminarPersonal(item.id)} />
                   </Box>
                 </TableCell>
               </TableRow>
@@ -168,6 +227,14 @@ const CredencialesTable = ({ data }) => {
           labelRowsPerPage="Filas por página:"
         />
       </TableContainer>
+      {/* Modal */}
+      {selectedUser && (
+        <EditFormModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          initialValues={selectedUser}
+        />
+      )}
     </Box>
   );
 };
