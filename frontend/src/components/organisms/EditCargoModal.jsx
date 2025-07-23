@@ -2,12 +2,20 @@ import React, { useState } from "react";
 import CustomEditIcon from "../../components/atoms/CustomEditIcon";
 import CustomModal from "../../components/molecules/CustomModal";
 
-const EditUnidadModal = ({ unidad, onSuccess }) => {
+const EditCargoModal = ({ cargo, onSuccess }) => {
   const [open, setOpen] = useState(false);
 
   const fields = [
     { name: "nombre", label: "Nombre", required: true, onlyLetters: true },
-    { name: "abreviatura", label: "Abreviatura", required: true },
+    {
+      name: "color",
+      label: "Color",
+      required: true,
+      options: [
+        { value: "verde", label: "Verde" },
+        { value: "plomo", label: "Plomo" },
+      ],
+    },
     {
       name: "estado",
       label: "Estado",
@@ -24,15 +32,20 @@ const EditUnidadModal = ({ unidad, onSuccess }) => {
 
   const handleSubmit = async (values) => {
     try {
+      const valoresConSeccion = {
+        ...values,
+        idseccion: cargo.idseccion, 
+      };
+
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/secciones/${unidad.id}`,
+        `${import.meta.env.VITE_API_URL}/cargos/${cargo.id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify(values),
+          body: JSON.stringify(valoresConSeccion), 
         }
       );
 
@@ -53,13 +66,14 @@ const EditUnidadModal = ({ unidad, onSuccess }) => {
         onSuccess(data.seccion);
       }
 
-      alert("Cargo actualizada exitosamente");
+      alert("Cargo actualizado exitosamente");
       handleClose();
     } catch (error) {
-      console.error("Error actualizando unidad:", error);
-      alert("Error actualizando unidad");
+      console.error("Error actualizando cargo:", error);
+      alert("Error actualizando cargo");
     }
   };
+
 
   return (
     <>
@@ -70,10 +84,10 @@ const EditUnidadModal = ({ unidad, onSuccess }) => {
         open={open}
         onClose={handleClose}
         onSubmit={handleSubmit}
-        initialValues={unidad}
+        initialValues={cargo}
       />
     </>
   );
 };
 
-export default EditUnidadModal;
+export default EditCargoModal;

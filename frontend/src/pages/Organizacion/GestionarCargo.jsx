@@ -14,6 +14,10 @@ import CustomTable from '../../components/organisms/CustomTable';
 import CustomEditIcon from '../../components/atoms/CustomEditIcon';
 import CustomDeleteIcon from '../../components/atoms/CustomDeleteIcon';
 import CustomAddIcon from '../../components/atoms/CustomAddIcon';
+import EditCargoModal from '../../components/organisms/EditCargoModal';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+
 
 const GestionarCargo = () => {
   const [filtroGeneral, setFiltroGeneral] = useState('');
@@ -21,7 +25,17 @@ const GestionarCargo = () => {
   const columns = [
     { id: 'nombre', label: 'Nombre Cargo', width: 180 },
     { id: 'color', label: 'Color', width: 20 },
-    { id: 'estado', label: 'Estado', width: 50 },
+    {
+      id: 'estado',
+      label: 'Estado',
+      width: 50,
+      render: (row) =>
+        row.estado === 1 ? (
+          <CheckCircleIcon color="success" titleAccess="Habilitado" />
+        ) : (
+          <CancelIcon color="error" titleAccess="Inhabilitado" />
+        ),
+    },
     { id: 'seccion', label: 'Sección', width: 100 },
     {
     id: 'opciones',
@@ -29,21 +43,44 @@ const GestionarCargo = () => {
     width: 50,
     render: (row) => (
       <Box sx={{ display: 'flex', gap: 1 }}>
-        <CustomEditIcon onClick={() => console.log("Editar " + row.id)} />
-        <CustomDeleteIcon onClick={() => console.log("Eliminar " + row.id)} />
+        <EditCargoModal cargo={row} onSuccess={obtenerListaCargos} />
+        <CustomDeleteIcon onClick={() => eliminarCargo(row.id, () => eliminarCargoDeLista(row.id))} />
       </Box>
     )
   },
   ];
   
   const [cargos, setCargos] = useState([]);
-  const [selectedRow, setSelectedRow] = useState({
-    id : 0,
-    nombre : '',
-    color : '',
-    descripcion : '',
-    seccion : ''
-  });
+
+  const eliminarCargo = async (id, onDeleteSuccess) => {
+    const confirmar = window.confirm("¿Estás segura/o de eliminar este registro?");
+    if (!confirmar) return;
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/cargos/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const res = await response.json();
+
+      if (response.ok && res.res) {
+        alert('Cargo eliminada exitosamente');
+        if (onDeleteSuccess) onDeleteSuccess(); 
+      } else {
+        alert(res.msg || 'No se pudo eliminar');
+      }
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+      alert('Hubo un error inesperado');
+    }
+  };
+
+  const eliminarCargoDeLista = (id) => {
+    setCargos((prev) => prev.filter((cargos) => cargos.id !== id));
+  };
 
   useEffect(() => {
     obtenerListaCargos();
@@ -88,7 +125,6 @@ const GestionarCargo = () => {
               sx={{ width: 300 }}
             />
         </Box>
-        <CustomAddIcon onClick={() => console.log("Añadir")}/>
       </Box>
       <Paper
         sx={{

@@ -29,7 +29,7 @@ class UpdateCargoRequest extends FormRequest
                 'max:150',
                 Rule::unique('cargos', 'nombre')->ignore($cargoId),
             ],
-            'color' => 'required|integer',
+            'color' => 'required|string',
             'estado' => 'required|integer',
             'idseccion' => 'required|integer|exists:secciones,id',
         ];

@@ -15,6 +15,8 @@ import CustomDeleteIcon from '../../components/atoms/CustomDeleteIcon';
 import AddUnidadModalWrapper from '../../components/organisms/AddUnidadModalWrapper';
 import CustomFormCargo from '../../components/organisms/CustomFormCargo';
 import EditUnidadModal from '../../components/organisms/EditUnidadModal';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 const GestionarUnidad = () => {
   const [filtroGeneral, setFiltroGeneral] = useState('');
@@ -22,7 +24,17 @@ const GestionarUnidad = () => {
   const columns = [
     { id: 'nombre', label: 'Nombre Unidad', width: 180 },
     { id: 'abreviatura', label: 'Abreviatura', width: 50 },
-    { id: 'estado', label: 'Estado', width: 50 },
+    {
+      id: 'estado',
+      label: 'Estado',
+      width: 50,
+      render: (row) =>
+        row.estado === 1 ? (
+          <CheckCircleIcon color="success" titleAccess="Habilitado" />
+        ) : (
+          <CancelIcon color="error" titleAccess="Inhabilitado" />
+        ),
+    },
     {
       id: 'opciones',
       label: 'Opciones',
@@ -55,7 +67,7 @@ const GestionarUnidad = () => {
 
       if (response.ok && res.res) {
         alert('Unidad eliminada exitosamente');
-        if (onDeleteSuccess) onDeleteSuccess(); // ✅ ahora está definido correctamente
+        if (onDeleteSuccess) onDeleteSuccess(); 
       } else {
         alert(res.msg || 'No se pudo eliminar');
       }
