@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { LateralBarContext } from "../Layout/Layout";
-import CredentialPrintPage from "../components/molecules/CredentialPrintPage";
+import CredentialPrintPage from "../components/organisms/CredentialPrintPage";
 import {Typography } from "@mui/material";
 
 const CredencialesPage = () => {

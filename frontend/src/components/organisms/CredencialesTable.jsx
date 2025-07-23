@@ -11,6 +11,7 @@ import {
   TableSortLabel,
   TextField,
   Paper,
+  Switch,
 } from '@mui/material';
 
 import CustomEditIcon from '../atoms/CustomEditIcon';
@@ -177,7 +178,8 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
                 </TableSortLabel>
               </TableCell>
               <TableCell>Sección</TableCell>
-              <TableCell>Circunscripción</TableCell>
+              <TableCell>C</TableCell>
+              <TableCell>Acc. Comp.</TableCell>
               <TableCell>Opciones</TableCell>
             </TableRow>
           </TableHead>
@@ -202,6 +204,10 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
                 <TableCell>{item.cargo_nombre}</TableCell>
                 <TableCell>{item.seccion_nombre}</TableCell>
                 <TableCell>{item.ciexterno}</TableCell>
+                <TableCell>
+                  <Switch disabled checked={item.accesoComputo === 0} />
+                </TableCell>
+
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <CustomEditIcon onClick={() => handleEditClick(item.id)}/>
