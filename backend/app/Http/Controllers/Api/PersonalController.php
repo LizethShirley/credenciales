@@ -88,8 +88,8 @@ class PersonalController extends Controller
                 $image = $manager->read($file->getPathname());
                 $compressed = $image->scale(width: 600)->toJpeg(quality: 70);
 
-            $validated['photo'] = $compressed->toString();
-        }
+                $validated['photo'] = $compressed->toString();
+            }
 
             $personal = Personal::create($validated);
 
@@ -385,71 +385,78 @@ class PersonalController extends Controller
      * @return mixed
      */
     public function filtroPesonal(Request $request)
-{
-    $date_ini = $request->query('fecha_inicio');
-    $date_fin = $request->query('fecha_fin');
-    $cargo = $request->query('cargo');
-    $circunscripcion = $request->query('circunscripcion'); // viene del frontend
-
-    try {
-        $personal = DB::table('personal as p')
-            ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
-            ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
-            ->select(
-                'p.id',
-                'p.nombre',
-                'p.paterno',
-                'p.materno',
-                'p.ci',
-                'p.estado',
-                'p.complemento',
-                'p.extencion',
-                'p.token',
-                'p.email',
-                'p.celular',
-                'p.accesoComputo',
-                'p.ciexterno',
-                'p.photo',
-                'c.id as cargo_id',
-                'c.nombre as cargo_nombre',
-                's.id as seccion_id',
-                's.nombre as seccion_nombre'
-            );
-
-        if (!empty($date_ini) && !empty($date_fin)) {
-            $personal->whereBetween('p.created_at', [$date_ini . ' 00:00:00', $date_fin . ' 23:59:59']);
-        }
-
-        if (!empty($cargo)) {
-            $personal->where('c.id', $cargo);
-        }
-
-        if (!empty($circunscripcion)) {
-            $personal->where('p.ciexterno', $circunscripcion);
-        }
-
-        $personal = $personal->get();
-
-        $personalsArray = $personal->map(function ($personal) {
-            $arrayPersonal = (array) $personal;
-            $arrayPersonal['photo'] = $personal->photo ? base64_encode($personal->photo) : null;
-            return $arrayPersonal;
-        });
-
-        return response()->json([
-            'res' => true,
-            'msg' => 'Lista de personal filtrada exitosamente',
-            'status' => 200,
-            'personal' => $personalsArray,
+    {
+        $request->validate([
+            'inicio' => 'nullable|date',
+            'fin' => 'nullable|date|after_or_equal:inicio',
+            'cargo' => 'nullable|integer|exists:cargos,id',
+            'circunscripcion' => 'nullable|string|max:10',
+            'personal' => 'nullable|array',
+            'personal.*' => 'string|max:20',
         ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'res' => false,
-            'msg' => 'Error al listar personal',
-            'error' => $e->getMessage(),
-            'status' => 500,
-        ]);
+
+        $date_ini = $request->inicio;
+        $date_fin = $request->fin;
+        $cargo = $request->cargo;
+        $array_ci = $request->personal;
+        $circunscripcion = $request->circunscripcion;
+
+        try {
+            $personal = DB::table('personal as p')
+                ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
+                ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
+                ->select(
+                    'p.id', 'p.nombre', 'p.paterno', 'p.materno', 'p.ci',
+                    'p.estado', 'p.complemento', 'p.extencion', 'p.token',
+                    'p.email', 'p.celular', 'p.accesoComputo', 'p.ciexterno',
+                    'p.photo',
+                    'c.id as cargo_id', 'c.nombre as cargo_nombre',
+                    's.id as seccion_id', 's.nombre as seccion_nombre'
+                );
+
+            if (!empty($date_ini) && !empty($date_fin)) {
+                $personal->whereBetween('p.updated_at', [
+                    $date_ini . ' 00:00:00',
+                    $date_fin . ' 23:59:59',
+                ]);
+            }
+
+            if (!empty($cargo)) {
+                $personal->where('c.id', $cargo);
+            }
+
+            if (!empty($circunscripcion)) {
+                $personal->where('p.ciexterno', $circunscripcion);
+            }
+
+            if (!empty($array_ci) && is_array($array_ci)) {
+                $personal->whereIn('p.ci', $array_ci);
+            }
+
+            $personal->orderBy('p.updated_at', 'asc');
+
+            $data = $personal->get()->map(function ($p) {
+                $arrayPersonal = (array) $p;
+                $arrayPersonal['photo'] = $p->photo ? base64_encode($p->photo) : null;
+                return $arrayPersonal;
+            });
+
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Lista de personal filtrada exitosamente',
+                'status' => 200,
+                'total' => $data->count(),
+                'personal' => $data,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al listar personal',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ]);
+        }
     }
 }
-
-};
+;

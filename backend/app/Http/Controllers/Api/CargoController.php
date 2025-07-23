@@ -17,7 +17,10 @@ class CargoController extends Controller
     public function list()
     {
         try {
-            return response()->json(Cargo::all(), 200);
+            return response()->json(
+                Cargo::orderBy('nombre', 'asc')->get(),
+                200
+            );
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,

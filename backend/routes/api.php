@@ -57,4 +57,13 @@ Route::post('auth/login', [AuthController::class, 'login']);
     Route::get('recintos/{id}', [RecintoController::class, 'show']);
     Route::put('recintos/{id}', [RecintoController::class, 'update']);
     Route::delete('recintos/{id}', [RecintoController::class, 'destroy']);
+
+
+    //Rutas Accesso Computo
+//Generar token y QR
+Route::post('/acceso-computo/generar-qr', [AccesoComputoController::class, 'generarTokenQR']);
+//Registrar entrada/salida desde token QR
+Route::post('/registro-acceso/registrar', [RegistroAccesoComputoController::class, 'registrarAcceso']);
+//Listar todos los registros (opcional)
+Route::get('/registro-acceso/listar', [RegistroAccesoComputoController::class, 'listarRegistros']);
 //});
