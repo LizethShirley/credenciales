@@ -23,6 +23,7 @@
     "formik": "^2.4.6",
     "html2pdf.js": "^0.10.3",
     "install": "^0.13.0",
+    "notistack": "^3.0.2",
     "npm": "^11.4.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

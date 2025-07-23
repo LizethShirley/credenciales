@@ -16,7 +16,7 @@ class StoreCargoRequest extends FormRequest
     {
         return [
             'nombre' => 'required|string|max:150|unique:cargos,nombre',
-            'color' => 'required|integer',
+            'color' => 'required|string',
             'estado' => 'required|integer',
             'idseccion' => 'required|integer|exists:secciones,id',
         ];
