@@ -12,7 +12,9 @@ import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import CustomTable from '../../components/organisms/CustomTable';
 import CustomEditIcon from '../../components/atoms/CustomEditIcon';
 import CustomDeleteIcon from '../../components/atoms/CustomDeleteIcon';
-import CustomAddIcon from '../../components/atoms/CustomAddIcon';
+import AddUnidadModalWrapper from '../../components/organisms/AddUnidadModalWrapper';
+import CustomFormCargo from '../../components/organisms/CustomFormCargo';
+import EditUnidadModal from '../../components/organisms/EditUnidadModal';
 
 const GestionarUnidad = () => {
   const [filtroGeneral, setFiltroGeneral] = useState('');
@@ -27,11 +29,9 @@ const GestionarUnidad = () => {
       width: 90,
       render: (row) => (
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <IconButton>
-          <GroupAddIcon/>
-        </IconButton>
-          <CustomEditIcon onClick={() => console.log("Editar " + row.id)} />
-          <CustomDeleteIcon onClick={() => console.log("Eliminar " + row.id)} />
+          <CustomFormCargo idseccion={row.id}/>
+          <EditUnidadModal unidad={row} onSuccess={obtenerListaUnidad} />
+          <CustomDeleteIcon onClick={() => eliminarUnidad(row.id, () => eliminarUnidadDeLista(row.id))} />
         </Box>
       )
     },
@@ -39,6 +39,37 @@ const GestionarUnidad = () => {
     
   const [unidad, setUnidad] = useState([]);
   
+  const eliminarUnidad = async (id, onDeleteSuccess) => {
+    const confirmar = window.confirm("¿Estás segura/o de eliminar este registro?");
+    if (!confirmar) return;
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/secciones/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const res = await response.json();
+
+      if (response.ok && res.res) {
+        alert('Unidad eliminada exitosamente');
+        if (onDeleteSuccess) onDeleteSuccess(); // ✅ ahora está definido correctamente
+      } else {
+        alert(res.msg || 'No se pudo eliminar');
+      }
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+      alert('Hubo un error inesperado');
+    }
+  };
+
+  const eliminarUnidadDeLista = (id) => {
+    setUnidad((prev) => prev.filter((unidad) => unidad.id !== id));
+  };
+
+
   useEffect(() => {
     obtenerListaUnidad();
   }, []);
@@ -82,7 +113,12 @@ const GestionarUnidad = () => {
               sx={{ width: 300 }}
             />
           </Box>
-          <CustomAddIcon onClick={() => console.log("Añadir")}/>
+          <AddUnidadModalWrapper
+            onSuccess={(nuevaUnidad) => {
+              // Actualiza tu estado unidad para que incluya la nueva unidad sin recargar
+              setUnidad((prev) => [...prev, nuevaUnidad]);
+            }}
+          />
         </Box>
         <Paper
           sx={{
@@ -97,9 +133,9 @@ const GestionarUnidad = () => {
             rows={unidad.filter((unidad) => {
               const texto = filtroGeneral.toLowerCase();
               return (
-                unidad.nombre.toLowerCase().includes(texto) ||
-                unidad.abreviatura.toLowerCase().includes(texto) ||
-                unidad.estado.toLowerCase().includes(texto)
+                (unidad.nombre?.toLowerCase() || "").includes(texto) ||
+                (unidad.abreviatura?.toLowerCase() || "").includes(texto) ||
+                (String(unidad.estado)).toLowerCase().includes(texto)
               );
             })}
             onClickRow={(row) => console.log(row)}

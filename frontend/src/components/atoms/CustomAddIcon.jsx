@@ -5,6 +5,7 @@ import { IconButton, Typography } from '@mui/material';
 const CustomAddIcon = ({onClick}) =>{
   return (
     <IconButton 
+        onClick={onClick}
         sx={{
         backgroundColor: '#058145',
         color: '#FFFFFF',
