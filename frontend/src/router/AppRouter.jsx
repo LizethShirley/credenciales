@@ -18,6 +18,7 @@ const App = () => {
       <Routes>
         {/* Esta es la única ruta fuera del Layout */}
         <Route path="/preview" element={<PreviewPage />} />
+        <Route path="/accesoComputo/:token" element={<AccesoComputo />} />
 
         {/* Todo lo demás dentro de Layout */}
         <Route path="/" element={<Layout />}>
@@ -32,7 +33,6 @@ const App = () => {
           <Route path="/Gestionar_Cargo" element={<GestionarCargo />} />
           <Route path="/Gestionar_Externo" element={<GestionarExterno />} />
 
-          <Route path="/accesoComputo/:token" element={<AccesoComputo />} />
         </Route>
       </Routes>
     </BrowserRouter>
