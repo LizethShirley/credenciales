@@ -10,6 +10,7 @@ import CredencialIndividual from '../pages/Usuarios/CredencialIndividual';
 import GestionarUnidad from '../pages/Organizacion/GestionarUnidad';
 import GestionarCargo from '../pages/Organizacion/GestionarCargo';
 import GestionarExterno from '../pages/Organizacion/GestionarExterno';
+import AccesoComputo from '../pages/AccesoComputo';
 
 const App = () => {
   return (
@@ -30,6 +31,8 @@ const App = () => {
           <Route path="/Gestionar_Unidad" element={<GestionarUnidad />} />
           <Route path="/Gestionar_Cargo" element={<GestionarCargo />} />
           <Route path="/Gestionar_Externo" element={<GestionarExterno />} />
+
+          <Route path="/accesoComputo/:token" element={<AccesoComputo />} />
         </Route>
       </Routes>
     </BrowserRouter>
