@@ -1,62 +1,80 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use App\Models\AccesoComputo;
+use App\Models\Personal;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Crypt;
 
 class AccesoComputoController extends Controller
 {
-    public function generarTokensQR(Request $request)
+    /**
+     * Generar QR con el CI de cada persona.
+     */
+    public function generarTokenQR(Request $request)
     {
         $request->validate([
             'personal_ids' => 'required|array',
             'personal_ids.*' => 'exists:personal,id',
+            'accesoComputo' => 'required',
         ]);
 
         $resultados = [];
 
         foreach ($request->personal_ids as $personal_id) {
             try {
-                // Obtener datos personales
                 $persona = Personal::findOrFail($personal_id);
+                $ci = $persona->ci;
+                $accesoComputo = $request->input('accesoComputo');
 
-                // Crear texto cifrado con id y ci
-                $contenidoEncriptado = Crypt::encrypt([
-                    'personal_id' => $persona->id,
-                    'ci'          => $persona->ci,
-                    'timestamp'   => now()->timestamp
+                $persona->accesoComputo = $accesoComputo;
+                $persona->save();
+
+                $acceso = AccesoComputo::where('personal_id', $persona->id)->first();
+
+                if ($acceso) {
+                    $acceso->activo = $accesoComputo == '1';
+                    $acceso->save();
+
+                    $resultados[] = [
+                        'personal_id' => $persona->id,
+                        'res'         => false,
+                        'msg'         => 'Ya existe un token para este CI, no se generó uno nuevo',
+                        'ci'          => $ci,
+                    ];
+                    continue;
+                }
+
+                $randomString = Str::uuid()->toString();
+                $token = $ci . '-' . $randomString;
+
+                $qr = QrCode::format('svg')->size(250)->generate($token);
+
+                $fileName = 'qr_ci_' . $ci . '.svg';
+                Storage::put("public/qr/{$fileName}", $qr);
+
+                AccesoComputo::create([
+                    'personal_id'    => $persona->id,
+                    'token_acceso'   => $token,
+                    'activo'         => true,
+                    'qr'             => $qr,
                 ]);
-
-                // Generar QR
-                $qr = QrCode::format('png')->size(250)->generate($contenidoEncriptado);
-
-                // Guardar archivo
-                $folderPath = "public/qr/{$persona->id}";
-                $fileName = 'qr_' . now()->timestamp . '.png';
-                Storage::put("{$folderPath}/{$fileName}", $qr);
 
                 $qrBase64 = base64_encode($qr);
-
-                // Guardar en base de datos
-                $acceso = AccesoComputo::create([
-                    'personal_id'    => $persona->id,
-                    'token_acceso'   => $contenidoEncriptado, // Guardamos el string cifrado como "token"
-                    'fecha_generado' => now(),
-                    'activo'         => true,
-                ]);
 
                 $resultados[] = [
                     'personal_id' => $persona->id,
                     'res'         => true,
-                    'msg'         => 'QR generado con datos cifrados',
-                    'token'       => $contenidoEncriptado,
+                    'msg'         => 'QR generado y guardado',
+                    'ci'          => $ci,
                     'qr_image'    => 'data:image/png;base64,' . $qrBase64,
-                    'qr_path'     => Storage::url("{$folderPath}/{$fileName}"),
+                    'qr_url'      => asset("storage/qr/{$fileName}"),
                 ];
-
             } catch (\Exception $e) {
                 $resultados[] = [
                     'personal_id' => $personal_id,
@@ -70,6 +88,6 @@ class AccesoComputoController extends Controller
         return response()->json([
             'res'   => true,
             'datos' => $resultados
-        ], 200);
+        ]);
     }
 }

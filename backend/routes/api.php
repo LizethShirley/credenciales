@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AccesoComputoController;
 use App\Http\Controllers\Api\CargoController;
 use App\Http\Controllers\Api\PersonalController;
+use App\Http\Controllers\Api\RegistroAccesoController;
 use App\Http\Controllers\Api\SeccionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Auth\AuthController;
@@ -48,7 +50,7 @@ Route::post('auth/login', [AuthController::class, 'login']);
     Route::put('personal/{personal}', [PersonalController::class, 'update']);
     Route::delete('personal/{personal}', [PersonalController::class, 'destroy']);
     Route::post('list/personal-ids', [PersonalController::class, 'getByIds']);
-    Route::get('list/personal-filter', [PersonalController::class, 'filtroPesonal']);
+    Route::get('list/personal-filter', [PersonalController::class, 'filtroPersonal']);
 
 
     //Rutas recintos
@@ -60,10 +62,10 @@ Route::post('auth/login', [AuthController::class, 'login']);
 
 
     //Rutas Accesso Computo
-//Generar token y QR
-Route::post('/acceso-computo/generar-qr', [AccesoComputoController::class, 'generarTokenQR']);
-//Registrar entrada/salida desde token QR
-Route::post('/registro-acceso/registrar', [RegistroAccesoComputoController::class, 'registrarAcceso']);
-//Listar todos los registros (opcional)
-Route::get('/registro-acceso/listar', [RegistroAccesoComputoController::class, 'listarRegistros']);
-//});
+    //Generar token y QR
+    Route::post('/acceso-computo/generar-qr', [AccesoComputoController::class, 'generarTokenQR']);
+    //Registrar entrada/salida desde token QR
+    Route::post('/registro-acceso/registrar', [RegistroAccesoController::class, 'registrarAcceso']);
+    //Listar todos los registros (opcional)
+    Route::get('/registro-acceso/listar', [RegistroAccesoController::class, 'listarRegistros']);
+    //});

@@ -234,6 +234,56 @@ class PersonalController extends Controller
         }
     }
 
+    /**
+     * Mostrar un personal por ID con sus relaciones
+     */
+    public function obtenerPersonalArray($id)
+    {
+        try {
+            $personal = DB::table('personal as p')
+                ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
+                ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
+                ->leftJoin('recintos as r', 'p.id_recinto', '=', 'r.id')
+                ->where('p.id', $id)
+                ->select(
+                    'p.nombre',
+                    'p.paterno',
+                    'p.materno',
+                    'p.ci',
+                    'p.estado',
+                    'p.complemento',
+                    'p.accesoComputo',
+                    'p.photo',
+                    'c.nombre as cargo_nombre',
+                    's.nombre as seccion_nombre',
+                )
+                ->first();
+
+            if (!$personal) {
+                return null; // Aquí solo devuelves null si no existe
+            }
+
+            $personal = (array) $personal;
+            $personal['photo'] = $personal['photo'] ? base64_encode($personal['photo']) : null;
+
+            return $personal;
+
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    public function getById($id)
+    {
+        $personal = $this->obtenerPersonalArray($id);
+
+        if (!$personal) {
+            return response()->json(['msg' => 'Personal no encontrado'], 404);
+        }
+
+        return response()->json($personal);
+    }
+
 
     /**
      * Actualizar un personal
@@ -384,7 +434,7 @@ class PersonalController extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function filtroPesonal(Request $request)
+    public function filtroPersonal(Request $request)
     {
         $request->validate([
             'inicio' => 'nullable|date',

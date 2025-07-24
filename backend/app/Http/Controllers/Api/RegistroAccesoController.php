@@ -1,12 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\AccesoComputo;
+use App\Models\Personal;
 use App\Models\RegistroAcceso;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
-class ResgitroAccesoComputoController extends Controller
+class RegistroAccesoController extends Controller
 {
     /**
      * Registrar acceso desde un token QR
@@ -18,57 +21,53 @@ class ResgitroAccesoComputoController extends Controller
         ]);
 
         try {
-            // Descifrar el token
-            $datos = Crypt::decrypt($request->input('token'));
+            $token = $request->input('token');
 
-            $personalId = $datos['personal_id'];
-            $ci         = $datos['ci'];
-
-            // Buscar el acceso activo correspondiente
-            $acceso = AccesoComputo::where('personal_id', $personalId)
+            $acceso = AccesoComputo::where('token_acceso', $token)
                 ->where('activo', true)
-                ->latest('fecha_generado')
                 ->first();
+
+            $controladorPersonal = new PersonalController();
+
+            $personalData = $controladorPersonal->obtenerPersonalArray($acceso->personal_id);
 
             if (!$acceso) {
                 return response()->json([
                     'res' => false,
-                    'msg' => 'Acceso no encontrado o inactivo para esta persona.',
+                    'msg' => 'Acceso no encontrado o inactivo.',
                     'status' => 404
                 ], 404);
             }
 
-            // Determinar si es entrada o salida
             $ultimoRegistro = RegistroAcceso::where('acceso_computo_id', $acceso->id)
                 ->orderBy('fecha_hora', 'desc')
                 ->first();
 
             $nuevoTipo = ($ultimoRegistro && $ultimoRegistro->tipo === 'entrada') ? 'salida' : 'entrada';
 
-            // Registrar nuevo acceso
             $registro = RegistroAcceso::create([
                 'acceso_computo_id' => $acceso->id,
-                'tipo' => $nuevoTipo,
-                'fecha_hora' => now()
+                'tipo'              => $nuevoTipo,
+                'fecha_hora'        => now(),
             ]);
 
             return response()->json([
-                'res' => true,
-                'msg' => "Acceso registrado correctamente como {$nuevoTipo}",
-                'tipo' => $nuevoTipo,
+                'res'      => true,
+                'msg'      => "Acceso registrado correctamente como {$nuevoTipo}",
+                'tipo'     => $nuevoTipo,
                 'registro' => $registro,
-                'status' => 200
+                'personal' => $personalData,
+                'status'   => 200,
             ]);
 
         } catch (\Exception $e) {
-            // Puedes registrar el error si es necesario
             Log::error('Error al registrar acceso desde QR: ' . $e->getMessage());
 
             return response()->json([
-                'res' => false,
-                'msg' => 'Token inválido o manipulado',
+                'res'   => false,
+                'msg'   => 'Error procesando el token',
                 'error' => $e->getMessage(),
-                'status' => 400
+                'status'=> 400
             ], 400);
         }
     }

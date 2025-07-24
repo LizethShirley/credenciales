@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('acceso_computos', function (Blueprint $table) {
+        Schema::create('acceso_computo', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('personal_id');
-            $table->string('token_acceso')->unique();
+            $table->text('token_acceso')->unique();
+            $table->longText('qr')->nullable();
             $table->boolean('activo')->default(true);
             $table->timestamps();
-
-            $table->foreign('personal_id')->references('id')->on('personal')->onDelete('cascade');
         });
     }
 

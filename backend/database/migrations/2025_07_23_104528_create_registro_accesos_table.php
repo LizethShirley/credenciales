@@ -13,12 +13,10 @@ return new class extends Migration
     {
         Schema::create('registro_accesos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('acceso_computo_id'); // Relación con credencial
+            $table->foreignId('acceso_computo_id')->constrained('acceso_computo')->onDelete('cascade'); // ✅ correcta
             $table->enum('tipo', ['entrada', 'salida']);
             $table->timestamp('fecha_hora')->useCurrent();
             $table->timestamps();
-
-            $table->foreign('acceso_computo_id')->references('id')->on('acceso_computos')->onDelete('cascade');
         });
     }
 
@@ -30,3 +28,4 @@ return new class extends Migration
         Schema::dropIfExists('registro_accesos');
     }
 };
+

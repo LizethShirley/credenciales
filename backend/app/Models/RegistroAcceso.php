@@ -12,10 +12,9 @@ class RegistroAcceso extends Model
     protected $table = 'registro_accesos';
 
     protected $fillable = [
-        'personal_id',
+        'acceso_computo_id',
         'fecha_hora',
         'tipo',
-        'observacion',
     ];
 
     /**

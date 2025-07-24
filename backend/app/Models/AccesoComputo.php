@@ -14,6 +14,7 @@ class AccesoComputo extends Model
     protected $fillable = [
         'personal_id',
         'token_acceso',
+        'qr',
         'activo',
     ];
 
