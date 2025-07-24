@@ -137,13 +137,6 @@ function AccesoComputo() {
           overflow: 'hidden',
         }}
       >
-        <Typography
-          variant="h5"
-          align="center"
-          style={{ margin: '20px 0', color: '#333' }}
-        >
-          Registro de Acceso
-        </Typography>
 
         {/* Loader sin overlay absoluto */}
         {loading && (
