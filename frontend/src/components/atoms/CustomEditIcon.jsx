@@ -4,10 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 const CustomEditIcon = ({ onClick}) => {
   return(
     <IconButton 
-      size="small"  sx={{color: '#FBCC00', 
-        '&:hover': {
-          backgroundColor: 'primary.main',
-        },
+      size="small"  sx={{color: '#FBCC00',
         '&:focus': {
           outline: 'none',
           boxShadow: 'none',

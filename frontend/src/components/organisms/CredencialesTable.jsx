@@ -31,33 +31,13 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]); // IDs seleccionados
 
-  const handleEditClick = async (id) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/personal/${id}`);
-      const result = await response.json();
-      const resultP = result.personal;
-      if (response.ok) {
-        setSelectedUser({
-          id: result.id,
-          nombres: resultP.nombre || '',
-          apellidoPaterno: resultP.paterno || '',
-          apellidoMaterno: resultP.materno || '',
-          numeroCarnet: resultP.ci || '',
-          complemento: resultP.complemento || '',
-          numeroCelular: resultP.celular || '',
-          secciones: resultP.id_seccion?.toString() || '',
-          cargos: resultP.id_cargo?.toString() || '',
-          recinto: resultP.ciexterno || '',
-          codVerificacion: resultP.token || '',
-          imagen: null,
-        });
-        setModalOpen(true);
-      } else {
-        console.error('Error al obtener datos del personal:', result);
-      }
-    } catch (error) {
-      console.error('Error al conectar con la API:', error);
-    }
+  const openEditPersonal = (id_personal) => {
+    const url = `https://walisanga.space/credenciales-2025/${id_personal}`;
+    window.open(
+      url,
+      'EditarPersonal',
+      'width=1000,height=700,scrollbars=yes,resizable=yes'
+    );
   };
 
   const eliminarPersonal = async (id) => {
@@ -272,7 +252,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
                     >
                       <WhatsAppIcon />
                     </IconButton>
-                    <CustomEditIcon onClick={() => handleEditClick(item.id)} />
+                    <CustomEditIcon onClick={() => openEditPersonal(item.id)} />
                     <CustomDeleteIcon onClick={() => eliminarPersonal(item.id)} />
                   </Box>
                 </TableCell>
