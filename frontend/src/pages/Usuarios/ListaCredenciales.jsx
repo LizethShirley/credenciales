@@ -4,17 +4,18 @@ import {
     Grid,
     Paper,
     TextField,
-    Typography
+    Typography,
+    IconButton
 } from '@mui/material';
+import SortByAlphaIcon from '@mui/icons-material/SortByAlpha';
 
-import CustomTable from '../../components/organisms/CustomTable';
-import CustomEditIcon from '../../components/atoms/CustomEditIcon';
-import CustomDeleteIcon from '../../components/atoms/CustomDeleteIcon';
 import CredencialesTable from '../../components/organisms/CredencialesTable';
 
 const ListaCredenciales = () => {
-    const [filtro, setFiltro] = useState('');
+    const [filtroNombre, setFiltroNombre] = useState('');
+    const [filtroCI, setFiltroCI] = useState('');
     const [personal, setPersonal] = useState([]);
+    const [ordenAsc, setOrdenAsc] = useState(true);
 
     useEffect(() => {
         obtenerPersonal();
@@ -30,31 +31,46 @@ const ListaCredenciales = () => {
         }
     };
 
-    const personalFiltrado = personal.filter((item) => {
-        const texto = filtro.toLowerCase();
-        return (
-            item.nombre?.toLowerCase().includes(texto) ||
-            item.paterno?.toLowerCase().includes(texto) ||
-            item.materno?.toLowerCase().includes(texto) ||
-            item.ci?.toLowerCase().includes(texto) ||
-            item.cargo_nombre?.toLowerCase().includes(texto) ||
-            item.seccion_nombre?.toLowerCase().includes(texto)
-        );
-    });
+    const personalFiltrado = personal
+        .filter((item) => {
+            const nombreCompleto = `${item.nombre || ''} ${item.paterno || ''} ${item.materno || ''}`.toLowerCase();
+            const ciTexto = item.ci?.toLowerCase() || '';
+
+            return (
+                nombreCompleto.includes(filtroNombre.toLowerCase()) &&
+                ciTexto.includes(filtroCI.toLowerCase())
+            );
+        })
+        .sort((a, b) => {
+            const cargoA = a.cargo_nombre?.toLowerCase() || '';
+            const cargoB = b.cargo_nombre?.toLowerCase() || '';
+            return ordenAsc ? cargoA.localeCompare(cargoB) : cargoB.localeCompare(cargoA);
+        });
+
+    const toggleOrden = () => setOrdenAsc(!ordenAsc);
 
     return (
         <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Box sx={{ width: '100%', maxWidth: 1010 }}>
                 <Typography variant="h5" align="center">Lista de Personal</Typography>
+
                 <Box sx={{ my: 2, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
                     <TextField
-                        label="Buscar..."
-                        value={filtro}
-                        onChange={(e) => setFiltro(e.target.value)}
+                        label="Buscar por nombre completo..."
+                        value={filtroNombre}
+                        onChange={(e) => setFiltroNombre(e.target.value)}
                         size="small"
-                        sx={{ width: 300 }}
+                        sx={{ width: 250 }}
+                    />
+                    <TextField
+                        label="Buscar por CI..."
+                        value={filtroCI}
+                        onChange={(e) => setFiltroCI(e.target.value)}
+                        size="small"
+                        sx={{ width: 200 }}
                     />
                 </Box>
+
                 <Paper sx={{ p: 2 }}>
                     <CredencialesTable data={personalFiltrado} onDeleteSuccess={obtenerPersonal} />
                 </Paper>

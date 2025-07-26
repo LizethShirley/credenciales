@@ -1,9 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CustomEditIcon from "../../components/atoms/CustomEditIcon";
 import CustomModal from "../../components/molecules/CustomModal";
 
 const EditCargoModal = ({ cargo, onSuccess }) => {
   const [open, setOpen] = useState(false);
+  const [secciones, setSecciones] = useState([]);
+
+  useEffect(() => {
+    if (open) obtenerSecciones();
+  }, [open]);
+
+  const obtenerSecciones = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/list/secciones`);
+      if (!response.ok) throw new Error("Error al obtener secciones");
+      const data = await response.json();
+      setSecciones(data || []);
+    } catch (error) {
+      console.error("Error cargando secciones:", error);
+      alert("No se pudieron cargar las secciones");
+    }
+  };
 
   const fields = [
     { name: "nombre", label: "Nombre", required: true, onlyLetters: true },
@@ -25,6 +42,18 @@ const EditCargoModal = ({ cargo, onSuccess }) => {
         { value: 0, label: "Inhabilitado" },
       ],
     },
+    {
+      name: "idseccion",
+      label: "Sección",
+      required: true,
+      options: [
+        { value: "", label: "Seleccione una sección" },
+        ...secciones.map((s) => ({
+          value: String(s.id),
+          label: s.nombre,
+        })),
+      ],
+    },
   ];
 
   const handleOpen = () => setOpen(true);
@@ -32,39 +61,26 @@ const EditCargoModal = ({ cargo, onSuccess }) => {
 
   const handleSubmit = async (values) => {
     try {
-      const valoresConSeccion = {
-        ...values,
-        idseccion: cargo.idseccion, 
-      };
-
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/cargos/${cargo.id}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(valoresConSeccion), 
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...values,
+            idseccion: Number(values.idseccion), // convertir a número
+          }),
         }
       );
-
       const data = await response.json();
 
       if (!response.ok) {
-        console.error("Errores de validación backend:", data);
-        if (data.errors) {
-          const mensajes = Object.values(data.errors).flat().join("\n");
-          alert("Errores:\n" + mensajes);
-        } else {
-          alert("Error: " + data.message);
-        }
+        console.error("Errores backend:", data);
+        alert(data.message || "Error en la actualización");
         return;
       }
 
-      if (typeof onSuccess === "function") {
-        onSuccess(data.seccion);
-      }
+      if (typeof onSuccess === "function") onSuccess(data.seccion);
 
       alert("Cargo actualizado exitosamente");
       handleClose();
@@ -73,7 +89,6 @@ const EditCargoModal = ({ cargo, onSuccess }) => {
       alert("Error actualizando cargo");
     }
   };
-
 
   return (
     <>
@@ -84,7 +99,10 @@ const EditCargoModal = ({ cargo, onSuccess }) => {
         open={open}
         onClose={handleClose}
         onSubmit={handleSubmit}
-        initialValues={cargo}
+        initialValues={{
+          ...cargo,
+          idseccion: cargo.idseccion ? String(cargo.idseccion) : "",
+        }}
       />
     </>
   );

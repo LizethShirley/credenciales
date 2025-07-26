@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PreviewPage from '../pages/preview';
 import Layout from '../Layout/Layout';
+import Login from '../pages/Login/Login';
 import CredencialPage from '../pages/CredencialPage';
 
 import ListaCredenciales from '../pages/Usuarios/ListaCredenciales';
@@ -17,6 +18,7 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         {/* Esta es la única ruta fuera del Layout */}
+        <Route path="/login" element={<Login/>} />
         <Route path="/preview" element={<PreviewPage />} />
         <Route path="/accesoComputo/:token" element={<AccesoComputo />} />
 

@@ -167,12 +167,6 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
           value={filters.cargo}
           onChange={handleFilterChange('cargo')}
         />
-        <TextField
-          label="Filtrar por Recinto"
-          size="small"
-          value={filters.recinto}
-          onChange={handleFilterChange('recinto')}
-        />
       </Box>
 
       <Button variant="contained" onClick={mostrarSeleccionados} sx={{ mb: 2 }}>
