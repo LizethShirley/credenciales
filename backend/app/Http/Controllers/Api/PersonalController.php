@@ -36,9 +36,12 @@ class PersonalController extends Controller
                     'p.celular',
                     'p.accesoComputo',
                     'p.ciexterno',
+                    'p.ciexterno',
                     'p.photo',
+                    'p.updated_at',
                     'c.id as cargo_id',
                     'c.nombre as cargo_nombre',
+                    'c.abreviatura',
                     's.id as seccion_id',
                     's.nombre as seccion_nombre',
                     'r.id as recinto_id',
@@ -188,6 +191,7 @@ class PersonalController extends Controller
                     'p.accesoComputo',
                     'p.ciexterno',
                     'p.photo',
+                    'p.updated_at',
                     // Campos específicos de cargo
                     'c.id as cargo_id',
                     'c.nombre as cargo_nombre',
@@ -455,7 +459,7 @@ class PersonalController extends Controller
 
         try {
 
-            if (!empty($accesoComputo)) {
+            if (!empty($accesoComputo) && $accesoComputo == 1) {
                  $personal = DB::table('personal as p')
                     ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
                     ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
@@ -474,7 +478,7 @@ class PersonalController extends Controller
                         'p.photo',
                         'c.id as cargo_id', 'c.nombre as cargo_nombre',
                         's.id as seccion_id', 's.nombre as seccion_nombre'
-                    )->where('p.estado', 1);
+                    );
             }
 
             if (!empty($date_ini) && !empty($date_fin)) {
