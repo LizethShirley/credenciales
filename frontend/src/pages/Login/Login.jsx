@@ -30,7 +30,6 @@ function Login() {
 
       if (response.ok) {
         alert('Inicio de sesión exitoso');
-        // Guardar token o redirigir
         localStorage.setItem('token', data.token);
         window.location.href = '/dashboard';
       } else {
