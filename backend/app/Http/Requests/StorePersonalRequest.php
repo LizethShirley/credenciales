@@ -24,21 +24,22 @@ class StorePersonalRequest extends FormRequest
             'email' => 'nullable|email|max:255',
             'celular' => 'required|digits_between:7,11',
             'id_cargo' => 'required|exists:cargos,id',
-            'id_recinto' => ['nullable'], // Por defecto nullable
+            'id_recinto' => ['nullable'],
             'estado' => 'required|integer|in:0,1',
             'accesoComputo' => 'nullable|integer|in:0,1',
             'ciexterno' => 'nullable|string|max:45',
-            'photo' => 'nullable|image', // o 'required' si es para creación
+            'photo' => 'nullable|image',
             'token' => 'required',
         ];
 
-//        $cargo = Cargo::find($this->id_cargo);
-//
-//        if ($cargo && strtoupper(trim($cargo->nombre)) === 'NOTARIO ELECTORAL') {
-//            $rules['id_recinto'] = ['required', 'exists:recintos,id'];
-//        }
-
         return $rules;
+    }
+
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'estado' => $this->input('estado', '0'),
+        ]);
     }
 
     public function withValidator($validator)

@@ -443,6 +443,7 @@ class PersonalController extends Controller
             'circunscripcion' => 'nullable|string|max:10',
             'personal' => 'nullable|array',
             'personal.*' => 'string|max:20',
+            'accesoComputo' => 'nullable|integer|in:0,1',
         ]);
 
         $date_ini = $request->inicio;
@@ -450,19 +451,31 @@ class PersonalController extends Controller
         $cargo = $request->cargo;
         $array_ci = $request->personal;
         $circunscripcion = $request->circunscripcion;
+        $accesoComputo = $request->accesoComputo;
 
         try {
-            $personal = DB::table('personal as p')
-                ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
-                ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
-                ->select(
-                    'p.id', 'p.nombre', 'p.paterno', 'p.materno', 'p.ci',
-                    'p.estado', 'p.complemento', 'p.extencion', 'p.token',
-                    'p.email', 'p.celular', 'p.accesoComputo', 'p.ciexterno',
-                    'p.photo',
-                    'c.id as cargo_id', 'c.nombre as cargo_nombre',
-                    's.id as seccion_id', 's.nombre as seccion_nombre'
-                );
+
+            if (!empty($accesoComputo)) {
+                 $personal = DB::table('personal as p')
+                    ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
+                    ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
+                    ->leftJoin('acceso_computo as a', 'p.id', '=', 'a.personal_id')
+                    ->select(
+                        'p.id', 'p.nombre', 'p.paterno', 'p.materno', 'p.ci', 'a.qr'
+                    )->where('p.accesoComputo', $accesoComputo);
+            } else {
+                $personal = DB::table('personal as p')
+                    ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
+                    ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
+                    ->select(
+                        'p.id', 'p.nombre', 'p.paterno', 'p.materno', 'p.ci',
+                        'p.estado', 'p.complemento', 'p.extencion', 'p.token',
+                        'p.email', 'p.celular', 'p.accesoComputo', 'p.ciexterno',
+                        'p.photo',
+                        'c.id as cargo_id', 'c.nombre as cargo_nombre',
+                        's.id as seccion_id', 's.nombre as seccion_nombre'
+                    )->where('p.estado', 1);
+            }
 
             if (!empty($date_ini) && !empty($date_fin)) {
                 $personal->whereBetween('p.updated_at', [
@@ -485,12 +498,19 @@ class PersonalController extends Controller
 
             $personal->orderBy('p.updated_at', 'asc');
 
-            $data = $personal->get()->map(function ($p) {
-                $arrayPersonal = (array) $p;
-                $arrayPersonal['photo'] = $p->photo ? base64_encode($p->photo) : null;
-                return $arrayPersonal;
-            });
-
+            if (!empty($accesoComputo)) {
+                $data = $personal->get()->map(function ($p) {
+                    $arrayPersonal = (array) $p;
+                    $arrayPersonal['qr'] = $p->qr ? base64_encode($p->qr) : null;
+                    return $arrayPersonal;
+                });
+            } else {
+                $data = $personal->get()->map(function ($p) {
+                    $arrayPersonal = (array) $p;
+                    $arrayPersonal['photo'] = $p->photo ? base64_encode($p->photo) : null;
+                    return $arrayPersonal;
+                });
+            }
 
             return response()->json([
                 'res' => true,
@@ -503,6 +523,33 @@ class PersonalController extends Controller
             return response()->json([
                 'res' => false,
                 'msg' => 'Error al listar personal',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ]);
+        }
+    }
+
+    public function updateStatus(Request $request) {
+        $request->validate([
+            'ids' => 'required|array',
+            'estado' => 'required|integer|in:0,1',
+        ]);
+
+        $ids = $request->input('ids');
+        $estado = $request->input('estado');
+        try {
+            $updatedCount = Personal::whereIn('id', $ids)->update(['estado' => $estado]);
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Estado de Impresión del personal actualizado exitosamente', 
+                'status' => 200,
+                'updated_count' => $updatedCount,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al actualizar el estado de Impresión del personal',
                 'error' => $e->getMessage(),
                 'status' => 500,
             ]);

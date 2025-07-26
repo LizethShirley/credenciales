@@ -51,6 +51,7 @@ Route::post('auth/login', [AuthController::class, 'login']);
     Route::delete('personal/{personal}', [PersonalController::class, 'destroy']);
     Route::post('list/personal-ids', [PersonalController::class, 'getByIds']);
     Route::get('list/personal-filter', [PersonalController::class, 'filtroPersonal']);
+    Route::patch('updateEstado', [PersonalController::class, 'updateStatus']);
 
 
     //Rutas recintos
