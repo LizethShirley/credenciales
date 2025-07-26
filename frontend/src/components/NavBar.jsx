@@ -1,6 +1,16 @@
-import { AppBar, Toolbar, Typography, Box, Stack} from '@mui/material';
+import { AppBar, Toolbar, Typography, Box, Stack, Button} from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from 'react-router-dom';
 
 const NavBar = (anchoCaja) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    sessionStorage.clear();
+    document.cookie = 'token=; Max-Age=0';
+    navigate('/Login');
+  };
   return (
     <AppBar position="fixed"
   sx={{
@@ -20,10 +30,46 @@ const NavBar = (anchoCaja) => {
             <img src="/EleccionesLogo.png" alt="img3" height={55} />
           </Stack>
         </Box>
-        <Box sx={{ textAlign: 'center', width: '100%'}}>
-          <Typography variant="h6" noWrap component="div" sx={{ fontSize: '21px',backgroundColor: 'primary.main', color: '#FFFFFF' }}>
+        <Box
+          sx={{
+            position: 'relative',
+            textAlign: 'center',
+            width: '100%',
+            backgroundColor: 'primary.main',
+          }}
+        >
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{
+              fontSize: '21px',
+              color: '#FFFFFF',
+            }}
+          >
             SISTEMA DE CREDENCIALES
           </Typography>
+
+          <Button
+            sx={{
+              color: '#FFFFFF',
+              position: 'absolute',
+              right: 8,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              minWidth: 'auto',
+              backgroundColor: 'transparent',
+              '&:hover': {
+                color: 'rgba(0, 0, 0, 0.2)',
+              },
+              '&:active': {
+                color: 'rgba(0, 0, 0, 0.3)',
+              },
+            }}
+            onClick={handleLogout}
+          >
+            <LogoutIcon />
+          </Button>
         </Box>
       </Toolbar>
     </AppBar>

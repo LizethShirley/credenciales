@@ -14,6 +14,13 @@ import {
   Checkbox,
   Button,
   IconButton,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography
 } from '@mui/material';
 
 import CustomEditIcon from '../atoms/CustomEditIcon';
@@ -27,9 +34,15 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedRows, setSelectedRows] = useState([]); // IDs seleccionados
+  const [selectedRows, setSelectedRows] = useState([]); 
+  const [alert, setAlert] = useState({ open: false, message: '', severity: 'info' });
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, onConfirm: null, title: '' });
+  const [selectedModalOpen, setSelectedModalOpen] = useState(false);
+
+  const showAlert = (message, severity = 'info') => {
+    setAlert({ open: true, message, severity });
+  };
+  const closeAlert = () => setAlert({ ...alert, open: false });
 
   const openEditPersonal = (id_personal) => {
     const url = `https://walisanga.space/credenciales-2025/${id_personal}`;
@@ -40,25 +53,31 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
     );
   };
 
-  const eliminarPersonal = async (id) => {
-    const confirmar = window.confirm('¿Estás segura/o de eliminar este registro?');
-    if (!confirmar) return;
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/personal/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const res = await response.json();
-      if (response.ok && res.res) {
-        alert('Personal eliminado exitosamente');
-        if (onDeleteSuccess) onDeleteSuccess();
-      } else {
-        alert(res.msg || 'No se pudo eliminar');
+  const eliminarPersonal = (id) => {
+    setConfirmDialog({
+      open: true,
+      title: '¿Estás segura/o de eliminar este registro?',
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/personal/${id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          const res = await response.json();
+          if (response.ok && res.res) {
+            showAlert('Personal eliminado exitosamente', 'success');
+            if (onDeleteSuccess) onDeleteSuccess();
+          } else {
+            showAlert(res.msg || 'No se pudo eliminar', 'error');
+          }
+        } catch (error) {
+          console.error('Error al eliminar:', error);
+          showAlert('Hubo un error inesperado', 'error');
+        } finally {
+          setConfirmDialog({ open: false, onConfirm: null, title: '' });
+        }
       }
-    } catch (error) {
-      console.error('Error al eliminar:', error);
-      alert('Hubo un error inesperado');
-    }
+    });
   };
 
   const handleSort = (field) => {
@@ -85,18 +104,16 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
 
   const sortedData = useMemo(() => {
     return [...filteredData].sort((a, b) => {
+      const compare = (valA, valB) => {
+        if (valA < valB) return order === 'asc' ? -1 : 1;
+        if (valA > valB) return order === 'asc' ? 1 : -1;
+        return 0;
+      };
+
       if (orderBy === 'nombreCompleto') {
-        const valA = getNombreCompleto(a).toLowerCase();
-        const valB = getNombreCompleto(b).toLowerCase();
-        if (valA < valB) return order === 'asc' ? -1 : 1;
-        if (valA > valB) return order === 'asc' ? 1 : -1;
-        return 0;
+        return compare(getNombreCompleto(a).toLowerCase(), getNombreCompleto(b).toLowerCase());
       } else if (orderBy === 'cargo_nombre') {
-        const valA = (a.cargo_nombre || '').toLowerCase();
-        const valB = (b.cargo_nombre || '').toLowerCase();
-        if (valA < valB) return order === 'asc' ? -1 : 1;
-        if (valA > valB) return order === 'asc' ? 1 : -1;
-        return 0;
+        return compare((a.cargo_nombre || '').toLowerCase(), (b.cargo_nombre || '').toLowerCase());
       }
       return 0;
     });
@@ -123,14 +140,15 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
   };
 
   const mostrarSeleccionados = async () => {
-    const seleccionados = sortedData.filter((item) => selectedRows.includes(item.id));
-    alert(`Seleccionados:\n${seleccionados.map((s) => getNombreCompleto(s)).join('\n')}`);
-
     if (selectedRows.length === 0) {
-      alert('No hay seleccionados');
+      showAlert('No hay seleccionados', 'warning');
       return;
     }
 
+    setSelectedModalOpen(true);
+  };
+
+  const generarQR = async () => {
     const form = new FormData();
     selectedRows.forEach((id) => form.append('personal_ids[]', id));
     form.append('accesoComputo', '1');
@@ -143,14 +161,15 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
 
       const result = await res.json();
       if (res.ok) {
-        alert('QR generado exitosamente');
-        setSelectedRows([]); // <--- Limpia los checkboxes
+        showAlert('QR generado exitosamente', 'success');
+        setSelectedRows([]);
+        setSelectedModalOpen(false);
       } else {
-        alert(result.msg || 'Error al generar QR');
+        showAlert(result.msg || 'Error al generar QR', 'error');
       }
     } catch (error) {
       console.error('Error al generar QR:', error);
-      alert('Hubo un error al conectar con la API');
+      showAlert('Hubo un error al conectar con la API', 'error');
     }
   };
 
@@ -159,6 +178,36 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
 
   return (
     <Box>
+      {/* Snackbar */}
+      <Snackbar open={alert.open} autoHideDuration={3000} onClose={closeAlert}>
+        <Alert severity={alert.severity} onClose={closeAlert} variant="filled">
+          {alert.message}
+        </Alert>
+      </Snackbar>
+
+      {/* Dialog de confirmación para eliminar */}
+      <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ open: false, onConfirm: null, title: '' })}>
+        <DialogTitle>{confirmDialog.title}</DialogTitle>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialog({ open: false, onConfirm: null, title: '' })}>Cancelar</Button>
+          <Button color="error" variant="contained" onClick={confirmDialog.onConfirm}>Eliminar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal de seleccionados */}
+      <Dialog open={selectedModalOpen} onClose={() => setSelectedModalOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Seleccionados</DialogTitle>
+        <DialogContent dividers>
+          {sortedData.filter((item) => selectedRows.includes(item.id)).map((s) => (
+            <Typography key={s.id}>{getNombreCompleto(s)}</Typography>
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedModalOpen(false)}>Cerrar</Button>
+          <Button variant="contained" onClick={generarQR}>Generar QR</Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Filtros */}
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <TextField
@@ -170,7 +219,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
       </Box>
 
       <Button variant="contained" onClick={mostrarSeleccionados} sx={{ mb: 2 }}>
-        Generar QR
+        Habilitar Acceso Computo
       </Button>
 
       {/* Tabla */}

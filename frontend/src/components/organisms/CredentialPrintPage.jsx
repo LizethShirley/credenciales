@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Grid, Typography, Stack, Box, Button } from "@mui/material";
+import { Grid, Typography, Stack, Box, Button, Snackbar, Alert } from "@mui/material";
 import DateRangeFilter from "../atoms/DateRangerFilter";
 import SideToggle from "../atoms/SideToggle";
 import PrintPageWrapper from "../organisms/PrintPageWrapper";
@@ -17,21 +17,23 @@ const chunkArray = (array, size) => {
 };
 
 const CredentialPrintPage = ({ fetchData }) => {
-  // Abrir ventana nueva con las credenciales
-  const handleOpenWindow = () => {
-    // Guardar los datos en localStorage para la vista previa
-    localStorage.setItem('credenciales_preview_pages', JSON.stringify(pages));
-    localStorage.setItem('credenciales_preview_side', side);
-    window.open('/preview', '_blank', 'width=900,height=1400');
-  };
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [side, setSide] = useState("anverso");
   const [resultadosFiltrados, setResultadosFiltrados] = useState([]);
   const [cargos, setCargos] = useState([]);
   const [selectedCargo, setSelectedCargo] = useState(null);
   const [selectedRecinto, setSelectedRecinto] = useState("");
-  const printRef = useRef();
   const [loading, setLoading] = useState(false);
+  const printRef = useRef();
+
+  // Estado para alertas
+  const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
+
+  const showAlert = (message, severity = "info") => {
+    setAlert({ open: true, message, severity });
+  };
+
+  const handleCloseAlert = () => setAlert({ ...alert, open: false });
 
   useEffect(() => {
     const fetchCargos = async () => {
@@ -42,6 +44,7 @@ const CredentialPrintPage = ({ fetchData }) => {
         setCargos(data);
       } catch (error) {
         console.error(error);
+        showAlert("Error al obtener cargos", "error");
       }
     };
     fetchCargos();
@@ -49,12 +52,24 @@ const CredentialPrintPage = ({ fetchData }) => {
 
   const handleFiltrar = async () => {
     setLoading(true);
-    if (!dateRange.start || !dateRange.end) return alert("Selecciona fechas.");
-    if (!selectedCargo) return alert("Selecciona un cargo.");
+    if (!dateRange.start || !dateRange.end) {
+      showAlert("Selecciona fechas.", "warning");
+      setLoading(false);
+      return;
+    }
+    if (!selectedCargo) {
+      showAlert("Selecciona un cargo.", "warning");
+      setLoading(false);
+      return;
+    }
     if (
       selectedCargo.nombre === "NOTARIO ELECTORAL" &&
       !selectedRecinto
-    ) return alert("Selecciona una circunscripción.");
+    ) {
+      showAlert("Selecciona una circunscripción.", "warning");
+      setLoading(false);
+      return;
+    }
 
     const inicio = dateRange.start.toISOString().slice(0, 10);
     const fin = dateRange.end.toISOString().slice(0, 10);
@@ -65,50 +80,57 @@ const CredentialPrintPage = ({ fetchData }) => {
     try {
       const result = await fetchData(inicio, fin, cargo, circunscripcion);
       await new Promise((res) => setTimeout(res, 2000));
-      if (result.res && Array.isArray(result.personal))
+      if (result.res && Array.isArray(result.personal)) {
         setResultadosFiltrados(result.personal);
-      else alert("No se encontraron resultados o hubo un error.");
+        if (result.personal.length === 0) {
+          showAlert("No se encontraron resultados.", "info");
+        } else {
+          showAlert("Resultados filtrados correctamente.", "success");
+        }
+      } else {
+        showAlert("No se encontraron resultados o hubo un error.", "error");
+      }
     } catch (error) {
       console.error(error);
-      alert("Error al filtrar los datos.");
+      showAlert("Error al filtrar los datos.", "error");
     } finally {
-    setLoading(false);
+      setLoading(false);
     }
   };
 
-  
   const handleDownloadPDF = () => {
     if (!printRef.current) return;
 
     const element = printRef.current;
-
     const options = {
       margin: 0,
       filename: `credenciales_${side}_${new Date().toISOString().split("T")[0]}.pdf`,
       image: { type: "jpeg", quality: 1 },
-      html2canvas: {
-        scale: 2, // mejor calidad
-        useCORS: true,
-      },
-      jsPDF: {
-        unit: "mm",
-        format: "a4",
-        orientation: "portrait",
-      },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-
-    // Usar solo el modo 'pdf' para que html2pdf renderice como documento, no como imagen
     html2pdf().set(options).from(element).toPdf().save();
   };
 
+  const handleOpenWindow = () => {
+    localStorage.setItem('credenciales_preview_pages', JSON.stringify(pages));
+    localStorage.setItem('credenciales_preview_side', side);
+    window.open('/preview', '_blank', 'width=900,height=1400');
+  };
 
-  // Divide los resultados en páginas de 9 elementos (A4)
   const pages = chunkArray(resultadosFiltrados, 9);
 
   return (
     <Box sx={{ p: 5 }}>
+      {/* Snackbar para alertas */}
+      <Snackbar open={alert.open} autoHideDuration={3000} onClose={handleCloseAlert}>
+        <Alert onClose={handleCloseAlert} severity={alert.severity} variant="filled">
+          {alert.message}
+        </Alert>
+      </Snackbar>
+
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} mb={2}>
         <DateRangeFilter
           startDate={dateRange.start}
@@ -127,7 +149,7 @@ const CredentialPrintPage = ({ fetchData }) => {
           {loading ? <CircularProgress size={22} color="inherit" /> : "Filtrar"}
         </Button>
       </Stack>
-      
+
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} mb={2}>
         <AutocompleteCi
           fetchData={fetchData}
@@ -158,7 +180,7 @@ const CredentialPrintPage = ({ fetchData }) => {
         <Grid item xs={12} md={8}>
           {resultadosFiltrados.length > 0 ? (
             <Box ref={printRef} sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}>
-              <CredentialPages pages={pages} side={side} printRef={printRef} cargos={cargos}/>
+              <CredentialPages pages={pages} side={side} printRef={printRef} cargos={cargos} />
             </Box>
           ) : (
             <Typography variant="body1" color="text.secondary">
