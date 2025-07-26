@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import CustomAddIcon from "../../components/atoms/CustomAddIcon";
 import CustomModal from "../../components/molecules/CustomModal";
+import { Snackbar, Alert } from "@mui/material";
 
 const AddUnidadModalWrapper = ({ onSuccess }) => {
   const [open, setOpen] = useState(false);
+  const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
 
   const fields = [
     { name: "nombre", label: "Nombre", required: true, onlyLetters: true },
@@ -22,6 +24,10 @@ const AddUnidadModalWrapper = ({ onSuccess }) => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const showAlert = (message, severity = "info") => {
+    setAlert({ open: true, message, severity });
+  };
+
   const handleSubmit = async (values) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/secciones`, {
@@ -38,34 +44,44 @@ const AddUnidadModalWrapper = ({ onSuccess }) => {
         console.error("Errores de validación backend:", errorData);
 
         if (errorData.errors) {
-          const mensajes = Object.values(errorData.errors)
-            .flat()
-            .join("\n");
-          alert("Errores:\n" + mensajes);
+          const mensajes = Object.values(errorData.errors).flat().join("\n");
+          showAlert("Errores: " + mensajes, "error");
         } else {
-          alert("Error: " + errorData.message);
+          showAlert("Error: " + errorData.message, "error");
         }
         return;
       }
 
       const data = await response.json();
-      console.log("Unidad guardada:", data);
 
       if (typeof onSuccess === "function") {
-        onSuccess(data.seccion); // ✅ solo enviamos la unidad creada
+        onSuccess(data.seccion);
       }
-      alert("Unidad guardada exitosamente", data.seccion);
+      showAlert("Unidad guardada exitosamente", "success");
       setOpen(false);
 
-      handleClose();
     } catch (error) {
       console.error("Error guardando unidad:", error);
-      alert("Error guardando unidad, revisa la consola");
+      showAlert("Error guardando unidad, revisa la consola", "error");
     }
   };
 
   return (
     <>
+      <Snackbar
+        open={alert.open}
+        autoHideDuration={4000}
+        onClose={() => setAlert({ ...alert, open: false })}
+      >
+        <Alert
+          severity={alert.severity}
+          variant="filled"
+          onClose={() => setAlert({ ...alert, open: false })}
+        >
+          {alert.message}
+        </Alert>
+      </Snackbar>
+
       <CustomAddIcon onClick={handleOpen} />
       <CustomModal
         title="Añadir Unidad"

@@ -222,7 +222,7 @@ const GestionarCargo = () => {
           <CustomTable
             columns={columns}
             rows={rowsOrdenadosYFiltrados}
-            onClickRow={(row) => console.log(row)}
+            onClickRow={(row) => console.log()}
           />
         </Paper>
       </Box>

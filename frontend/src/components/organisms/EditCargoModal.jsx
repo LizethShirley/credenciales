@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from "react";
 import CustomEditIcon from "../../components/atoms/CustomEditIcon";
 import CustomModal from "../../components/molecules/CustomModal";
+import { Snackbar, Alert } from "@mui/material";
 
 const EditCargoModal = ({ cargo, onSuccess }) => {
   const [open, setOpen] = useState(false);
   const [secciones, setSecciones] = useState([]);
+  const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
 
   useEffect(() => {
     if (open) obtenerSecciones();
   }, [open]);
+
+  const showAlert = (message, severity = "info") => {
+    setAlert({ open: true, message, severity });
+  };
 
   const obtenerSecciones = async () => {
     try {
@@ -18,7 +24,7 @@ const EditCargoModal = ({ cargo, onSuccess }) => {
       setSecciones(data || []);
     } catch (error) {
       console.error("Error cargando secciones:", error);
-      alert("No se pudieron cargar las secciones");
+      showAlert("No se pudieron cargar las secciones", "error");
     }
   };
 
@@ -76,22 +82,36 @@ const EditCargoModal = ({ cargo, onSuccess }) => {
 
       if (!response.ok) {
         console.error("Errores backend:", data);
-        alert(data.message || "Error en la actualización");
+        showAlert(data.message || "Error en la actualización", "error");
         return;
       }
 
       if (typeof onSuccess === "function") onSuccess(data.seccion);
 
-      alert("Cargo actualizado exitosamente");
+      showAlert("Cargo actualizado exitosamente", "success");
       handleClose();
     } catch (error) {
       console.error("Error actualizando cargo:", error);
-      alert("Error actualizando cargo");
+      showAlert("Error actualizando cargo", "error");
     }
   };
 
   return (
     <>
+      <Snackbar
+        open={alert.open}
+        autoHideDuration={4000}
+        onClose={() => setAlert({ ...alert, open: false })}
+      >
+        <Alert
+          severity={alert.severity}
+          variant="filled"
+          onClose={() => setAlert({ ...alert, open: false })}
+        >
+          {alert.message}
+        </Alert>
+      </Snackbar>
+
       <CustomEditIcon onClick={handleOpen} />
       <CustomModal
         title="Editar Cargo"

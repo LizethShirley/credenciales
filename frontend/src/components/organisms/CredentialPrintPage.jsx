@@ -177,7 +177,7 @@ const CredentialPrintPage = ({ fetchData }) => {
       </Grid>
 
       <Grid container spacing={2} justifyContent="center">
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           {resultadosFiltrados.length > 0 ? (
             <Box ref={printRef} sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}>
               <CredentialPages pages={pages} side={side} printRef={printRef} cargos={cargos} />

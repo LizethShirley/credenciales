@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import CustomModal from "../molecules/CustomModal";
-import { IconButton } from "@mui/material";
+import { IconButton, Snackbar, Alert } from "@mui/material";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 
 const CustomFormCargo = ({ idseccion }) => {
   const [open, setOpen] = useState(false);
+  const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
 
   const fields = [
     { name: "nombre", label: "Nombre", required: true, onlyLetters: true },
@@ -28,6 +29,10 @@ const CustomFormCargo = ({ idseccion }) => {
     },
   ];
 
+  const showAlert = (message, severity = "info") => {
+    setAlert({ open: true, message, severity });
+  };
+
   const handleSubmit = async (values) => {
     try {
       const data = new FormData();
@@ -43,25 +48,39 @@ const CustomFormCargo = ({ idseccion }) => {
       });
 
       const result = await response.json();
-      console.log(result);
 
       if (response.ok) {
-        alert("¡Registro exitoso!");
+        showAlert("¡Registro exitoso!", "success");
         setOpen(false);
       } else {
-        alert("Error al guardar");
+        showAlert(result?.msg || "Error al guardar", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Error de conexión con la API");
+      showAlert("Error de conexión con la API", "error");
     }
   };
 
   return (
     <>
+      <Snackbar
+        open={alert.open}
+        autoHideDuration={4000}
+        onClose={() => setAlert({ ...alert, open: false })}
+      >
+        <Alert
+          severity={alert.severity}
+          variant="filled"
+          onClose={() => setAlert({ ...alert, open: false })}
+        >
+          {alert.message}
+        </Alert>
+      </Snackbar>
+
       <IconButton onClick={() => setOpen(true)}>
         <GroupAddIcon />
       </IconButton>
+
       <CustomModal
         title="Registrar nuevo cargo"
         fields={fields}

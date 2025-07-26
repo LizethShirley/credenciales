@@ -1,9 +1,15 @@
 import React, { useState } from "react";
 import CustomEditIcon from "../../components/atoms/CustomEditIcon";
 import CustomModal from "../../components/molecules/CustomModal";
+import { Snackbar, Alert } from "@mui/material";
 
 const EditUnidadModal = ({ unidad, onSuccess }) => {
   const [open, setOpen] = useState(false);
+  const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
+
+  const showAlert = (message, severity = "info") => {
+    setAlert({ open: true, message, severity });
+  };
 
   const fields = [
     { name: "nombre", label: "Nombre", required: true, onlyLetters: true },
@@ -39,12 +45,11 @@ const EditUnidadModal = ({ unidad, onSuccess }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        console.error("Errores de validación backend:", data);
         if (data.errors) {
           const mensajes = Object.values(data.errors).flat().join("\n");
-          alert("Errores:\n" + mensajes);
+          showAlert("Errores:\n" + mensajes, "error");
         } else {
-          alert("Error: " + data.message);
+          showAlert("Error: " + data.message, "error");
         }
         return;
       }
@@ -53,16 +58,31 @@ const EditUnidadModal = ({ unidad, onSuccess }) => {
         onSuccess(data.seccion);
       }
 
-      alert("Cargo actualizada exitosamente");
+      showAlert("Cargo actualizada exitosamente", "success");
       handleClose();
     } catch (error) {
       console.error("Error actualizando unidad:", error);
-      alert("Error actualizando unidad");
+      showAlert("Error actualizando unidad", "error");
     }
   };
 
   return (
     <>
+      {/* Snackbar global */}
+      <Snackbar
+        open={alert.open}
+        autoHideDuration={4000}
+        onClose={() => setAlert({ ...alert, open: false })}
+      >
+        <Alert
+          severity={alert.severity}
+          variant="filled"
+          onClose={() => setAlert({ ...alert, open: false })}
+        >
+          {alert.message}
+        </Alert>
+      </Snackbar>
+
       <CustomEditIcon onClick={handleOpen} />
       <CustomModal
         title="Editar Cargo"

@@ -102,7 +102,6 @@ const CustomFormRegister = () => {
         showSnackbar("¡Registro exitoso!", "success");
         resetForm();
       } else {
-        console.error(result);
         showSnackbar("Error al guardar", "error");
       }
     } catch (e) {

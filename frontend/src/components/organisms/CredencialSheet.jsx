@@ -7,7 +7,6 @@ export default function CredentialSheet({ persons, side, cargos = [] }) {
   const getComponentePorColor = (persona) => {
     const cargoPersona = cargos.find(c => c.id === persona.cargo_id);
     const color = cargoPersona?.color?.toLowerCase();
-    console.log(color+" "+cargoPersona);
 
     if (color === "verde") {
       return <CustomCredencialVerde persona={persona} lado={side} />;

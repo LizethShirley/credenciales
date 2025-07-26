@@ -5,18 +5,31 @@ import {
   TextField,
   Button,
   Typography,
-  Box
+  Box,
+  Snackbar,
+  Alert
 } from '@mui/material';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  const [errorEmail, setErrorEmail] = useState('');
+  const [errorPassword, setErrorPassword] = useState('');
+
+  const [alert, setAlert] = useState({ open: false, message: '', severity: 'error' });
+
+  const showAlert = (message, severity = 'error') => {
+    setAlert({ open: true, message, severity });
+  };
+
+  const handleCloseAlert = () => setAlert((prev) => ({ ...prev, open: false }));
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrorEmail('');
+    setErrorPassword('');
     setLoading(true);
 
     try {
@@ -29,15 +42,27 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Inicio de sesión exitoso');
+        showAlert('Inicio de sesión exitoso', 'success');
         localStorage.setItem('token', data.token);
-        window.location.href = '/Inicio';
+        setTimeout(() => {
+          window.location.href = '/Inicio';
+        }, 1000);
       } else {
-        setError(data.message || 'Error en las credenciales');
+        // Errores específicos
+        if (data.errors) {
+          if (data.errors.email) setErrorEmail(data.errors.email[0]);
+          if (data.errors.password) setErrorPassword(data.errors.password[0]);
+        } else if (data.field === 'email') {
+          setErrorEmail(data.message || 'Correo electrónico incorrecto');
+        } else if (data.field === 'password') {
+          setErrorPassword(data.message || 'Contraseña incorrecta');
+        } else {
+          showAlert(data.message || 'Error en las credenciales');
+        }
       }
     } catch (err) {
-      setError('Error en la conexión con el servidor');
       console.error(err);
+      showAlert('Error en la conexión con el servidor');
     } finally {
       setLoading(false);
     }
@@ -63,18 +88,10 @@ function Login() {
           padding: '30px',
         }}
       >
-        <Grid container spacing={0.5} flexDirection="row" justifyContent={'center'}  mb={2}>
-          <img
-            src={`/TEDLogo.jpg`}
-            alt="Logo TED"
-            style={{ width: '70px', height: '100%' }}
-          />
-          <Box backgroundColor="primary.main" width="1.5px"></Box>
-          <img
-            src={`/EleccionesLogo.png`}
-            alt="Logo TED"
-            style={{ width: '90px', height: '100%' }}
-          />
+        <Grid container spacing={0.5} flexDirection="row" justifyContent={'center'} mb={2}>
+          <img src={`/TEDLogo.jpg`} alt="Logo TED" style={{ width: '70px' }} />
+          <Box backgroundColor="primary.main" width="1.5px" />
+          <img src={`/EleccionesLogo.png`} alt="Logo Elecciones" style={{ width: '90px' }} />
         </Grid>
         <Typography variant="h5" align="center" gutterBottom>
           Iniciar Sesión
@@ -89,16 +106,13 @@ function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
               fullWidth
+              error={!!errorEmail}
+              helperText={errorEmail}
               sx={{
                 backgroundColor: '#fff',
                 borderRadius: 2,
                 boxShadow: '3px 3px 6px #c1c1c1, -3px -3px 6px #ffffff',
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                },
-                '&:hover': {
-                  boxShadow: '4px 4px 8px #b0b0b0, -4px -4px 8px #ffffff',
-                },
+                '& .MuiOutlinedInput-root': { borderRadius: 2 },
               }}
             />
             <TextField
@@ -108,23 +122,15 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
               required
               fullWidth
+              error={!!errorPassword}
+              helperText={errorPassword}
               sx={{
                 backgroundColor: '#fff',
                 borderRadius: 2,
                 boxShadow: '3px 3px 6px #c1c1c1, -3px -3px 6px #ffffff',
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                },
-                '&:hover': {
-                  boxShadow: '4px 4px 8px #b0b0b0, -4px -4px 8px #ffffff',
-                },
+                '& .MuiOutlinedInput-root': { borderRadius: 2 },
               }}
             />
-            {error && (
-              <Typography color="error" variant="body2">
-                {error}
-              </Typography>
-            )}
             <Button
               type="submit"
               variant="contained"
@@ -132,17 +138,25 @@ function Login() {
               disabled={loading}
               sx={{
                 boxShadow: '3px 3px 6px #c1c1c1, -3px -3px 6px #ffffff',
-                '&:hover': {
-                  boxShadow: '4px 4px 8px #b0b0b0, -4px -4px 8px #ffffff',
-                },
               }}
             >
               {loading ? 'Ingresando...' : 'Ingresar'}
             </Button>
           </Box>
-
         </form>
       </Paper>
+
+      {/* Snackbar para mensajes generales */}
+      <Snackbar
+        open={alert.open}
+        autoHideDuration={4000}
+        onClose={handleCloseAlert}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity={alert.severity} onClose={handleCloseAlert} variant="filled">
+          {alert.message}
+        </Alert>
+      </Snackbar>
     </Grid>
   );
 }

@@ -1,6 +1,6 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import PreviewPage from '../pages/preview';
+import PreviewPage from '../pages/PreviewCredenciales';
 import Layout from '../Layout/Layout';
 import Login from '../pages/Login/Login';
 import CredencialPage from '../pages/CredencialPage';
