@@ -20,7 +20,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -31,7 +31,7 @@ function Login() {
       if (response.ok) {
         alert('Inicio de sesión exitoso');
         localStorage.setItem('token', data.token);
-        window.location.href = '/dashboard';
+        window.location.href = '/Inicio';
       } else {
         setError(data.message || 'Error en las credenciales');
       }
@@ -64,18 +64,18 @@ function Login() {
         }}
       >
         <Grid container spacing={0.5} flexDirection="row" justifyContent={'center'}  mb={2}>
-                        <img
-                          src={`/TEDLogo.jpg`}
-                          alt="Logo TED"
-                          style={{ width: '70px', height: '100%' }}
-                        />
-                        <Box backgroundColor="primary.main" width="1.5px"></Box>
-                        <img
-                          src={`/EleccionesLogo.png`}
-                          alt="Logo TED"
-                          style={{ width: '90px', height: '100%' }}
-                        />
-                      </Grid>
+          <img
+            src={`/TEDLogo.jpg`}
+            alt="Logo TED"
+            style={{ width: '70px', height: '100%' }}
+          />
+          <Box backgroundColor="primary.main" width="1.5px"></Box>
+          <img
+            src={`/EleccionesLogo.png`}
+            alt="Logo TED"
+            style={{ width: '90px', height: '100%' }}
+          />
+        </Grid>
         <Typography variant="h5" align="center" gutterBottom>
           Iniciar Sesión
         </Typography>

@@ -5,7 +5,13 @@ import {
   TextField,
   Typography,
   InputAdornment,
-  IconButton
+  IconButton,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  Button
 } from '@mui/material';
 
 import { Search as SearchIcon, ArrowDownward, ArrowUpward } from '@mui/icons-material';
@@ -20,30 +26,43 @@ const GestionarCargo = () => {
   const [cargos, setCargos] = useState([]);
   const [ordenNombreAsc, setOrdenNombreAsc] = useState(true);
   const [ordenSeccionAsc, setOrdenSeccionAsc] = useState(true);
-  const [ordenarPor, setOrdenarPor] = useState('seccion'); // 'seccion' | 'nombre'
+  const [ordenarPor, setOrdenarPor] = useState('seccion');
 
-  const eliminarCargo = async (id, onDeleteSuccess) => {
-    const confirmar = window.confirm("¿Estás segura/o de eliminar este registro?");
-    if (!confirmar) return;
+  const [alert, setAlert] = useState({ open: false, message: '', severity: 'info' });
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, onConfirm: null, title: '' });
 
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/cargos/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      });
+  const showAlert = (message, severity = 'info') => {
+    setAlert({ open: true, message, severity });
+  };
+  const closeAlert = () => setAlert({ ...alert, open: false });
 
-      const res = await response.json();
+  const eliminarCargo = (id, onDeleteSuccess) => {
+    setConfirmDialog({
+      open: true,
+      title: '¿Estás segura/o de eliminar este registro?',
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/cargos/${id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+          });
 
-      if (response.ok && res.res) {
-        alert('Cargo eliminado exitosamente');
-        if (onDeleteSuccess) onDeleteSuccess();
-      } else {
-        alert(res.msg || 'No se pudo eliminar');
+          const res = await response.json();
+
+          if (response.ok && res.res) {
+            showAlert('Cargo eliminado exitosamente', 'success');
+            if (onDeleteSuccess) onDeleteSuccess();
+          } else {
+            showAlert(res.msg || 'No se pudo eliminar', 'error');
+          }
+        } catch (error) {
+          console.error('Error al eliminar:', error);
+          showAlert('Hubo un error inesperado', 'error');
+        } finally {
+          setConfirmDialog({ open: false, onConfirm: null, title: '' });
+        }
       }
-    } catch (error) {
-      console.error('Error al eliminar:', error);
-      alert('Hubo un error inesperado');
-    }
+    });
   };
 
   const eliminarCargoDeLista = (id) => {
@@ -58,6 +77,7 @@ const GestionarCargo = () => {
       setCargos(data.cargos);
     } catch (error) {
       console.error("Error al obtener cargos:", error);
+      showAlert('Error al cargar los cargos', 'error');
     }
   };
 
@@ -65,7 +85,6 @@ const GestionarCargo = () => {
     obtenerListaCargos();
   }, []);
 
-  // Filtrar por nombre + Ordenar
   const rowsOrdenadosYFiltrados = useMemo(() => {
     const texto = filtroNombre.trim().toLowerCase();
     return cargos
@@ -153,12 +172,27 @@ const GestionarCargo = () => {
 
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', bgcolor: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', py: 4 }}>
+      {/* Snackbar para alertas */}
+      <Snackbar open={alert.open} autoHideDuration={3000} onClose={closeAlert}>
+        <Alert severity={alert.severity} onClose={closeAlert} variant="filled">
+          {alert.message}
+        </Alert>
+      </Snackbar>
+
+      {/* Dialog de confirmación */}
+      <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ open: false, onConfirm: null, title: '' })}>
+        <DialogTitle>{confirmDialog.title}</DialogTitle>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialog({ open: false, onConfirm: null, title: '' })}>Cancelar</Button>
+          <Button color="error" variant="contained" onClick={confirmDialog.onConfirm}>Eliminar</Button>
+        </DialogActions>
+      </Dialog>
+
       <Box sx={{ width: '100%', maxWidth: 1100 }}>
         <Typography variant='h5' align='center' gutterBottom>
           Lista de Cargos
         </Typography>
 
-        {/* Campo de búsqueda por nombre */}
         <Box sx={{ mb: 2 }}>
           <TextField
             variant="outlined"
