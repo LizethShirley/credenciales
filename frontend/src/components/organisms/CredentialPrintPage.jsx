@@ -133,6 +133,9 @@ const CredentialPrintPage = ({ fetchData }) => {
     localStorage.setItem('credenciales_preview_pages', JSON.stringify(pages));
     localStorage.setItem('credenciales_preview_side', side);
     localStorage.setItem('credenciales_preview_acceso', accesoComputo);
+    // Guardar los IDs de los credenciales filtrados
+    const ids = resultadosFiltrados.map(item => item.id);
+    localStorage.setItem('credenciales_preview_ids', JSON.stringify(ids));
     window.open('/preview', '_blank', 'width=900,height=1400');
   };
 
