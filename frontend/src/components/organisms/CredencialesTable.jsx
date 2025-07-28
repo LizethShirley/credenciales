@@ -20,8 +20,16 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Typography
+  Typography,
+  Grid
 } from '@mui/material';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import PrintIcon from '@mui/icons-material/Print';
 
 import CustomEditIcon from '../atoms/CustomEditIcon';
 import CustomDeleteIcon from '../atoms/CustomDeleteIcon';
@@ -38,6 +46,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'info' });
   const [confirmDialog, setConfirmDialog] = useState({ open: false, onConfirm: null, title: '' });
   const [selectedModalOpen, setSelectedModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
 
   const showAlert = (message, severity = 'info') => {
     setAlert({ open: true, message, severity });
@@ -92,12 +101,15 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
   };
 
   const filteredData = useMemo(() => {
-    return data.filter(
-      (item) =>
-        (item.cargo_nombre || '').toLowerCase().includes(filters.cargo.toLowerCase()) &&
-        (item.recinto_nombre || '').toLowerCase().includes(filters.recinto.toLowerCase())
-    );
-  }, [data, filters]);
+    return data.filter((item) => {
+      const matchCargo = (item.cargo_nombre || '').toLowerCase().includes(filters.cargo.toLowerCase());
+      const matchDate = selectedDate
+        ? new Date(item.updated_at).toLocaleDateString('en-CA') === selectedDate
+        : true;
+
+      return matchCargo && matchDate;
+    });
+  }, [data, filters, selectedDate]);
 
   const getNombreCompleto = (item) =>
     `${item.nombre || ''} ${item.paterno || ''} ${item.materno || ''}`.trim();
@@ -175,6 +187,52 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
 
   const allSelected =
     paginatedData.length > 0 && paginatedData.every((item) => selectedRows.includes(item.id));
+  const exportToCSV = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      sortedData.map(item => ({
+        'Nombre Completo': getNombreCompleto(item),
+        'CI': item.ci,
+        'Cargo': item.cargo_nombre,
+        'Sección': item.abreviatura,
+        'Acceso Cómputo': item.accesoComputo === 1 ? 'Sí' : 'No'
+      }))
+    );
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Credenciales');
+    XLSX.writeFile(workbook, 'credenciales.csv');
+  };
+
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      sortedData.map(item => ({
+        'Nombre Completo': getNombreCompleto(item),
+        'CI': item.ci,
+        'Cargo': item.cargo_nombre,
+        'Sección': item.abreviatura,
+        'Acceso Cómputo': item.accesoComputo === 1 ? 'Sí' : 'No'
+      }))
+    );
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Credenciales');
+    XLSX.writeFile(workbook, 'credenciales.xlsx');
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+
+    autoTable(doc, {
+      head: [['Nombre Completo', 'CI', 'Cargo', 'Sección', 'Acceso Cómputo']],
+      body: sortedData.map(item => [
+        getNombreCompleto(item),
+        item.ci,
+        item.cargo_nombre,
+        item.abreviatura,
+        item.accesoComputo === 1 ? 'Sí' : 'No'
+      ]),
+    });
+
+    doc.save('credenciales.pdf');
+  };
 
   return (
     <Box>
@@ -216,93 +274,176 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
           value={filters.cargo}
           onChange={handleFilterChange('cargo')}
         />
+        <TextField
+          label="Filtrar por Fecha"
+          type="date"
+          size="small"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+        />
       </Box>
 
-      <Button variant="contained" onClick={mostrarSeleccionados} sx={{ mb: 2 }}>
-        Habilitar Acceso Computo
-      </Button>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
+        <Button variant="contained" size="small" onClick={mostrarSeleccionados}>
+          Habilitar Acceso Computo
+        </Button>
 
-      {/* Tabla */}
-      <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={allSelected}
-                  onChange={toggleSelectAll}
-                />
-              </TableCell>
-              <TableCell>Foto</TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'nombreCompleto'}
-                  direction={orderBy === 'nombreCompleto' ? order : 'asc'}
-                  onClick={() => handleSort('nombreCompleto')}
-                >
-                  Nombre Completo
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>CI</TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'cargo_nombre'}
-                  direction={orderBy === 'cargo_nombre' ? order : 'asc'}
-                  onClick={() => handleSort('cargo_nombre')}
-                >
-                  Cargo
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>Sección</TableCell>
-              <TableCell>C</TableCell>
-              <TableCell>A. C.</TableCell>
-              <TableCell>Opciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedData.map((item) => (
-              <TableRow key={item.id}>
+        <Box sx={{ display: 'flex', ml: 'auto', alignItems: 'center' }}>
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                color: 'white',
+                borderColor: 'primary.main',
+              },
+            }}
+            onClick={() => exportToCSV()}
+          >
+            CSV
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                color: 'white',
+                borderColor: 'primary.main',
+              },
+            }}
+            onClick={() => exportToExcel()}
+          >
+            Excel
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                color: 'white',
+                borderColor: 'primary.main',
+              },
+            }}
+            onClick={() => exportToPDF()}
+          >
+            PDF
+          </Button>
+        </Box>
+      </Box>
+
+
+      <Paper
+        sx={{
+          width: '100%',
+          padding: 2,
+          boxShadow: '0px 0px 10px 2px rgba(0,0,0,0.2)',
+          backgroundColor: '#FFFFFF',
+          borderRadius: 2,
+          mb: 2,
+        }}
+      >
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
                 <TableCell padding="checkbox">
                   <Checkbox
-                    checked={selectedRows.includes(item.id)}
-                    onChange={() => toggleSelectRow(item.id)}
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
                   />
                 </TableCell>
+                <TableCell>Foto</TableCell>
                 <TableCell>
-                  {item.photo ? (
-                    <img
-                      src={`data:image/jpeg;base64,${item.photo}`}
-                      alt="foto"
-                      width={40}
-                      height={40}
-                      style={{ borderRadius: '20%' }}
-                    />
-                  ) : (
-                    'Sin foto'
-                  )}
+                  <TableSortLabel
+                    active={orderBy === 'nombreCompleto'}
+                    direction={orderBy === 'nombreCompleto' ? order : 'asc'}
+                    onClick={() => handleSort('nombreCompleto')}
+                  >
+                    Nombre Completo
+                  </TableSortLabel>
                 </TableCell>
-                <TableCell>{getNombreCompleto(item)}</TableCell>
-                <TableCell>{item.ci}</TableCell>
-                <TableCell>{item.cargo_nombre}</TableCell>
-                <TableCell>{item.seccion_nombre}</TableCell>
-                <TableCell>{item.ciexterno}</TableCell>
-                <TableCell>{item.accesoComputo === 0 ? 'No' : 'Sí'}</TableCell>
+                <TableCell>CI</TableCell>
                 <TableCell>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <IconButton
-                      sx={{ color: '#25D366' }}
-                      onClick={() => window.open(`https://wa.me/${item.celular}`, '_blank')}
-                    >
-                      <WhatsAppIcon />
-                    </IconButton>
-                    <CustomEditIcon onClick={() => openEditPersonal(item.id)} />
-                    <CustomDeleteIcon onClick={() => eliminarPersonal(item.id)} />
-                  </Box>
+                  <TableSortLabel
+                    active={orderBy === 'cargo_nombre'}
+                    direction={orderBy === 'cargo_nombre' ? order : 'asc'}
+                    onClick={() => handleSort('cargo_nombre')}
+                  >
+                    Cargo
+                  </TableSortLabel>
                 </TableCell>
+                <TableCell>Sección</TableCell>
+                <TableCell>A. C.</TableCell>
+                <TableCell>Imp.</TableCell>
+                <TableCell>Fecha</TableCell>
+                <TableCell>Opciones</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {paginatedData.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selectedRows.includes(item.id)}
+                      onChange={() => toggleSelectRow(item.id)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {item.photo ? (
+                      <img
+                        src={`data:image/jpeg;base64,${item.photo}`}
+                        alt="foto"
+                        width={40}
+                        height={40}
+                        style={{ borderRadius: '20%' }}
+                      />
+                    ) : (
+                      'Sin foto'
+                    )}
+                  </TableCell>
+                  <TableCell>{getNombreCompleto(item)}</TableCell>
+                  <TableCell>{item.ci}</TableCell>
+                  <TableCell>{item.cargo_nombre}</TableCell>
+                  <TableCell>{item.abreviatura}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                      {item.accesoComputo === 1 ? (
+                        <CheckCircleIcon color="success" titleAccess="Acceso Cómputo habilitado" />
+                      ) : (
+                        <CancelIcon color="error" titleAccess="Sin acceso a Cómputo" />
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    {item.estado === 1 ? (
+                      <PrintIcon color="success" titleAccess="Credencial impresa" />
+                    ) : (
+                      <PrintIcon color="disabled" titleAccess="Sin impresión" />
+                    )}
+                  </TableCell>
+                  <TableCell>{new Date(item.updated_at).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <IconButton
+                        sx={{ color: '#25D366' }}
+                        onClick={() => window.open(`https://wa.me/${item.celular}`, '_blank')}
+                      >
+                        <WhatsAppIcon />
+                      </IconButton>
+                      <CustomEditIcon onClick={() => openEditPersonal(item.id)} />
+                      <CustomDeleteIcon onClick={() => eliminarPersonal(item.id)} />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
         <TablePagination
           component="div"
           count={sortedData.length}
@@ -316,7 +457,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
           rowsPerPageOptions={[5, 10, 25]}
           labelRowsPerPage="Filas por página:"
         />
-      </TableContainer>
+      </Paper>
     </Box>
   );
 };

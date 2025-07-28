@@ -218,24 +218,23 @@ const CredentialPrintPage = ({ fetchData }) => {
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
     <CircularProgress />
   </Box>
-) : resultadosFiltrados.length > 0 ? (
-  <Box ref={printRef} sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}>
-    <CredentialPages
-      pages={pages}
-      side={side}
-      printRef={printRef}
-      cargos={cargos}
-      accesoComputo={accesoComputo}
-    />
-  </Box>
-) : (
-  <Typography variant="body1" color="text.secondary">
-    {dateRange.start && dateRange.end
-      ? "No se encontraron credenciales en ese rango."
-      : "Selecciona un rango de fechas y presiona Filtrar."}
-  </Typography>
-)}
-
+    ) : resultadosFiltrados.length > 0 ? (
+      <Box ref={printRef} sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}>
+        <CredentialPages
+          pages={pages}
+          side={side}
+          printRef={printRef}
+          cargos={cargos}
+          accesoComputo={accesoComputo}
+        />
+      </Box>
+    ) : (
+      <Typography variant="body1" color="text.secondary">
+        {dateRange.start && dateRange.end
+          ? "No se encontraron credenciales en ese rango."
+          : "Selecciona un rango de fechas y presiona Filtrar."}
+      </Typography>
+    )}
         </Grid>
       </Grid>
     </Box>

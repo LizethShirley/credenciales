@@ -71,9 +71,7 @@ const ListaCredenciales = () => {
                     />
                 </Box>
 
-                <Paper sx={{ p: 2 }}>
-                    <CredencialesTable data={personalFiltrado} onDeleteSuccess={obtenerPersonal} />
-                </Paper>
+                <CredencialesTable data={personalFiltrado} onDeleteSuccess={obtenerPersonal} />
             </Box>
         </Box>
     );
