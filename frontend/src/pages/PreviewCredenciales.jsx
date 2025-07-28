@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@mui/material";
-import CredentialPageGroup from "../components/organisms/CredenctialPageGroup";
+import CredentialPageGroup from "../components/organisms/CredentialPageGroup";
 
 export default function PreviewCredenciales() {
   const [pages, setPages] = useState([]);
   const [side, setSide] = useState("anverso");
   const [cargos, setCargos] = useState([]);
+  const [accesoComputo, setAccesoComputo] = useState(0);
 
   useEffect(() => {
     const storedPages = localStorage.getItem("credenciales_preview_pages");
     const storedSide = localStorage.getItem("credenciales_preview_side");
+    const storedAcceso = localStorage.getItem("credenciales_preview_acceso");
+    if (storedAcceso !== null) setAccesoComputo(parseInt(storedAcceso));
     if (storedPages) setPages(JSON.parse(storedPages));
     if (storedSide) setSide(storedSide);
   }, []);
@@ -90,7 +93,7 @@ export default function PreviewCredenciales() {
       </div>
 
       <div className="print-area" style={{ width: "100%", maxWidth: 800 }}>
-        <CredentialPageGroup pages={pages} side={side} cargos={cargos} />
+        <CredentialPageGroup pages={pages} side={side} cargos={cargos} accesoComputo={accesoComputo}/>
       </div>
     </div>
   );
