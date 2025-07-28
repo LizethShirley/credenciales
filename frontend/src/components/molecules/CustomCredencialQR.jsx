@@ -38,8 +38,8 @@ const CustomCredencialQR = ({ persona, lado }) => {
             {safePersona.cargo_nombre}
           </Typography>
           <img
-            src={`data:image/jpeg;base64,${safePersona.photo}`}
-            alt="foto"
+            src={`data:image/svg+xml;base64,${safePersona.qr}`}
+            alt="QR"
             style={{
               position: "absolute",
               top: "3.3cm",

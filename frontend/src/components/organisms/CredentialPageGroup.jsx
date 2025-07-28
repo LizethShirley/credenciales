@@ -2,8 +2,7 @@ import React from "react";
 import A4Page from "../atoms/A4Page";
 import CredentialSheet from "../organisms/CredencialSheet";
 
-
-const CredentialPageGroup = ({ pages, side, printRef, cargos }) => {
+const CredentialPageGroup = ({ pages, side, printRef, cargos, accesoComputo }) => {
   const isPrint = !!printRef;
   return (
     <>
@@ -13,11 +12,17 @@ const CredentialPageGroup = ({ pages, side, printRef, cargos }) => {
           ref={idx === 0 && isPrint ? printRef : null}
           forPrint={isPrint}
         >
-          <CredentialSheet persons={grupo} side={side} cargos={cargos}/>
+          <CredentialSheet
+            persons={grupo}
+            side={side}
+            cargos={cargos}
+            accesoComputo={accesoComputo} // PASAMOS A CredentialSheet
+          />
         </A4Page>
       ))}
     </>
   );
 };
+
 
 export default CredentialPageGroup;

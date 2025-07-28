@@ -5,10 +5,11 @@ import {Typography } from "@mui/material";
 
 const CredencialesPage = () => {
   const [data, setData] = useState([]);
+  
 
-  const fetchData = async (inicio, fin,cargo, circunscripcion) => {
+  const fetchData = async (inicio, fin,cargo, circunscripcion, accesoComputo) => {
     try {
-      const queryParams = new URLSearchParams({ inicio, fin, cargo, circunscripcion }).toString();
+      const queryParams = new URLSearchParams({ inicio, fin, cargo, circunscripcion, accesoComputo }).toString();
       const response = await fetch(`${import.meta.env.VITE_API_URL}/list/personal-filter?${queryParams}`);
 
       if (!response.ok) {

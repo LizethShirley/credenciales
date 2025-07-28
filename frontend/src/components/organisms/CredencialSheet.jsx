@@ -2,17 +2,20 @@ import React from "react";
 import { Grid } from "@mui/material";
 import CustomCredencial from "../molecules/CustomCredencial";
 import CustomCredencialVerde from "../molecules/CustomCredencialVerde";
+import CustomCredencialQR from "../molecules/CustomCredencialQR";
 
-export default function CredentialSheet({ persons, side, cargos = [] }) {
+export default function CredentialSheet({ persons, side, cargos = [], accesoComputo }) {
   const getComponentePorColor = (persona) => {
     const cargoPersona = cargos.find(c => c.id === persona.cargo_id);
     const color = cargoPersona?.color?.toLowerCase();
 
-    if (color === "verde") {
+    if (color === "verde" && accesoComputo === 0) {
       return <CustomCredencialVerde persona={persona} lado={side} />;
+    }else if (accesoComputo === 1) {
+      return <CustomCredencialQR persona={persona} lado={side} />
+    }else if(accesoComputo === 0 && color != "verde") {
+      return <CustomCredencial persona={persona} lado={side} />;
     }
-
-    return <CustomCredencial persona={persona} lado={side} />;
   };
 
   return (

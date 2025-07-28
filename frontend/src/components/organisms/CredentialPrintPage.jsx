@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Grid, Typography, Stack, Box, Button, Snackbar, Alert } from "@mui/material";
+import { Grid, Typography, Stack, Box, Button, Snackbar, Alert, Switch, FormControlLabel } from "@mui/material";
 import DateRangeFilter from "../atoms/DateRangerFilter";
 import SideToggle from "../atoms/SideToggle";
 import PrintPageWrapper from "../organisms/PrintPageWrapper";
-import CredentialPages from "../organisms/CredenctialPageGroup";
+import CredentialPages from "../organisms/CredentialPageGroup";
 import html2pdf from "html2pdf.js";
 import CircularProgress from '@mui/material/CircularProgress';
 import AutocompleteCi from "../molecules/AutocompleteCi";
@@ -25,9 +25,22 @@ const CredentialPrintPage = ({ fetchData }) => {
   const [selectedRecinto, setSelectedRecinto] = useState("");
   const [loading, setLoading] = useState(false);
   const printRef = useRef();
-
-  // Estado para alertas
   const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
+  const [accesoComputo, setAccesoComputo] = useState(0);
+
+  const handleToggleAcceso = async (e) => {
+  const nuevoValor = e.target.checked ? 1 : 0;
+  setAccesoComputo(nuevoValor);
+
+  // Solo filtrar si ya se eligieron fechas y un cargo
+  if (dateRange.start && dateRange.end && selectedCargo) {
+    await handleFiltrar(nuevoValor);
+  } else {
+    showAlert("Selecciona fechas y cargo para aplicar el filtro.", "warning");
+  }
+};
+
+
 
   const showAlert = (message, severity = "info") => {
     setAlert({ open: true, message, severity });
@@ -50,8 +63,9 @@ const CredentialPrintPage = ({ fetchData }) => {
     fetchCargos();
   }, []);
 
-  const handleFiltrar = async () => {
+  const handleFiltrar = async (accesoValue = accesoComputo) => {
     setLoading(true);
+
     if (!dateRange.start || !dateRange.end) {
       showAlert("Selecciona fechas.", "warning");
       setLoading(false);
@@ -78,7 +92,7 @@ const CredentialPrintPage = ({ fetchData }) => {
       selectedCargo.nombre === "NOTARIO ELECTORAL" ? selectedRecinto : "";
 
     try {
-      const result = await fetchData(inicio, fin, cargo, circunscripcion);
+      const result = await fetchData(inicio, fin, cargo, circunscripcion, accesoValue);
       await new Promise((res) => setTimeout(res, 2000));
       if (result.res && Array.isArray(result.personal)) {
         setResultadosFiltrados(result.personal);
@@ -97,6 +111,7 @@ const CredentialPrintPage = ({ fetchData }) => {
       setLoading(false);
     }
   };
+
 
   const handleDownloadPDF = () => {
     if (!printRef.current) return;
@@ -117,6 +132,7 @@ const CredentialPrintPage = ({ fetchData }) => {
   const handleOpenWindow = () => {
     localStorage.setItem('credenciales_preview_pages', JSON.stringify(pages));
     localStorage.setItem('credenciales_preview_side', side);
+    localStorage.setItem('credenciales_preview_acceso', accesoComputo);
     window.open('/preview', '_blank', 'width=900,height=1400');
   };
 
@@ -131,31 +147,51 @@ const CredentialPrintPage = ({ fetchData }) => {
         </Alert>
       </Snackbar>
 
-      <Stack direction={{ xs: "column", md: "row" }} spacing={2} mb={2}>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 2,
+          mb: 2,
+        }}
+      >
         <DateRangeFilter
           startDate={dateRange.start}
           endDate={dateRange.end}
           onChange={setDateRange}
         />
+
         <PrintPageWrapper
           cargos={cargos}
           selectedCargo={selectedCargo}
           setSelectedCargo={setSelectedCargo}
           selectedRecinto={selectedRecinto}
           setSelectedRecinto={setSelectedRecinto}
-          sx={{ minWidth: 220 }}
         />
-        <Button variant="contained" onClick={handleFiltrar} sx={{ height: 40, minWidth: 120 }} disabled={loading}>
-          {loading ? <CircularProgress size={22} color="inherit" /> : "Filtrar"}
-        </Button>
-      </Stack>
 
-      <Stack direction={{ xs: "column", md: "row" }} spacing={2} mb={2}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={accesoComputo === 1}
+              onChange={handleToggleAcceso}
+              color="primary"
+            />
+          }
+          label="Acceso a Cómputo"
+          sx={{ m: 0 }}
+        />
+      </Box>
+
+      {/* AutocompleteCi separado debajo */}
+      <Box sx={{ mb: 2 }}>
         <AutocompleteCi
           fetchData={fetchData}
           setResultadosFiltrados={setResultadosFiltrados}
         />
-      </Stack>
+      </Box>
+
+
 
       <Grid container spacing={5} alignItems="center" sx={{ mb: 2 }}>
         <SideToggle side={side} onChange={setSide} />
@@ -178,17 +214,28 @@ const CredentialPrintPage = ({ fetchData }) => {
 
       <Grid container spacing={2} justifyContent="center">
         <Grid size={{ xs: 12, md: 8 }}>
-          {resultadosFiltrados.length > 0 ? (
-            <Box ref={printRef} sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}>
-              <CredentialPages pages={pages} side={side} printRef={printRef} cargos={cargos} />
-            </Box>
-          ) : (
-            <Typography variant="body1" color="text.secondary">
-              {dateRange.start && dateRange.end
-                ? "No se encontraron credenciales en ese rango."
-                : "Selecciona un rango de fechas y presiona Filtrar."}
-            </Typography>
-          )}
+          {loading ? (
+  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+    <CircularProgress />
+  </Box>
+) : resultadosFiltrados.length > 0 ? (
+  <Box ref={printRef} sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}>
+    <CredentialPages
+      pages={pages}
+      side={side}
+      printRef={printRef}
+      cargos={cargos}
+      accesoComputo={accesoComputo}
+    />
+  </Box>
+) : (
+  <Typography variant="body1" color="text.secondary">
+    {dateRange.start && dateRange.end
+      ? "No se encontraron credenciales en ese rango."
+      : "Selecciona un rango de fechas y presiona Filtrar."}
+  </Typography>
+)}
+
         </Grid>
       </Grid>
     </Box>
