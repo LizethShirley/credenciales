@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Button } from "@mui/material";
 import CredentialPageGroup from "../components/organisms/CredentialPageGroup";
 
@@ -7,16 +7,23 @@ export default function PreviewCredenciales() {
   const [side, setSide] = useState("anverso");
   const [cargos, setCargos] = useState([]);
   const [accesoComputo, setAccesoComputo] = useState(0);
+  const [ids, setIds] = useState([]);
+  const apiCalled = useRef(false);
 
+  // Cargar datos desde localStorage
   useEffect(() => {
     const storedPages = localStorage.getItem("credenciales_preview_pages");
     const storedSide = localStorage.getItem("credenciales_preview_side");
     const storedAcceso = localStorage.getItem("credenciales_preview_acceso");
-    if (storedAcceso !== null) setAccesoComputo(parseInt(storedAcceso));
+    const storedIds = localStorage.getItem("credenciales_preview_ids");
+
     if (storedPages) setPages(JSON.parse(storedPages));
     if (storedSide) setSide(storedSide);
+    if (storedAcceso !== null) setAccesoComputo(parseInt(storedAcceso));
+    if (storedIds) setIds(JSON.parse(storedIds));
   }, []);
 
+  // Obtener cargos
   useEffect(() => {
     const fetchCargos = async () => {
       try {
@@ -31,12 +38,71 @@ export default function PreviewCredenciales() {
     fetchCargos();
   }, []);
 
+  // Actualizar estado en backend
+  const callUpdateEstadoAPI = async (showAlert = true, useBeacon = false) => {
+    if (apiCalled.current || !ids.length) return;
+    apiCalled.current = true;
+
+    const estado = 1;
+    const baseUrl = `${import.meta.env.VITE_API_URL}/updateEstado`;
+    const queryParams = new URLSearchParams();
+
+    ids.forEach(id => queryParams.append("ids[]", id));
+    queryParams.append("estado", estado);
+
+    const fullUrl = `${baseUrl}?${queryParams.toString()}`;
+    console.log("Llamando API PATCH a:", fullUrl);
+
+    if (useBeacon && navigator.sendBeacon) {
+      // No se puede hacer PATCH con sendBeacon
+      console.warn("sendBeacon no soportado para PATCH");
+      return;
+    }
+
+    try {
+      const resp = await fetch(fullUrl, {
+        method: "PATCH",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ force: true }) // Laravel requiere body en PATCH
+      });
+
+      const text = await resp.text();
+      console.log("Respuesta cruda:", text);
+
+      if (!resp.ok) throw new Error(`Estado HTTP ${resp.status}`);
+
+      if (showAlert) alert("✅ Estado actualizado correctamente.");
+    } catch (error) {
+      console.error("❌ Error en actualización:", error);
+      if (showAlert) alert("⚠️ Ocurrió un error al actualizar estado.");
+    }
+  };
+
+  // Escuchar impresión
+  useEffect(() => {
+    if (!ids.length) return;
+
+    const handleAfterPrint = () => {
+      callUpdateEstadoAPI(true, false);
+    };
+
+    window.addEventListener("afterprint", handleAfterPrint);
+    return () => window.removeEventListener("afterprint", handleAfterPrint);
+  }, [ids]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      callUpdateEstadoAPI(false, true);
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [ids]);
+
   const handlePrint = () => {
     window.print();
-    // Cerramos la ventana DESPUÉS de imprimir
-    setTimeout(() => {
-      window.close();
-    }, 500);
   };
 
   if (!pages.length) {
@@ -51,7 +117,6 @@ export default function PreviewCredenciales() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "flex-start",
         padding: 2,
       }}
     >
@@ -60,13 +125,11 @@ export default function PreviewCredenciales() {
           body * { visibility: hidden !important; }
           .print-area, .print-area * { visibility: visible !important; }
           .print-area {
-            position: absolute !important;
+            position: absolute;
             left: 0; top: 0;
             width: 100vw;
             background: white !important;
             box-shadow: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
           }
         }
       `}</style>
@@ -83,9 +146,7 @@ export default function PreviewCredenciales() {
             fontWeight: "bold",
             borderRadius: 2,
             boxShadow: "3px 3px 6px #c1c1c1",
-            "&:hover": {
-              boxShadow: "4px 4px 8px #b0b0b0",
-            },
+            "&:hover": { boxShadow: "4px 4px 8px #b0b0b0" },
           }}
         >
           Imprimir
@@ -93,7 +154,7 @@ export default function PreviewCredenciales() {
       </div>
 
       <div className="print-area" style={{ width: "100%", maxWidth: 800 }}>
-        <CredentialPageGroup pages={pages} side={side} cargos={cargos} accesoComputo={accesoComputo}/>
+        <CredentialPageGroup pages={pages} side={side} cargos={cargos} accesoComputo={accesoComputo} />
       </div>
     </div>
   );
