@@ -25,6 +25,10 @@ const CustomFormCargo = ({ idseccion }) => {
       options: [
         { value: "verde", label: "Verde" },
         { value: "plomo", label: "Plomo" },
+        { value: "blanco", label: "Blanco" },
+        { value: "naranja", label: "Naranja" },
+        { value: "guindo", label: "Guindo" },
+        { value: "cafe", label: "Café" },
       ],
     },
   ];

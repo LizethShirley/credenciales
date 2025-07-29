@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Grid, Typography, Stack, Box, Button, Snackbar, Alert, Switch, FormControlLabel } from "@mui/material";
+import { Grid, Typography, Stack, Box, Button, Snackbar, Alert, Switch, Checkbox, FormControlLabel, FormGroup  } from "@mui/material";
 import DateRangeFilter from "../atoms/DateRangerFilter";
 import SideToggle from "../atoms/SideToggle";
 import PrintPageWrapper from "../organisms/PrintPageWrapper";
@@ -27,20 +27,18 @@ const CredentialPrintPage = ({ fetchData }) => {
   const printRef = useRef();
   const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
   const [accesoComputo, setAccesoComputo] = useState(0);
+  const [checked, setChecked] = useState(false);
 
   const handleToggleAcceso = async (e) => {
   const nuevoValor = e.target.checked ? 1 : 0;
   setAccesoComputo(nuevoValor);
 
-  // Solo filtrar si ya se eligieron fechas y un cargo
   if (dateRange.start && dateRange.end && selectedCargo) {
     await handleFiltrar(nuevoValor);
   } else {
     showAlert("Selecciona fechas y cargo para aplicar el filtro.", "warning");
   }
 };
-
-
 
   const showAlert = (message, severity = "info") => {
     setAlert({ open: true, message, severity });
@@ -173,17 +171,27 @@ const CredentialPrintPage = ({ fetchData }) => {
           setSelectedRecinto={setSelectedRecinto}
         />
 
-        <FormControlLabel
-          control={
-            <Switch
-              checked={accesoComputo === 1}
-              onChange={handleToggleAcceso}
-              color="primary"
-            />
-          }
-          label="Acceso a Cómputo"
-          sx={{ m: 0 }}
-        />
+        <FormGroup row sx={{ alignItems: 'center', gap: 2 }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={checked}
+                onChange={(e) => setChecked(e.target.checked)}
+              />
+            }
+            label="Acceso a Cómputo"
+          />
+          <Button
+            variant="contained"
+            onClick={() => {
+              const accesoValue = checked ? 1 : 0;
+              setAccesoComputo(accesoValue);
+              handleFiltrar(accesoValue);
+            }}
+          >
+            Filtrar
+          </Button>
+        </FormGroup>
       </Box>
 
       {/* AutocompleteCi separado debajo */}
@@ -218,26 +226,26 @@ const CredentialPrintPage = ({ fetchData }) => {
       <Grid container spacing={2} justifyContent="center">
         <Grid size={{ xs: 12, md: 8 }}>
           {loading ? (
-  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-    <CircularProgress />
-  </Box>
-    ) : resultadosFiltrados.length > 0 ? (
-      <Box ref={printRef} sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}>
-        <CredentialPages
-          pages={pages}
-          side={side}
-          printRef={printRef}
-          cargos={cargos}
-          accesoComputo={accesoComputo}
-        />
-      </Box>
-    ) : (
-      <Typography variant="body1" color="text.secondary">
-        {dateRange.start && dateRange.end
-          ? "No se encontraron credenciales en ese rango."
-          : "Selecciona un rango de fechas y presiona Filtrar."}
-      </Typography>
-    )}
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+            <CircularProgress />
+          </Box>
+          ) : resultadosFiltrados.length > 0 ? (
+            <Box ref={printRef} sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}>
+              <CredentialPages
+                pages={pages}
+                side={side}
+                printRef={printRef}
+                cargos={cargos}
+                accesoComputo={accesoComputo}
+              />
+            </Box>
+          ) : (
+            <Typography variant="body1" color="text.secondary">
+              {dateRange.start && dateRange.end
+                ? "No se encontraron credenciales en ese rango."
+                : "Selecciona un rango de fechas y presiona Filtrar."}
+            </Typography>
+          )}
         </Grid>
       </Grid>
     </Box>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Button } from "@mui/material";
+import { Button, Snackbar, Alert } from "@mui/material";
 import CredentialPageGroup from "../components/organisms/CredentialPageGroup";
 
 export default function PreviewCredenciales() {
@@ -10,7 +10,16 @@ export default function PreviewCredenciales() {
   const [ids, setIds] = useState([]);
   const apiCalled = useRef(false);
 
-  // Cargar datos desde localStorage
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success"); 
+
+  const showAlert = (message, severity = "success") => {
+    setAlertMessage(message);
+    setAlertSeverity(severity);
+    setAlertOpen(true);
+  };
+
   useEffect(() => {
     const storedPages = localStorage.getItem("credenciales_preview_pages");
     const storedSide = localStorage.getItem("credenciales_preview_side");
@@ -23,7 +32,6 @@ export default function PreviewCredenciales() {
     if (storedIds) setIds(JSON.parse(storedIds));
   }, []);
 
-  // Obtener cargos
   useEffect(() => {
     const fetchCargos = async () => {
       try {
@@ -33,13 +41,13 @@ export default function PreviewCredenciales() {
         setCargos(data);
       } catch (error) {
         console.error(error);
+        showAlert("❌ Error al obtener cargos", "error");
       }
     };
     fetchCargos();
   }, []);
 
-  // Actualizar estado en backend
-  const callUpdateEstadoAPI = async (showAlert = true, useBeacon = false) => {
+  const callUpdateEstadoAPI = async (useAlert = true, useBeacon = false) => {
     if (apiCalled.current || !ids.length) return;
     apiCalled.current = true;
 
@@ -54,7 +62,6 @@ export default function PreviewCredenciales() {
     console.log("Llamando API PATCH a:", fullUrl);
 
     if (useBeacon && navigator.sendBeacon) {
-      // No se puede hacer PATCH con sendBeacon
       console.warn("sendBeacon no soportado para PATCH");
       return;
     }
@@ -63,10 +70,10 @@ export default function PreviewCredenciales() {
       const resp = await fetch(fullUrl, {
         method: "PATCH",
         headers: {
-          "Accept": "application/json",
+          Accept: "application/json",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ force: true }) // Laravel requiere body en PATCH
+        body: JSON.stringify({ force: true })
       });
 
       const text = await resp.text();
@@ -74,14 +81,13 @@ export default function PreviewCredenciales() {
 
       if (!resp.ok) throw new Error(`Estado HTTP ${resp.status}`);
 
-      if (showAlert) alert("✅ Estado actualizado correctamente.");
+      if (useAlert) showAlert("✅ Estado actualizado correctamente", "success");
     } catch (error) {
       console.error("❌ Error en actualización:", error);
-      if (showAlert) alert("⚠️ Ocurrió un error al actualizar estado.");
+      if (useAlert) showAlert("⚠️ Ocurrió un error al actualizar estado", "error");
     }
   };
 
-  // Escuchar impresión
   useEffect(() => {
     if (!ids.length) return;
 
@@ -156,6 +162,17 @@ export default function PreviewCredenciales() {
       <div className="print-area" style={{ width: "100%", maxWidth: 800 }}>
         <CredentialPageGroup pages={pages} side={side} cargos={cargos} accesoComputo={accesoComputo} />
       </div>
+
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={4000}
+        onClose={() => setAlertOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity={alertSeverity} onClose={() => setAlertOpen(false)} sx={{ width: "100%" }}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

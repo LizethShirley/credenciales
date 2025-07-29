@@ -3,6 +3,7 @@ import { Grid } from "@mui/material";
 import CustomCredencial from "../molecules/CustomCredencial";
 import CustomCredencialVerde from "../molecules/CustomCredencialVerde";
 import CustomCredencialQR from "../molecules/CustomCredencialQR";
+import CustomCredencialBlanco from "../molecules/CustomCredencialBlanco";
 
 export default function CredentialSheet({ persons, side, cargos = [], accesoComputo }) {
   const getComponentePorColor = (persona) => {
@@ -13,9 +14,17 @@ export default function CredentialSheet({ persons, side, cargos = [], accesoComp
       return <CustomCredencialVerde persona={persona} lado={side} />;
     }else if (accesoComputo === 1) {
       return <CustomCredencialQR persona={persona} lado={side} />
-    }else if(accesoComputo === 0 && color != "verde") {
-      return <CustomCredencial persona={persona} lado={side} />;
-    }
+    }else if(accesoComputo === 0 && color === "blanco") {
+      return <CustomCredencialBlanco persona={persona} lado={side} />;
+    }// }else if(accesoComputo === 0 && color === "verde") {
+    //   return <CustomCredencial persona={persona} lado={side} />;
+    // }else if(accesoComputo === 0 && color === "verde") {
+    //   return <CustomCredencial persona={persona} lado={side} />;
+    // }else if(accesoComputo === 0 && color === "verde") {
+    //   return <CustomCredencial persona={persona} lado={side} />;
+    // }else if(accesoComputo === 0 && color != "verde") {
+    //   return <CustomCredencial persona={persona} lado={side} />;
+    // }
   };
 
   return (
