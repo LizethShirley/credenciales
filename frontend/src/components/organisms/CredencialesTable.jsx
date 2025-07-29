@@ -192,9 +192,10 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
       sortedData.map(item => ({
         'Nombre Completo': getNombreCompleto(item),
         'CI': item.ci,
-        'Cargo': item.cargo_nombre,
-        'Sección': item.abreviatura,
-        'Acceso Cómputo': item.accesoComputo === 1 ? 'Sí' : 'No'
+        'Sección': item.cargo_nombre,
+        'Cargo': item.abreviatura,
+        'Firma': '',
+        // 'Impreso': item.estado === 1 ? 'Sí' : 'No',
       }))
     );
     const workbook = XLSX.utils.book_new();
@@ -207,9 +208,10 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
       sortedData.map(item => ({
         'Nombre Completo': getNombreCompleto(item),
         'CI': item.ci,
-        'Cargo': item.cargo_nombre,
-        'Sección': item.abreviatura,
-        'Acceso Cómputo': item.accesoComputo === 1 ? 'Sí' : 'No'
+        'Sección': item.cargo_nombre,
+        'Cargo': item.abreviatura,
+        'Firma': '',
+        // 'Impreso': item.estado === 1 ? 'Sí' : 'No',
       }))
     );
     const workbook = XLSX.utils.book_new();
@@ -221,13 +223,13 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
     const doc = new jsPDF();
 
     autoTable(doc, {
-      head: [['Nombre Completo', 'CI', 'Cargo', 'Sección', 'Acceso Cómputo']],
+      head: [['Nombre Completo', 'CI', 'Sección', 'Cargo', 'Impreso', 'Firma']],
       body: sortedData.map(item => [
         getNombreCompleto(item),
         item.ci,
         item.cargo_nombre,
         item.abreviatura,
-        item.accesoComputo === 1 ? 'Sí' : 'No'
+        //item.estado === 1 ? 'Sí' : 'No',
       ]),
     });
 
