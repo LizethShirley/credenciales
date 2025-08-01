@@ -10,12 +10,13 @@ import {
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
-function AccesoComputo() {
-  // 1) Soporta /accesoComputo/:token y /accesoComputo?token=...
+function AccesoComputo({ token: tokenFromProps }) {
+  
   const { token: tokenFromParams } = useParams();
   const [search] = useSearchParams();
   const tokenFromQuery = search.get('token');
-  const token = tokenFromParams || tokenFromQuery;
+  // Prioridad: prop > params > query
+  const token = tokenFromProps || tokenFromParams || tokenFromQuery;
 
   const [respuesta, setRespuesta] = useState(null);
   const [error, setError] = useState(null);
@@ -116,15 +117,6 @@ function AccesoComputo() {
   };
 
   return (
-    <Grid
-      padding={1}
-      margin={1}
-      minHeight={'95vh'} // evita bugs con vh en WebView
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-    >
       <Paper
         elevation={3}
         style={{
@@ -277,7 +269,6 @@ function AccesoComputo() {
           </Box>
         )}
       </Paper>
-    </Grid>
   );
 }
 
