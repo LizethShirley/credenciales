@@ -1,15 +1,14 @@
 import React, { forwardRef } from "react";
 
 const A4Page = forwardRef(({ children, style = {}, ...props }, ref) => {
-  // Si se pasa prop 'forPrint', no aplica el margin visual
   const { forPrint, ...restProps } = props;
   return (
     <div
     ref={ref}
     {...restProps}
     style={{
-      width: "209mm",
-      height: "271mm",
+      width: "209.5mm",
+      height: "296.5mm",
       backgroundColor: "#fff",
       boxSizing: "border-box",
       overflow: "hidden",
