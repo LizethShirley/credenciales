@@ -16,13 +16,13 @@ export default function CredentialSheet({ persons, side, cargos = [], accesoComp
       return <CustomCredencialQR persona={persona} lado={side} />
     }else if(accesoComputo === 0 && color === "blanco") {
       return <CustomCredencialBlanco persona={persona} lado={side} />;
+    }else if(accesoComputo === 0 && color != "verde" && color != "blanco") {
+       return <CustomCredencial persona={persona} lado={side} />;
     }// }else if(accesoComputo === 0 && color === "verde") {
     //   return <CustomCredencial persona={persona} lado={side} />;
     // }else if(accesoComputo === 0 && color === "verde") {
     //   return <CustomCredencial persona={persona} lado={side} />;
     // }else if(accesoComputo === 0 && color === "verde") {
-    //   return <CustomCredencial persona={persona} lado={side} />;
-    // }else if(accesoComputo === 0 && color != "verde") {
     //   return <CustomCredencial persona={persona} lado={side} />;
     // }
   };

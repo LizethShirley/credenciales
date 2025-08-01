@@ -22,6 +22,7 @@
     "express": "^5.1.0",
     "formik": "^2.4.6",
     "html2pdf.js": "^0.10.3",
+    "html5-qrcode": "^2.3.8",
     "install": "^0.13.0",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",

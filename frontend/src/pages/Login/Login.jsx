@@ -9,11 +9,13 @@ import {
   Snackbar,
   Alert
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const [errorEmail, setErrorEmail] = useState('');
   const [errorPassword, setErrorPassword] = useState('');
@@ -43,11 +45,18 @@ function Login() {
 
       if (response.ok) {
         showAlert('Inicio de sesión exitoso', 'success');
-        localStorage.setItem('token', data.token);
+
+        const token = data.token;
+        const expiry = new Date();
+        expiry.setHours(expiry.getHours() + 1);
+
+        localStorage.setItem('token', token);
+        localStorage.setItem('token_expiry', expiry.toISOString());
+
         setTimeout(() => {
-          window.location.href = '/Inicio';
+          navigate('/Inicio', { replace: true });
         }, 1000);
-      } else {
+      }else {
         // Errores específicos
         if (data.errors) {
           if (data.errors.email) setErrorEmail(data.errors.email[0]);
@@ -89,7 +98,7 @@ function Login() {
         }}
       >
         <Grid container spacing={0.5} flexDirection="row" justifyContent={'center'} mb={2}>
-          <img src={`/TEDLogo.jpg`} alt="Logo TED" style={{ width: '70px' }} />
+          <img src={`/TEDLogo.png`} alt="Logo TED" style={{ width: '50px' }} />
           <Box backgroundColor="primary.main" width="1.5px" />
           <img src={`/EleccionesLogo.png`} alt="Logo Elecciones" style={{ width: '90px' }} />
         </Grid>

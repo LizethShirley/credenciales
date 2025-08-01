@@ -6,13 +6,15 @@ import {
   Button,
   Box,
   Snackbar,
-  Alert
+  Alert,
+  CircularProgress
 } from "@mui/material";
 
 const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
   const [opciones, setOpciones] = useState([]);
   const [seleccionados, setSeleccionados] = useState([]);
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'info' });
+  const [loading, setLoading] = useState(false); // 👈 Agregado
 
   useEffect(() => {
     obtenerPersonal();
@@ -38,6 +40,8 @@ const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
   const handleBuscar = async () => {
     if (seleccionados.length === 0) return;
 
+    setLoading(true); // 👈 Activar spinner
+
     const params = new URLSearchParams();
     seleccionados.forEach(ci => params.append('personal[]', ci));
 
@@ -52,12 +56,13 @@ const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
     } catch (error) {
       console.error("Error al buscar detalles:", error);
       showAlert("Hubo un error al buscar los detalles.", "error");
+    } finally {
+      setLoading(false); // 👈 Desactivar spinner
     }
   };
 
   return (
     <Box>
-      {/* Snackbar para alertas */}
       <Snackbar open={alert.open} autoHideDuration={3000} onClose={closeAlert}>
         <Alert severity={alert.severity} onClose={closeAlert} variant="filled">
           {alert.message}
@@ -72,7 +77,6 @@ const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
         filterSelectedOptions
         renderTags={(value, getTagProps) =>
           value.map((numero, index) => {
-            // Extraer la key de los props
             const { key, ...chipProps } = getTagProps({ index });
             return <Chip key={key} label={numero} {...chipProps} />;
           })
@@ -86,9 +90,13 @@ const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
         onClick={handleBuscar}
         variant="contained"
         sx={{ mt: 2 }}
-        disabled={seleccionados.length === 0}
+        disabled={seleccionados.length === 0 || loading} // desactivar durante loading
       >
-        Buscar detalles
+        {loading ? (
+          <CircularProgress size={24} color="inherit" />
+        ) : (
+          "Buscar detalles"
+        )}
       </Button>
     </Box>
   );

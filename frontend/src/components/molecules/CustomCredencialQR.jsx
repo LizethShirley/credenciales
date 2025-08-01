@@ -9,12 +9,12 @@ const CustomCredencialQR = ({ persona, lado }) => {
     <Box
       className="credencial"
       sx={{
-        width: "6.2cm",
-        height: "8.5cm",
+        width: "6cm",
+        height: "9.5cm",
         position: "relative",
         backgroundImage: `url(${lado === 'anverso' 
-          ? '/credenciales/CARA_EVENTUAL_EG2020_8.png'
-          : '/credenciales/ATRAS_EVENTUAL_EG2020_8.png'})`,
+          ? '/credenciales/CARA_QR_EG2025.png'
+          : '/credenciales/ATRAS_QR_EG2025.jpg'})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         fontSize: "8pt",
@@ -42,21 +42,22 @@ const CustomCredencialQR = ({ persona, lado }) => {
             alt="QR"
             style={{
               position: "absolute",
-              top: "3.3cm",
-              left: "2.1cm",
-              width: "1.9cm",
-              height: "1.9cm",
+              top: "3.2cm",
+              left: "1.8cm",
+              width: "2.6cm",
+              height: "2.6cm",
               objectFit: "cover"
             }}
           />
           <Typography
             sx={{
               position: "absolute",
-              bottom: "2.9cm",
+              top: "6.6cm",
               left: 0,
               width: "100%",
               textAlign: "center",
-              fontSize: "8pt"
+              fontSize: "8pt",
+              lineHeight: 1
             }}
           >
             {safePersona.nombre+" "+safePersona.paterno+" "+safePersona.materno}
@@ -64,86 +65,48 @@ const CustomCredencialQR = ({ persona, lado }) => {
           <Typography
             sx={{
               position: "absolute",
-              bottom: "0.56cm",
-              left: "4.7cm",
+              bottom: "1.88cm",
+              left: "3.5cm",
               width: "100%",
               fontSize: "7pt"
             }}
           >
             {safePersona.ci}
           </Typography>
-            <img
-                src={`/EleccionesLogo.png`}
-                alt="foto"
-                style={{
-                    position: "absolute",
-                    top: "6.2cm",
-                    left: "0.2cm",
-                    width: "3.5cm",
-                    height: "1.7cm",
-                    objectFit: "cover",
-                    backgroundColor: "transparent",
-                }}
-            />
-            <Typography
-                sx={{
-                    position: "absolute",
-                    bottom: "0.05cm",
-                    left: "0.5cm",
-                    width: "70%",
-                    lineHeight:"1.3",
-                    fontWeight:"700",
-                    fontSize: "6pt",
-                    color:"white"
-                }}
-            >
-                {"Válido Elecciones Generales 2025"}
-            </Typography>
-        </>
-      )}
-      {lado === 'reverso' && (
-        <>
           <Typography
             sx={{
               position: "absolute",
-              top: "2.9cm",
-              left: "1.8cm",
-              width: "70%",
-              lineHeight:"1.3",
-              fontWeight:"800",
-              fontSize: "6pt"
+              bottom: "0",
+              height: "0.45cm",
+              textAlign: "center",
+              width: "100%",
+              fontWeight:"700",
+              fontSize: "6pt",
+              color:"white",
+              bgcolor: "#000000",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              p: 0,
             }}
           >
-            {safePersona.cargo_nombre}
+            {"Válido Elecciones Generales 2025"}
           </Typography>
-            <img
-                src={`/credenciales/qr.png`}
-                alt="foto"
-                style={{
-                    position: "absolute",
-                    top: "5.5cm",
-                    left: "4.1cm",
-                    width: "1.8cm",
-                    height: "1.8cm",
-                    objectFit: "cover",
-                }}
-            />
-
-            <Typography
-                sx={{
-                    position: "absolute",
-                    top: "0.5cm",
-                    left: "5cm",
-                    width: "70%",
-                    lineHeight:"1.3",
-                    fontWeight:"700",
-                    fontSize: "12pt",
-                    color:"white"
-                }}
-            >
-                {safePersona.cargo_nombre=="NOTARIO ELECTORAL"?"C"+safePersona.ciexterno:""}
-            </Typography>
         </>
+      )}
+      {lado === 'reverso' && (
+        <Typography
+          sx={{
+            position: "absolute",
+            bottom: "0.7cm",
+            width: "100%",
+            textAlign: "center",
+            fontSize: "8pt",
+            lineHeight: 1
+          }}
+        >
+          {"Aqui va el qr horizontal"}
+        </Typography>
       )}
     </Box>
   );

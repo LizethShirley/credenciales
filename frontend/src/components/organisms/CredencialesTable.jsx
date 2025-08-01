@@ -21,7 +21,7 @@ import {
   DialogContent,
   DialogActions,
   Typography,
-  Grid
+  MenuItem, Select, FormControl, InputLabel
 } from '@mui/material';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -36,7 +36,7 @@ import CustomDeleteIcon from '../atoms/CustomDeleteIcon';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 const CredencialesTable = ({ data, onDeleteSuccess }) => {
-  const [filters, setFilters] = useState({ cargo: '', recinto: '' });
+  const [filters, setFilters] = useState({ cargo: '', estado: '' });
   const [orderBy, setOrderBy] = useState('nombreCompleto');
   const [order, setOrder] = useState('asc');
   const [page, setPage] = useState(0);
@@ -101,15 +101,22 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
   };
 
   const filteredData = useMemo(() => {
-    return data.filter((item) => {
-      const matchCargo = (item.cargo_nombre || '').toLowerCase().includes(filters.cargo.toLowerCase());
-      const matchDate = selectedDate
-        ? new Date(item.updated_at).toLocaleDateString('en-CA') === selectedDate
-        : true;
+  return data.filter((item) => {
+    const matchCargo = (item.cargo_nombre || '').toLowerCase().includes(filters.cargo.toLowerCase());
+    const matchDate = selectedDate
+      ? new Date(item.updated_at).toLocaleDateString('en-CA') === selectedDate
+      : true;
+    const matchEstado =
+      filters.estado === ''
+        ? true
+        : filters.estado === '1'
+        ? item.estado === 1
+        : item.estado !== 1;
 
-      return matchCargo && matchDate;
-    });
-  }, [data, filters, selectedDate]);
+    return matchCargo && matchDate && matchEstado;
+  });
+}, [data, filters, selectedDate]);
+
 
   const getNombreCompleto = (item) =>
     `${item.nombre || ''} ${item.paterno || ''} ${item.materno || ''}`.trim();
@@ -126,6 +133,8 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
         return compare(getNombreCompleto(a).toLowerCase(), getNombreCompleto(b).toLowerCase());
       } else if (orderBy === 'cargo_nombre') {
         return compare((a.cargo_nombre || '').toLowerCase(), (b.cargo_nombre || '').toLowerCase());
+      }else if (orderBy === 'updated_at') {
+        return compare(new Date(a.updated_at), new Date(b.updated_at));
       }
       return 0;
     });
@@ -192,8 +201,8 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
       sortedData.map(item => ({
         'Nombre Completo': getNombreCompleto(item),
         'CI': item.ci,
-        'Sección': item.cargo_nombre,
-        'Cargo': item.abreviatura,
+        'Sección': item.abreviatura,
+        'Cargo': item.cargo_nombre,
         'Firma': '',
         // 'Impreso': item.estado === 1 ? 'Sí' : 'No',
       }))
@@ -208,8 +217,8 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
       sortedData.map(item => ({
         'Nombre Completo': getNombreCompleto(item),
         'CI': item.ci,
-        'Sección': item.cargo_nombre,
-        'Cargo': item.abreviatura,
+        'Sección': item.abreviatura,
+        'Cargo': item.cargo_nombre,
         'Firma': '',
         // 'Impreso': item.estado === 1 ? 'Sí' : 'No',
       }))
@@ -223,12 +232,12 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
     const doc = new jsPDF();
 
     autoTable(doc, {
-      head: [['Nombre Completo', 'CI', 'Sección', 'Cargo', 'Impreso', 'Firma']],
+      head: [['Nombre Completo', 'CI', 'Sección', 'Cargo', 'Firma']],
       body: sortedData.map(item => [
         getNombreCompleto(item),
         item.ci,
-        item.cargo_nombre,
         item.abreviatura,
+        item.cargo_nombre,
         //item.estado === 1 ? 'Sí' : 'No',
       ]),
     });
@@ -284,6 +293,18 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
           onChange={(e) => setSelectedDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
         />
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Impreso</InputLabel>
+          <Select
+            value={filters.estado}
+            label="Impreso"
+            onChange={(e) => setFilters({ ...filters, estado: e.target.value })}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            <MenuItem value="1">Sí</MenuItem>
+            <MenuItem value="0">No</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
@@ -381,7 +402,15 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
                 <TableCell>Sección</TableCell>
                 <TableCell>A. C.</TableCell>
                 <TableCell>Imp.</TableCell>
-                <TableCell>Fecha</TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={orderBy === 'updated_at'}
+                    direction={orderBy === 'updated_at' ? order : 'asc'}
+                    onClick={() => handleSort('updated_at')}
+                  >
+                    Fecha
+                  </TableSortLabel>
+                </TableCell>
                 <TableCell>Opciones</TableCell>
               </TableRow>
             </TableHead>
