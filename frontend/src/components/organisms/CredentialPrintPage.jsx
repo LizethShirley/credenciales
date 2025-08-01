@@ -213,8 +213,15 @@ const CredentialPrintPage = ({ fetchData }) => {
             </Button>
             <Button
               variant="outlined"
-              color="primary.main"
-              sx={{ ml: 2 }}
+              sx={{
+                ml: 2,
+                borderColor: '#888',
+                '&:hover': {
+                  borderColor: '#aaa',
+                  backgroundColor: '#2a2a2a',
+                  color: '#fff',
+                }
+              }}
               onClick={handleOpenWindow}
             >
               Previsualizar

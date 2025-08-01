@@ -1,4 +1,3 @@
-// src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PreviewPage from '../pages/PreviewCredenciales';
 import Layout from '../Layout/Layout';
@@ -12,8 +11,10 @@ import GestionarUnidad from '../pages/Organizacion/GestionarUnidad';
 import GestionarCargo from '../pages/Organizacion/GestionarCargo';
 import GestionarExterno from '../pages/Organizacion/GestionarExterno';
 import AccesoComputo from '../pages/AccesoComputo';
-
+import QRScanner from '../pages/QRScanner'; // 👈 Asegúrate de importar el componente
 import PrivateRoute from '../pages/Login/PrivateRoute';
+
+const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 const App = () => {
   return (
@@ -23,20 +24,31 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/preview" element={<PreviewPage />} />
         <Route path="/accesoComputo/:token" element={<AccesoComputo />} />
+        <Route path="/qr" element={<QRScanner />} /> {/* 👈 Ruta al escáner */}
 
-        {/* Rutas privadas */}
-        <Route element={<PrivateRoute />}>
-          {/* Todo lo demás dentro de Layout */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/Inicio" />} />
-            <Route path="/Inicio" element={<CredencialPage />} />
-            <Route path="/Lista_Credenciales" element={<ListaCredenciales />} />
-            <Route path="/Credencial_Individual" element={<CredencialIndividual />} />
-            <Route path="/Gestionar_Unidad" element={<GestionarUnidad />} />
-            <Route path="/Gestionar_Cargo" element={<GestionarCargo />} />
-            <Route path="/Gestionar_Externo" element={<GestionarExterno />} />
+        {/* Redirección según tipo de dispositivo */}
+        <Route
+          path="/"
+          element={
+            isMobile()
+              ? <Navigate to="/qr" />
+              : <Navigate to="/Inicio" />
+          }
+        />
+
+        {/* Rutas privadas solo para escritorio */}
+        {!isMobile() && (
+          <Route element={<PrivateRoute />}>
+            <Route path="/" element={<Layout />}>
+              <Route path="/Inicio" element={<CredencialPage />} />
+              <Route path="/Lista_Credenciales" element={<ListaCredenciales />} />
+              <Route path="/Credencial_Individual" element={<CredencialIndividual />} />
+              <Route path="/Gestionar_Unidad" element={<GestionarUnidad />} />
+              <Route path="/Gestionar_Cargo" element={<GestionarCargo />} />
+              <Route path="/Gestionar_Externo" element={<GestionarExterno />} />
+            </Route>
           </Route>
-        </Route>
+        )}
       </Routes>
     </BrowserRouter>
   );

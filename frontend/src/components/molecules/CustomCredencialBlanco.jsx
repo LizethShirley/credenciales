@@ -7,21 +7,21 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
 
   return (
     <Box
-      className="credencial"
-      sx={{
-        width: "5cm",
-        height: "8cm",
-        position: "relative",
-        backgroundImage: `url(${lado === 'anverso' 
-          ? '/credenciales/CARA_JUEZELECTORAL_EG2025.jpg'
-          : '/credenciales/ATRAS_JUEZELECTORAL_EG2025.jpg'})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        fontSize: "8pt",
-        fontFamily: "Times New Roman, serif",
-        overflow: "hidden"
-      }}
-    >
+  sx={{
+    width: "6cm",
+    height: "9cm",
+    position: "relative",
+    backgroundImage: `url(${lado === 'anverso'
+      ? '/credenciales/CARA_JUEZELECTORAL_EG2025.jpg'
+      : '/credenciales/ATRAS_JUEZELECTORAL_EG2025.jpg'})`,
+    backgroundSize: "100% 100%", 
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "center",
+    fontSize: "8pt",
+    fontFamily: "Times New Roman, serif",
+    overflow: "hidden",
+  }}
+>
       {lado === 'anverso' && (
         <>
           <Box
@@ -29,7 +29,7 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
               position: "absolute",
               top: 0,
               right: 0,
-              width: "5.2cm",
+              width: "6cm",
               height: "100%",
               display: "flex",
               flexDirection: "column",
@@ -45,7 +45,7 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
               fontWeight="800"
               sx={{
                 position: "absolute",
-                top: "6.2cm",
+                top: "6.85cm",
                 lineHeight: 1,
                 fontSize: "5.7pt",
                 fontFamily: "Source Sans Pro, sans-serif",
@@ -58,7 +58,7 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
             <Typography
               sx={{
                 position: "absolute",
-                top: "6.4cm",
+                top: "7.05cm",
                 fontWeight: 800,
                 fontSize: "6pt",
                 fontFamily: "Source Sans Pro, sans-serif",
@@ -75,27 +75,32 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
               alt="foto"
               style={{
                 position: "absolute",
-                top: "1.95cm",
-                left: "1.21cm",
-                width: "2.55cm",
-                height: "2.55cm",
+                top: "2.13cm",
+                left: "1.5cm",
+                width: "3cm",
+                height: "3cm",
                 objectFit: "cover",
               }}
             />
             <Typography
-                sx={{
-                    position: "absolute",
-                    bottom: "0.02cm",
-                    width: "100%",
-                    fontWeight:"700",
-                    fontSize: "6pt",
-                    color:"#000000",
-                    textAlign:"center",
-                    fontFamily: "Source Sans Pro, sans-serif",
-                }}
-            >
-                {"ELECCIONES GENERALES 2025"}
-            </Typography>
+            sx={{
+              position: "absolute",
+              bottom: "0",
+              height: "0.45cm",
+              textAlign: "center",
+              width: "100%",
+              fontWeight:"700",
+              fontSize: "6pt",
+              color:"white",
+              bgcolor: "#3A3A35",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              p: 0,
+            }}
+          >
+            {"Válido Elecciones Generales 2025"}
+          </Typography>
         </>
       )}
     </Box>

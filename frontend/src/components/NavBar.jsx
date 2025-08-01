@@ -7,6 +7,7 @@ const NavBar = (anchoCaja) => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('token_expiry');
     sessionStorage.clear();
     document.cookie = 'token=; Max-Age=0';
     navigate('/Login');
