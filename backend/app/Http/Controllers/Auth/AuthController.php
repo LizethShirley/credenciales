@@ -11,7 +11,6 @@ use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-
 class AuthController extends Controller
 {
     public function register(RegisterRequest $request)
