@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('personal_id');
             $table->text('token_acceso')->unique();
             $table->longText('qr')->nullable();
+            $table->longText('barcode')->nullable();
             $table->boolean('activo')->default(true);
             $table->timestamps();
         });

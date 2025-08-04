@@ -15,6 +15,7 @@ class AccesoComputo extends Model
         'personal_id',
         'token_acceso',
         'qr',
+        'barcode',
         'activo',
     ];
 

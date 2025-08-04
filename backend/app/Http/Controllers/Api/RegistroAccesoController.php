@@ -53,7 +53,7 @@ class RegistroAccesoController extends Controller
 
             return response()->json([
                 'res'      => true,
-                'msg'      => "Acceso registrado correctamente como {$nuevoTipo}",
+                'msg'      => "Acceso registrado como {$nuevoTipo}",
                 'tipo'     => $nuevoTipo,
                 'registro' => $registro,
                 'personal' => $personalData,

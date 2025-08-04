@@ -21,7 +21,7 @@ class PersonalController extends Controller
             $personal = DB::table('personal as p')
                 ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
                 ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
-                ->leftJoin('recintos as r', 'p.id_recinto', '=', 'r.id')
+                // ->leftJoin('recintos as r', 'p.id_recinto', '=', 'r.id')
                 ->select(
                     'p.id',
                     'p.nombre',
@@ -44,12 +44,12 @@ class PersonalController extends Controller
                     's.id as seccion_id',
                     's.nombre as seccion_nombre',
                     's.abreviatura',
-                    'r.id as recinto_id',
-                    'r.nombreRecinto as recinto_nombre',
-                    'r.nombreMunicipio as recinto_municipio',
-                    'r.nombreProvincia as recinto_provincia',
-                    'r.nombreLocalidad as recinto_localidad',
-                    'r.circun as recinto_circun',
+                    // 'r.id as recinto_id',
+                    // 'r.nombreRecinto as recinto_nombre',
+                    // 'r.nombreMunicipio as recinto_municipio',
+                    // 'r.nombreProvincia as recinto_provincia',
+                    // 'r.nombreLocalidad as recinto_localidad',
+                    // 'r.circun as recinto_circun',
                 )
                 ->get();
 
@@ -70,6 +70,142 @@ class PersonalController extends Controller
             return response()->json([
                 'res' => false,
                 'msg' => 'Error al listar personal',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    /**
+     * Listar paginación de personal
+     *
+     * @return void
+     */
+    public function listPaginated(Request $request)
+    {
+        try {
+            $perPage = $request->input('per_page', 10);
+            $nombreCI = $request->input('nombre_ci', '');
+            $cargo = $request->input('cargo', '');
+            $fecha = $request->input('fecha', '');
+            $impreso = $request->input('impreso', '');
+            $orderBy = $request->input('orderBy', '');
+            $orderByTipo = $request->input('orderByTipo', 'ASC');
+
+            $personal = DB::table('personal as p')
+                ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
+                ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
+                ->select(
+                    'p.id',
+                    DB::raw("CONCAT(p.nombre, ' ', p.paterno, ' ', p.materno) AS nombre_completo"),
+                    'p.ci',
+                    'p.estado',
+                    'p.complemento',
+                    'p.extencion',
+                    'p.token',
+                    'p.email',
+                    'p.celular',
+                    'p.accesoComputo',
+                    'p.ciexterno',
+                    'p.photo',
+                    'p.updated_at',
+                    'c.id as cargo_id',
+                    'c.nombre as cargo_nombre',
+                    's.id as seccion_id',
+                    's.nombre as seccion_nombre',
+                    's.abreviatura',
+                );
+
+            if ($nombreCI) {
+                $personal->where(function ($query) use ($nombreCI) {
+                    $query->where(DB::raw("CONCAT(p.nombre, ' ', p.paterno, ' ', p.materno)"), 'like', "%{$nombreCI}%")
+                        ->orWhere('p.ci', 'like', "%{$nombreCI}%");
+                });
+            }
+
+            if ($cargo) {
+                $personal->where('c.nombre','like', "%{$cargo}%");
+            }
+
+            if ($fecha) {
+                $personal->whereDate('p.created_at', $fecha);
+            }
+
+            if ($impreso !== '') {
+                $personal->where('p.estado', $impreso);
+            }
+
+            if ($orderBy) {
+                if ($orderBy === 'nombre_completo') {
+                    $personal->orderBy(DB::raw("CONCAT(p.nombre, ' ', p.paterno, ' ', p.materno)"), $orderByTipo);
+                } elseif ($orderBy === 'cargo_nombre') {
+                    $personal->orderBy('c.nombre', $orderByTipo);
+                } elseif ($orderBy === 'created_at') {
+                    $personal->orderBy('p.created_at', $orderByTipo);
+                }
+            }
+
+            $personal = $personal->paginate($perPage);
+
+            $personalsArray = $personal->map(function ($personal) {
+                $arrayPersonal = (array) $personal;
+                $arrayPersonal['photo'] = $personal->photo ? base64_encode($personal->photo) : null;
+                return $arrayPersonal;
+            });
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Lista de personal con recinto, cargo y sección obtenida exitosamente',
+                'status' => 200,
+                'personal' => $personalsArray,
+                'meta' => [
+                    'current_page' => $personal->currentPage(),
+                    'last_page' => $personal->lastPage(),
+                    'per_page' => $personal->perPage(),
+                    'total' => $personal->total(),
+                ],
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al listar personal',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Listar todo el personal
+     */
+    public function getPersonalCI()
+    {
+        try {
+            $personal = DB::table('personal as p')
+                ->select(
+                    'p.id',
+                    'p.ci',
+                )
+                ->get();
+
+            $personalsArray = $personal->map(function ($personal) {
+                $arrayPersonal = (array) $personal;
+                return $arrayPersonal;
+            });
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Lista de personal solo CI obtenida exitosamente',
+                'status' => 200,
+                'personal' => $personalsArray,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al listar personal por CI',
                 'error' => $e->getMessage(),
                 'status' => 500,
             ], 500);
@@ -120,7 +256,6 @@ class PersonalController extends Controller
         }
     }
 
-
     /**
      * Guardar un nuevo personal
      * @param StorePersonalRequest $request
@@ -163,7 +298,6 @@ class PersonalController extends Controller
             ], 500);
         }
     }
-
 
     /**
      * Mostrar un personal por ID con sus relaciones
@@ -500,7 +634,7 @@ class PersonalController extends Controller
                 $personal->whereIn('p.ci', $array_ci);
             }
 
-            $personal->orderBy('p.updated_at', 'asc');
+            $personal->orderBy('p.created_at', 'asc');
 
             if (!empty($accesoComputo)) {
                 $data = $personal->get()->map(function ($p) {
