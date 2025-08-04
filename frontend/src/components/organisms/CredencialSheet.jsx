@@ -12,24 +12,30 @@ export default function CredentialSheet({ persons, side, cargos = [], accesoComp
 
     if (color === "verde" && accesoComputo === 0) {
       return <CustomCredencialVerde persona={persona} lado={side} />;
-    }else if (accesoComputo === 1) {
+    } else if (accesoComputo === 1) {
       return <CustomCredencialQR persona={persona} lado={side} />
-    }else if(accesoComputo === 0 && color === "blanco") {
+    } else if (accesoComputo === 0 && color === "blanco") {
       return <CustomCredencialBlanco persona={persona} lado={side} />;
-    }else if(accesoComputo === 0 && color != "verde" && color != "blanco") {
-       return <CustomCredencial persona={persona} lado={side} />;
-    }// }else if(accesoComputo === 0 && color === "verde") {
-    //   return <CustomCredencial persona={persona} lado={side} />;
-    // }else if(accesoComputo === 0 && color === "verde") {
-    //   return <CustomCredencial persona={persona} lado={side} />;
-    // }else if(accesoComputo === 0 && color === "verde") {
-    //   return <CustomCredencial persona={persona} lado={side} />;
-    // }
+    } else {
+      return <CustomCredencial persona={persona} lado={side} />;
+    }
   };
+
+  // Si es reverso, invertimos cada fila de 3
+  const formatPersons = (list) => {
+    const rows = [];
+    for (let i = 0; i < list.length; i += 3) {
+      const fila = list.slice(i, i + 3);
+      rows.push(side === "reverso" ? fila.reverse() : fila);
+    }
+    return rows.flat();
+  };
+
+  const displayedPersons = formatPersons(persons);
 
   return (
     <Grid container spacing={2} justifyContent="center" alignItems="center">
-      {persons.map((p, idx) => (
+      {displayedPersons.map((p, idx) => (
         <Grid
           item
           xs={4}
