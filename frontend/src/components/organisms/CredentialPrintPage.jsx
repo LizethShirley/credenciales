@@ -1,11 +1,21 @@
 import { useState, useRef, useEffect } from "react";
-import { Grid, Typography, Stack, Box, Button, Snackbar, Alert, Switch, Checkbox, FormControlLabel, FormGroup  } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  Stack,
+  Box,
+  Button,
+  Snackbar,
+  Alert,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  CircularProgress
+} from "@mui/material";
 import DateRangeFilter from "../atoms/DateRangerFilter";
-import SideToggle from "../atoms/SideToggle";
 import PrintPageWrapper from "../organisms/PrintPageWrapper";
 import CredentialPages from "../organisms/CredentialPageGroup";
 import html2pdf from "html2pdf.js";
-import CircularProgress from '@mui/material/CircularProgress';
 import AutocompleteCi from "../molecules/AutocompleteCi";
 
 const chunkArray = (array, size) => {
@@ -18,27 +28,15 @@ const chunkArray = (array, size) => {
 
 const CredentialPrintPage = ({ fetchData }) => {
   const [dateRange, setDateRange] = useState({ start: null, end: null });
-  const [side, setSide] = useState("anverso");
   const [resultadosFiltrados, setResultadosFiltrados] = useState([]);
   const [cargos, setCargos] = useState([]);
   const [selectedCargo, setSelectedCargo] = useState(null);
   const [selectedRecinto, setSelectedRecinto] = useState("");
   const [loading, setLoading] = useState(false);
-  const printRef = useRef();
-  const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
-  const [accesoComputo, setAccesoComputo] = useState(0);
   const [checked, setChecked] = useState(false);
-
-  const handleToggleAcceso = async (e) => {
-  const nuevoValor = e.target.checked ? 1 : 0;
-  setAccesoComputo(nuevoValor);
-
-  if (dateRange.start && dateRange.end && selectedCargo) {
-    await handleFiltrar(nuevoValor);
-  } else {
-    showAlert("Selecciona fechas y cargo para aplicar el filtro.", "warning");
-  }
-};
+  const [accesoComputo, setAccesoComputo] = useState(0);
+  const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
+  const printRef = useRef();
 
   const showAlert = (message, severity = "info") => {
     setAlert({ open: true, message, severity });
@@ -69,15 +67,14 @@ const CredentialPrintPage = ({ fetchData }) => {
       setLoading(false);
       return;
     }
+
     if (!selectedCargo) {
       showAlert("Selecciona un cargo.", "warning");
       setLoading(false);
       return;
     }
-    if (
-      selectedCargo.nombre === "NOTARIO ELECTORAL" &&
-      !selectedRecinto
-    ) {
+
+    if (selectedCargo.nombre === "NOTARIO ELECTORAL" && !selectedRecinto) {
       showAlert("Selecciona una circunscripción.", "warning");
       setLoading(false);
       return;
@@ -86,8 +83,7 @@ const CredentialPrintPage = ({ fetchData }) => {
     const inicio = dateRange.start.toISOString().slice(0, 10);
     const fin = dateRange.end.toISOString().slice(0, 10);
     const cargo = selectedCargo.id;
-    const circunscripcion =
-      selectedCargo.nombre === "NOTARIO ELECTORAL" ? selectedRecinto : "";
+    const circunscripcion = selectedCargo.nombre === "NOTARIO ELECTORAL" ? selectedRecinto : "";
 
     try {
       const result = await fetchData(inicio, fin, cargo, circunscripcion, accesoValue);
@@ -110,28 +106,32 @@ const CredentialPrintPage = ({ fetchData }) => {
     }
   };
 
-
   const handleDownloadPDF = () => {
-    if (!printRef.current) return;
+    if (!printRef.current || loading || resultadosFiltrados.length === 0) return;
 
-    const element = printRef.current;
-    const options = {
-      margin: 0,
-      filename: `credenciales_${side}_${new Date().toISOString().split("T")[0]}.pdf`,
-      image: { type: "jpeg", quality: 1 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    html2pdf().set(options).from(element).toPdf().save();
+    setTimeout(() => {
+      const element = printRef.current;
+      const options = {
+        margin: 0,
+        filename: `credenciales_${new Date().toISOString().split("T")[0]}.pdf`,
+        image: { type: "jpeg", quality: 1 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+      html2pdf().set(options).from(element).toPdf().save();
+    }, 500);
   };
 
   const handleOpenWindow = () => {
+    const pages = chunkArray(resultadosFiltrados, 9);
     localStorage.setItem('credenciales_preview_pages', JSON.stringify(pages));
-    localStorage.setItem('credenciales_preview_side', side);
     localStorage.setItem('credenciales_preview_acceso', accesoComputo);
-    // Guardar los IDs de los credenciales filtrados
     const ids = resultadosFiltrados.map(item => item.id);
     localStorage.setItem('credenciales_preview_ids', JSON.stringify(ids));
     window.open('/preview', '_blank', 'width=900,height=1400');
@@ -141,22 +141,13 @@ const CredentialPrintPage = ({ fetchData }) => {
 
   return (
     <Box sx={{ p: 5 }}>
-      {/* Snackbar para alertas */}
       <Snackbar open={alert.open} autoHideDuration={3000} onClose={handleCloseAlert}>
         <Alert onClose={handleCloseAlert} severity={alert.severity} variant="filled">
           {alert.message}
         </Alert>
       </Snackbar>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: 2,
-          mb: 2,
-        }}
-      >
+      <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 2, mb: 2 }}>
         <DateRangeFilter
           startDate={dateRange.start}
           endDate={dateRange.end}
@@ -194,7 +185,6 @@ const CredentialPrintPage = ({ fetchData }) => {
         </FormGroup>
       </Box>
 
-      {/* AutocompleteCi separado debajo */}
       <Box sx={{ mb: 2 }}>
         <AutocompleteCi
           fetchData={fetchData}
@@ -202,13 +192,14 @@ const CredentialPrintPage = ({ fetchData }) => {
         />
       </Box>
 
-
-
       <Grid container spacing={5} alignItems="center" sx={{ mb: 2 }}>
-        <SideToggle side={side} onChange={setSide} />
         {resultadosFiltrados.length > 0 && (
           <>
-            <Button variant="contained" onClick={handleDownloadPDF}>
+            <Button
+              variant="contained"
+              onClick={handleDownloadPDF}
+              disabled={loading || resultadosFiltrados.length === 0}
+            >
               Descargar PDF
             </Button>
             <Button
@@ -231,17 +222,19 @@ const CredentialPrintPage = ({ fetchData }) => {
       </Grid>
 
       <Grid container spacing={2} justifyContent="center">
-        <Grid size={{ xs: 12, md: 8 }}>
+        <Grid item xs={12} md={8}>
           {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-            <CircularProgress />
-          </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+              <CircularProgress />
+            </Box>
           ) : resultadosFiltrados.length > 0 ? (
-            <Box ref={printRef} sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}>
+            <Box
+              ref={printRef}
+              className="a4-page"
+              sx={{ p: 0, m: 0, width: 'auto', backgroundColor: 'transparent', boxShadow: 'none' }}
+            >
               <CredentialPages
                 pages={pages}
-                side={side}
-                printRef={printRef}
                 cargos={cargos}
                 accesoComputo={accesoComputo}
               />
