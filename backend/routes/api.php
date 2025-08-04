@@ -52,6 +52,8 @@ Route::post('auth/login', [AuthController::class, 'login']);
     Route::post('list/personal-ids', [PersonalController::class, 'getByIds']);
     Route::get('list/personal-filter', [PersonalController::class, 'filtroPersonal']);
     Route::patch('updateEstado', [PersonalController::class, 'updateStatus']);
+    Route::get('list/personalCI', [PersonalController::class, 'getPersonalCI']);
+    Route::get('list/personalPaginated', [PersonalController::class, 'listPaginated']);
 
 
     //Rutas recintos
