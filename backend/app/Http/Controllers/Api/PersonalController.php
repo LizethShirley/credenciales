@@ -599,7 +599,7 @@ class PersonalController extends Controller
                     ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
                     ->leftJoin('acceso_computo as a', 'p.id', '=', 'a.personal_id')
                     ->select(
-                        'p.id', 'p.nombre', 'p.paterno', 'p.materno', 'p.ci', 'a.qr'
+                        'p.id', 'p.nombre', 'p.paterno', 'p.materno', 'p.ci', 'a.qr', 'a.barcode'
                     )->where('p.accesoComputo', $accesoComputo);
             } else {
                 $personal = DB::table('personal as p')
