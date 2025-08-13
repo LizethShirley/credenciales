@@ -14,7 +14,7 @@ export default function CredentialSheet({ persons, side, cargos = [], accesoComp
       return <CustomCredencialVerde persona={persona} lado={side} />;
     } else if (accesoComputo === 1) {
       return <CustomCredencialQR persona={persona} lado={side} />
-    } else if (accesoComputo === 0 && color === "blanco") {
+    } else if (color === "blanco" && accesoComputo === 0) {
       return <CustomCredencialBlanco persona={persona} lado={side} />;
     } else {
       return <CustomCredencial persona={persona} lado={side} />;

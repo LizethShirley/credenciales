@@ -5,6 +5,10 @@ const CustomCredencialQR = ({ persona, lado }) => {
     Object.entries(persona).map(([key, value]) => [key, value ?? ""])
   );
 
+  const rawSvg = safePersona.barcode;
+  const cleanedSvg = rawSvg.replace(/<text[^>]*>[\s\S]*?<\/text>/g, '');
+  const svgBase64 = btoa(unescape(encodeURIComponent(cleanedSvg)));
+
   return (
     <Box
       className="credencial"
@@ -95,18 +99,22 @@ const CustomCredencialQR = ({ persona, lado }) => {
         </>
       )}
       {lado === 'reverso' && (
-        <Typography
-          sx={{
-            position: "absolute",
-            bottom: "0.7cm",
-            width: "100%",
-            textAlign: "center",
-            fontSize: "8pt",
-            lineHeight: 1
-          }}
-        >
-          {"Aqui va el qr horizontal"}
-        </Typography>
+        <>
+          <img
+            src={`data:image/svg+xml;base64,${svgBase64}`}
+            alt="Código de barras"
+            style={{
+              position: "absolute",
+              top: "8.2cm",
+              paddingLeft: "0.1cm",
+              paddingRight: "0.1cm",
+              width: "100%",
+              height: "0.9cm",
+              objectFit: "cover",
+              backgroundColor: "#fff",
+            }}
+          />
+        </>
       )}
     </Box>
   );

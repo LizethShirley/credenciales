@@ -22,7 +22,9 @@ const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
 
   const obtenerPersonal = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/list/personal`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/list/personalCI`, {
+          headers: { 'Content-Type': 'application/json' },
+        });
       const data = await response.json();
       const ci = data.personal.map(item => item.ci);
       setOpciones(ci);
@@ -40,7 +42,7 @@ const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
   const handleBuscar = async () => {
     if (seleccionados.length === 0) return;
 
-    setLoading(true); // 👈 Activar spinner
+    setLoading(true);
 
     const params = new URLSearchParams();
     seleccionados.forEach(ci => params.append('personal[]', ci));
@@ -57,7 +59,7 @@ const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
       console.error("Error al buscar detalles:", error);
       showAlert("Hubo un error al buscar los detalles.", "error");
     } finally {
-      setLoading(false); // 👈 Desactivar spinner
+      setLoading(false);
     }
   };
 
