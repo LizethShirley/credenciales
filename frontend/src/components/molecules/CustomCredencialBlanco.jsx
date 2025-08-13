@@ -39,6 +39,20 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
               textAlign: "center",
             }}
           >
+           <Typography
+              fontWeight="800"
+              sx={{
+                position: "absolute",
+                bottom: "2.2cm",
+                padding: "0.05cm",
+                lineHeight: 1,
+                fontSize: "9pt",
+                fontFamily: "Source Sans Pro, sans-serif",
+                backgroundColor: "#FFFFFF"
+              }}
+            >
+              {safePersona.cargo_nombre}
+            </Typography>
 
             {/* Nombre */}
             <Typography

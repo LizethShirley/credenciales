@@ -42,8 +42,8 @@ const CustomCredencial = ({ persona, lado }) => {
             alt="foto"
             style={{
               position: "absolute",
-              top: "3.3cm",
-              left: "2.1cm",
+              top: "3.27cm",
+              left: "2.12cm",
               width: "1.9cm",
               height: "1.9cm",
               objectFit: "cover"
@@ -52,11 +52,12 @@ const CustomCredencial = ({ persona, lado }) => {
           <Typography
             sx={{
               position: "absolute",
-              bottom: "2.9cm",
+              top: "5.22cm",
               left: 0,
               width: "100%",
               textAlign: "center",
-              fontSize: "8pt"
+              fontSize: "8pt",
+              lineHeight: "0.9",
             }}
           >
             {safePersona.nombre+" "+safePersona.paterno+" "+safePersona.materno}

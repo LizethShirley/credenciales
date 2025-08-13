@@ -79,8 +79,6 @@ const CustomCredencialVerde = ({ persona, lado }) => {
             >
               {"CI: "+safePersona.ci}
             </Typography>
-
-            {/* Validez */}
             
           </Box>
           <Box
@@ -88,7 +86,7 @@ const CustomCredencialVerde = ({ persona, lado }) => {
               position: "absolute",
               top: "1.4cm",
               left: "2cm",
-              width: "0.03cm",
+              width: "0.025cm",
               height: "1.2cm",
               display: "flex",
               flexDirection: "column",
@@ -156,7 +154,7 @@ const CustomCredencialVerde = ({ persona, lado }) => {
                     fontFamily: "Source Sans Pro, sans-serif",
                 }}
             >
-                {"PERSONAL EVENTUAL"}
+                {safePersona.cargo_nombre==="ASISTENTE ADMINISTRATIVA"?"PERSONAL EVENTUAL":"PERSONAL EVENTUAL"}
             </Typography>
             <Typography
                 sx={{
