@@ -9,6 +9,7 @@ use Milon\Barcode\Facades\DNS1DFacade as DNS1D;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 class AccesoComputoExternoController extends Controller
 {
@@ -72,7 +73,6 @@ class AccesoComputoExternoController extends Controller
         ]);
     }
 
-
     public function generateQRExternoMasivo(Request $request)
     {
         $request->validate([
@@ -85,8 +85,8 @@ class AccesoComputoExternoController extends Controller
         $resultados = [];
 
         for ($i = 0; $i < $cantidad; $i++) {
-            $code = Str::upper(Str::random(10));
-            $qrData = url("/externo/{$code}");
+            $code = Str::upper(Str::random(5));
+            $qrData = "externo/{$code}";
 
             $qr = QrCode::format('svg')->size(250)->generate($qrData);
             $codigoBarra = DNS1D::getBarcodeSVG($qrData, 'C128', 2, 70, false);
@@ -115,6 +115,35 @@ class AccesoComputoExternoController extends Controller
             'res' => true,
             'msg' => "Se generaron {$cantidad} accesos",
             'datos' => $resultados
+        ]);
+    }
+
+    public function listarAccesosExternos()
+    {
+
+        $accesos = DB::table('acceso_computo_externo as a')
+                ->select(
+                    'a.id',
+                    'a.tipo',
+                    'a.activo',
+                    'a.qr',
+                    'a.barcode',
+                    'a.created_at',
+                    'a.updated_at'
+                )
+                ->orderBy('a.created_at', 'desc')
+                ->get();
+
+        $accesosArray = $accesos->map(function ($acceso) {
+            $arrayAcceso = (array) $acceso;
+            $arrayAcceso['qr'] = $acceso->qr ? base64_encode($acceso->qr) : null;
+            $arrayAcceso['barcode'] = $acceso->barcode ? base64_encode($acceso->barcode) : null;
+            return $arrayAcceso;
+        });
+
+        return response()->json([
+            'res' => true,
+            'datos' => $accesosArray
         ]);
     }
 }

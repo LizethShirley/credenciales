@@ -13,7 +13,7 @@ class RegistroAccesoExternoController extends Controller
     /**
      * Registrar acceso desde un token QR
      */
-    public function registrarAcceso(Request $request)
+    public function registrarAccesoExterno(Request $request)
     {
         $request->validate([
             'token' => 'required|string',
@@ -29,7 +29,7 @@ class RegistroAccesoExternoController extends Controller
             if (!$acceso) {
                 return response()->json([
                     'res' => false,
-                    'msg' => 'Acceso no encontrado o inactivo',
+                    'msg' => 'Usuario Inactivo.',
                     'status' => 404
                 ]);
             }
@@ -48,7 +48,7 @@ class RegistroAccesoExternoController extends Controller
 
             return response()->json([
                 'res' => true,
-                'msg' => "Acceso registrado como {$nuevoTipo}",
+                'msg' => "Acceso Correcto, Entrada {$nuevoTipo}",
                 'tipo' => $nuevoTipo,
                 'registro' => $registro,
                 'status' => 200,

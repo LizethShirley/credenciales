@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccesoComputo;
-use App\Models\Personal;
+use App\Models\AccesoComputoExterno;
 use App\Models\RegistroAcceso;
+use App\Models\RegistroAccesoExterno;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -21,44 +22,83 @@ class RegistroAccesoController extends Controller
         ]);
 
         try {
+            
             $token = $request->input('token');
 
-            $acceso = AccesoComputo::where('token_acceso', $token)
+            if (strpos($token, 'externo') !== false) {
+
+                $token = explode("/", $token)[1];
+
+                $acceso = AccesoComputoExterno::where('token_acceso', $token)
                 ->where('activo', true)
                 ->first();
 
-            $controladorPersonal = new PersonalController();
+                if (!$acceso) {
+                    return response()->json([
+                        'res' => false,
+                        'msg' => 'Usuario Inactivo.',
+                        'status' => 404
+                    ]);
+                }
 
-            $personalData = $controladorPersonal->obtenerPersonalArray($acceso->personal_id);
+                $ultimoRegistro = RegistroAccesoExterno::where('acceso_computo_externo_id', $acceso->id)
+                    ->orderBy('fecha_hora', 'desc')
+                    ->first();
 
-            if (!$acceso) {
+                $nuevoTipo = ($ultimoRegistro && $ultimoRegistro->tipo === 'entrada') ? 'salida' : 'entrada';
+
+                $registro = RegistroAccesoExterno::create([
+                    'acceso_computo_externo_id' => $acceso->id,
+                    'tipo' => $nuevoTipo,
+                    'fecha_hora' => now(),
+                ]);
+
                 return response()->json([
-                    'res' => false,
-                    'msg' => 'Acceso no encontrado o inactivo.',
-                    'status' => 404
-                ], 404);
+                    'res' => true,
+                    'msg' => "Acceso a Computo Externo, {$nuevoTipo}",
+                    'tipo' => $nuevoTipo,
+                    'tipo_credencial' => $acceso->tipo,
+                    'status' => 200,
+                ]);
+
+            } else {
+                $acceso = AccesoComputo::where('token_acceso', $token)
+                    ->where('activo', true)
+                    ->first();
+
+                $controladorPersonal = new PersonalController();
+
+                $personalData = $controladorPersonal->obtenerPersonalArray($acceso->personal_id);
+
+                if (!$acceso) {
+                    return response()->json([
+                        'res' => false,
+                        'msg' => 'Acceso no encontrado o inactivo.',
+                        'status' => 404
+                    ], 404);
+                }
+
+                $ultimoRegistro = RegistroAcceso::where('acceso_computo_id', $acceso->id)
+                    ->orderBy('fecha_hora', 'desc')
+                    ->first();
+
+                $nuevoTipo = ($ultimoRegistro && $ultimoRegistro->tipo === 'entrada') ? 'salida' : 'entrada';
+
+                $registro = RegistroAcceso::create([
+                    'acceso_computo_id' => $acceso->id,
+                    'tipo'              => $nuevoTipo,
+                    'fecha_hora'        => now(),
+                ]);
+
+                return response()->json([
+                    'res'      => true,
+                    'msg'      => "Acceso a Computo, {$nuevoTipo}",
+                    'tipo'     => $nuevoTipo,
+                    'registro' => $registro,
+                    'personal' => $personalData,
+                    'status'   => 200,
+                ]);
             }
-
-            $ultimoRegistro = RegistroAcceso::where('acceso_computo_id', $acceso->id)
-                ->orderBy('fecha_hora', 'desc')
-                ->first();
-
-            $nuevoTipo = ($ultimoRegistro && $ultimoRegistro->tipo === 'entrada') ? 'salida' : 'entrada';
-
-            $registro = RegistroAcceso::create([
-                'acceso_computo_id' => $acceso->id,
-                'tipo'              => $nuevoTipo,
-                'fecha_hora'        => now(),
-            ]);
-
-            return response()->json([
-                'res'      => true,
-                'msg'      => "Acceso registrado como {$nuevoTipo}",
-                'tipo'     => $nuevoTipo,
-                'registro' => $registro,
-                'personal' => $personalData,
-                'status'   => 200,
-            ]);
 
         } catch (\Exception $e) {
             Log::error('Error al registrar acceso desde QR: ' . $e->getMessage());
