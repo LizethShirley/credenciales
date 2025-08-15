@@ -15,11 +15,50 @@ import CustomSendIcon from '../../components/atoms/CustomSendIcon';
 
 const GestionarExterno = () => {
   const [cargoSeleccionado, setCargoSeleccionado] = useState('');
-  
+  const [cantidad, setCantidad] = useState('');
+
 
   const handleChangeCargo = (event) => {
     setCargoSeleccionado(event.target.value);
   };
+
+  const handleEnviar = async () => {
+    if (!cantidad || !cargoSeleccionado) {
+      alert('Debe completar todos los campos');
+      return;
+    }
+
+    try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/generar-accesos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({
+        tipo: cargoSeleccionado,
+        cantidad: Number(cantidad)
+      })
+    });
+
+    console.log('Enviando datos:', cargoSeleccionado, cantidad);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Error de validación:', data);
+      throw new Error('Error al enviar los datos');
+    }
+
+    console.log('Respuesta:', data);
+    alert('Datos enviados correctamente');
+
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Ocurrió un error al enviar los datos');
+  }
+  };
+
 
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', bgcolor: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', py: 4 }}>
@@ -35,6 +74,8 @@ const GestionarExterno = () => {
                 fullWidth
                 placeholder="Cantidad"
                 variant="outlined"
+                value={cantidad}
+                onChange={(e) => setCantidad(e.target.value)}
               />
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
@@ -48,14 +89,14 @@ const GestionarExterno = () => {
                   onChange={handleChangeCargo}
                 >
                   <MenuItem value="prensa">Prensa</MenuItem>
-                  <MenuItem value="observadores">Observadores</MenuItem>
-                  <MenuItem value="delegados">Delegados</MenuItem>
+                  <MenuItem value="observador">Observador</MenuItem>
+                  <MenuItem value="candidato">Candidato</MenuItem>
                 </Select>
               </FormControl>
             </Box>
           </Grid>
           <Box sx={{ml:10}}>
-            <CustomSendIcon onClick={() => console.log("Añadir")}/>
+            <CustomSendIcon onClick={handleEnviar} />
           </Box>
         </Box>
       </Box>
