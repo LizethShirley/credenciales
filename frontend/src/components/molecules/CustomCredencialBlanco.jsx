@@ -44,7 +44,7 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
               sx={{
                 position: "absolute",
                 bottom: "2.2cm",
-                padding: "0.05cm",
+                padding: "0.06cm",
                 lineHeight: 1,
                 fontSize: "9pt",
                 fontFamily: "Source Sans Pro, sans-serif",
@@ -117,6 +117,26 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
           </Typography>
         </>
       )}
+      {lado === 'reverso' && (
+              <>
+                <Typography
+              fontWeight="800"
+              sx={{
+                position: "absolute",
+                top: "3.22cm",
+                left: "2.9cm",
+                padding: "0.06cm",
+                lineHeight: 1,
+                fontSize: "4.5pt",
+                fontFamily: "Source Sans Pro, sans-serif",
+                backgroundColor: "#FFFFFF"
+              }}
+            >
+              {safePersona.cargo_nombre}
+            </Typography>
+                  
+              </>
+            )}
     </Box>
   );
 };

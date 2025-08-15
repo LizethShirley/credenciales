@@ -29,6 +29,7 @@ const CustomFormCargo = ({ idseccion }) => {
         { value: "naranja", label: "Naranja" },
         { value: "guindo", label: "Guindo" },
         { value: "cafe", label: "Café" },
+        { value: "externo", label: "Externo" },
       ],
     },
   ];
