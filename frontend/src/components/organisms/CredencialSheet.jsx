@@ -4,20 +4,30 @@ import CustomCredencial from "../molecules/CustomCredencial";
 import CustomCredencialVerde from "../molecules/CustomCredencialVerde";
 import CustomCredencialQR from "../molecules/CustomCredencialQR";
 import CustomCredencialBlanco from "../molecules/CustomCredencialBlanco";
+import CustomCredencialExternoCara from "../molecules/CustomCredencialExternoCara";
+import CustomCredencialExternoAtras from "../molecules/CustomCredencialExternoAtras";
 
 export default function CredentialSheet({ persons, side, cargos = [], accesoComputo }) {
   const getComponentePorColor = (persona) => {
     const cargoPersona = cargos.find(c => c.id === persona.cargo_id);
     const color = cargoPersona?.color?.toLowerCase();
-
-    if (color === "verde" && accesoComputo === 0) {
+    const colorAC = persona.color?.toLowerCase() || color;
+    if (accesoComputo === 1) {
+      if (colorAC === "externo") {
+        console.log("CARGO COMPUTO", persona);
+        return <CustomCredencialExternoAtras persona={persona} lado={side}/>;
+      }
+      return <CustomCredencialQR persona={persona} lado={side} />;
+    }else{
+      if (color === "verde") {
       return <CustomCredencialVerde persona={persona} lado={side} />;
-    } else if (accesoComputo === 1) {
-      return <CustomCredencialQR persona={persona} lado={side} />
-    } else if (color === "blanco" && accesoComputo === 0) {
+    } else if (color === "externo") {
+      return <CustomCredencialExternoCara persona={persona} lado={side} />;
+    } else if (color === "blanco") {
       return <CustomCredencialBlanco persona={persona} lado={side} />;
     } else {
       return <CustomCredencial persona={persona} lado={side} />;
+    }
     }
   };
 
