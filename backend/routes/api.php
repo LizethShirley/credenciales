@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Api\RecintoController;
 use App\Http\Controllers\SuscriberController;
+use App\Models\AccesoComputoExterno;
 use Illuminate\Support\Facades\Route;
 
 Route::post('auth/register', [AuthController::class, 'register']);
@@ -70,16 +71,12 @@ Route::delete('recintos/{id}', [RecintoController::class, 'destroy']);
 //Rutas Accesso Computo
 //Generar token y QR
 Route::post('/acceso-computo/generar-qr', [AccesoComputoController::class, 'generarTokenQR']);
-//Registrar entrada/salida desde token QR
 Route::post('/registro-acceso/registrar', [RegistroAccesoController::class, 'registrarAcceso']);
-//Listar todos los registros (opcional)
 Route::get('/registro-acceso/listar', [RegistroAccesoController::class, 'listarRegistros']);
 
 Route::post('/generar-accesos', [AccesoComputoExternoController::class, 'generateQRExternoMasivo']);
-
-Route::post('/registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAcceso']);
-
-Route::get('/registro-acceso-externo/listar', [RegistroAccesoExternoController::class, 'listarRegistros']);
+Route::post('/registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAccesoExterno']);
+Route::get('/acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']);
 
 
 

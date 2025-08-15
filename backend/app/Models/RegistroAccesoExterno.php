@@ -9,7 +9,7 @@ class RegistroAccesoExterno extends Model
 {
     use HasFactory;
 
-    protected $table = 'registro_accesos';
+    protected $table = 'registro_acceso_externos';
 
     protected $fillable = [
         'acceso_computo_externo_id',
