@@ -108,6 +108,8 @@ class AccesoComputoExternoController extends Controller
             $resultados[] = [
                 'token_access' => $code,
                 'tipo' => $type,
+                'qr' => $qr ? base64_encode($qr) : null,
+                'barcode' => $codigoBarra ? base64_encode($codigoBarra) : null,
             ];
         }
 
@@ -120,7 +122,6 @@ class AccesoComputoExternoController extends Controller
 
     public function listarAccesosExternos()
     {
-
         $accesos = DB::table('acceso_computo_externo as a')
                 ->select(
                     'a.id',
@@ -140,7 +141,6 @@ class AccesoComputoExternoController extends Controller
             $arrayAcceso['barcode'] = $acceso->barcode ? base64_encode($acceso->barcode) : null;
             return $arrayAcceso;
         });
-
         return response()->json([
             'res' => true,
             'datos' => $accesosArray
