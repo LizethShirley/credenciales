@@ -114,7 +114,7 @@ export default function PreviewCredenciales() {
   if (!pages.length) {
     return <h2 style={{ textAlign: "center", marginTop: 10 }}>No hay credenciales para mostrar.</h2>;
   }
-
+console.log("p:",pages)
   return (
     <div
       style={{

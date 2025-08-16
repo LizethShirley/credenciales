@@ -10,12 +10,12 @@ import {
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
-function AccesoComputo() {
-  // 1) Soporta /accesoComputo/:token y /accesoComputo?token=...
-  const { token: tokenFromParams } = useParams();
+function AccesoObservador() {
+  // Soporta /accesoObservador/:tipo/:codigo y /accesoObservador?token=externo/RIMA7
+  const { tipo, codigo } = useParams();
   const [search] = useSearchParams();
   const tokenFromQuery = search.get('token');
-  const token = tokenFromParams || tokenFromQuery;
+  const token = tokenFromQuery || (tipo && codigo ? `${tipo}/${codigo}` : null);
 
   const [respuesta, setRespuesta] = useState(null);
   const [error, setError] = useState(null);
@@ -62,14 +62,9 @@ function AccesoComputo() {
     if (loading) {
       setProgress(0);
       progressIntervalRef.current = setInterval(() => {
-        setProgress((prev) => {
-          // Deja al 95% hasta que termine el fetch
-          if (prev >= 95) return 95;
-          return prev + 5;
-        });
+        setProgress((prev) => (prev >= 95 ? 95 : prev + 5));
       }, 200);
     } else {
-      // Completa a 100% cuando termina
       setProgress(100);
       clearInterval(progressIntervalRef.current);
     }
@@ -81,17 +76,18 @@ function AccesoComputo() {
     setError(null);
     setRespuesta(null);
 
-    // Timeout manual (por si el WebView se queda colgado)
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 10000); // 10s
+    const id = setTimeout(() => controller.abort(), 10000);
 
     try {
+      // 🔑 Aquí va el token como query param
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/registro-acceso/registrar`,
+        `${import.meta.env.VITE_API_URL}/registro-acceso/registrar/?token=${encodeURIComponent(
+          tokenParam
+        )}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: tokenParam }),
           signal: controller.signal,
         }
       );
@@ -114,7 +110,7 @@ function AccesoComputo() {
       setLoading(false);
     }
   };
-
+  console.log(respuesta);
   return (
     <Grid
       padding={1}
@@ -139,13 +135,13 @@ function AccesoComputo() {
       >
         {loading && (
           <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            my: 2,
-            position: 'relative',
-          }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              my: 2,
+              position: 'relative',
+            }}
           >
             <CircularProgress
               variant="determinate"
@@ -187,38 +183,10 @@ function AccesoComputo() {
             >
               <Typography
                 color="#FFFFFF"
-                sx={{ fontWeight: 'bold', letterSpacing: 3 }}
+                sx={{ fontWeight: 'bold', letterSpacing: 3, fontSize: "25pt" }}
               >
-                {`${respuesta.personal.nombre} ${respuesta.personal.paterno} ${respuesta.personal.materno}`}
+                {`${respuesta.tipo_credencial}`.toUpperCase()}
               </Typography>
-
-              {respuesta.personal.photo && (
-                <img
-                  src={`data:image/jpeg;base64,${respuesta.personal.photo}`}
-                  alt="Foto del personal"
-                  style={{
-                    width: '150px',
-                    borderRadius: '10px',
-                    marginTop: '5px',
-                  }}
-                />
-              )}
-
-              <Box
-                marginTop={1}
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-                color="#FFFFFF"
-              >
-                <Typography variant="body1">
-                  <strong>CI: </strong>
-                  {`${respuesta.personal.ci} ${respuesta.personal.complemento || ''}`}
-                </Typography>
-                <Typography variant="body1">
-                  {respuesta.personal.cargo_nombre}
-                </Typography>
-              </Box>
             </Box>
 
             <Grid
@@ -237,7 +205,7 @@ function AccesoComputo() {
                 <Box backgroundColor="primary.main" width="1.5px"></Box>
                 <img
                   src={`/EleccionesLogo.png`}
-                  alt="Logo TED"
+                  alt="Logo Elecciones"
                   style={{ width: '90px', height: '100%' }}
                 />
               </Grid>
@@ -279,4 +247,4 @@ function AccesoComputo() {
   );
 }
 
-export default AccesoComputo;
+export default AccesoObservador;
