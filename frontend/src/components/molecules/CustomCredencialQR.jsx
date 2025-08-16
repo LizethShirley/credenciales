@@ -106,8 +106,8 @@ const CustomCredencialQR = ({ persona, lado }) => {
             style={{
               position: "absolute",
               top: "8.2cm",
-              paddingLeft: "0.1cm",
-              paddingRight: "0.1cm",
+              paddingLeft: "0.5cm",
+              paddingRight: "0.5cm",
               width: "100%",
               height: "0.9cm",
               objectFit: "cover",

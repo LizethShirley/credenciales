@@ -25,6 +25,13 @@ const QRScanner = () => {
           console.log("QR detectado:", decodedText);
           setScannedText(decodedText);
           stopScanner();
+
+          // Redirigir automáticamente según el formato
+          if (decodedText.startsWith("externo/")) {
+            navigate(`/accesoObservador/${encodeURIComponent(decodedText)}`);
+          } else {
+            navigate(`/accesoComputo/${encodeURIComponent(decodedText)}`);
+          }
         },
         (scanError) => {
           console.warn("Scan error:", scanError);
@@ -60,12 +67,6 @@ const QRScanner = () => {
     window.close();
   };
 
-  const handleRedirect = () => {
-    if (scannedText) {
-      navigate(`/accesoComputo/${encodeURIComponent(scannedText)}`);
-    }
-  };
-
   return (
     <Paper sx={{ p: 3, maxWidth: 500, margin: 'auto', borderRadius: 3 }}>
       <Box>
@@ -89,37 +90,18 @@ const QRScanner = () => {
           border: '1px solid #ccc',
           position: 'relative',
         }}
-      >
-        {scannedText && (
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: 'rgba(255,255,255,0.8)',
-              textAlign: 'center',
-              p: 1,
-            }}
-          >
-            {/* Aqui debe ir el componente accesoComputo*/}
-          </Box>
-        )}
-      </Box>
-
+      />
       <Box mt={2} display="flex" flexDirection="row" alignItems="center" justifyContent="center" gap={1}>
         {!scanning && (
           <Button onClick={startScanner} variant="contained" sx={{color: 'white', backgroundColor: '#07854E'}}>
             ESCANEAR
           </Button>
         )}
-
         {scanning && (
           <Button onClick={stopScanner} variant="outlined" sx={{color: '#FFFFFF', backgroundColor: 'primary.main'}}>
             Detener escáner
           </Button>
         )}
-
         <Button onClick={handleClear} variant="outlined" color="secondary">
           Limpiar
         </Button>
@@ -127,7 +109,6 @@ const QRScanner = () => {
           Salir
         </Button>
       </Box>
-
       {error && (
         <Typography mt={2} color="error">
           ⚠️ {error}
