@@ -15,7 +15,7 @@ class AccesoComputoExternoController extends Controller
 {
     public function generateQRExterno($type)
     {
-        if (!in_array($type, ['prensa', 'observador', 'candidato'])) {
+        if (!in_array($type, ['prensa', 'observador', 'candidato', 'delegado', 'publico'])) {
             return response()->json(['msg' => 'Tipo inválido'], 400);
         }
 
@@ -76,7 +76,7 @@ class AccesoComputoExternoController extends Controller
     public function generateQRExternoMasivo(Request $request)
     {
         $request->validate([
-            'tipo' => 'required|in:prensa,observador,candidato',
+            'tipo' => 'required|in:prensa,observador,candidato,delegado,publico',
             'cantidad' => 'required|integer|min:1|max:1000'
         ]);
 

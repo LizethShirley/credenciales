@@ -14,7 +14,7 @@ return new class extends Migration {
         Schema::create('acceso_computo_externo', function (Blueprint $table) {
             $table->id();
             $table->string('token_acceso')->unique();
-            $table->enum('tipo', ['prensa', 'observador', 'candidato', 'delegado']);
+            $table->enum('tipo', ['prensa', 'observador', 'candidato', 'delegado', 'publico']);
             $table->longText('qr')->nullable();
             $table->longText('barcode')->nullable();
             $table->boolean('activo')->default(true);
