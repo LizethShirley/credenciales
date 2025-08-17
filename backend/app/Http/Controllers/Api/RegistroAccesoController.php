@@ -55,7 +55,7 @@ class RegistroAccesoController extends Controller
 
                 return response()->json([
                     'res' => true,
-                    'msg' => "Acceso a Computo Externo, {$nuevoTipo}",
+                    'msg' => "Acceso a área de Observación, {$nuevoTipo}",
                     'tipo' => $nuevoTipo,
                     'tipo_credencial' => $acceso->tipo,
                     'status' => 200,
@@ -92,7 +92,7 @@ class RegistroAccesoController extends Controller
 
                 return response()->json([
                     'res'      => true,
-                    'msg'      => "Acceso a Computo, {$nuevoTipo}",
+                    'msg'      => "Acceso a Cómputo, {$nuevoTipo}",
                     'tipo'     => $nuevoTipo,
                     'registro' => $registro,
                     'personal' => $personalData,

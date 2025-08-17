@@ -15,7 +15,7 @@ class AccesoComputoExternoController extends Controller
 {
     public function generateQRExterno($type)
     {
-        if (!in_array($type, ['prensa', 'observador', 'candidato'])) {
+        if (!in_array($type, ['prensa', 'observador', 'candidato', 'delegado', 'publico'])) {
             return response()->json(['msg' => 'Tipo inválido'], 400);
         }
 
@@ -76,7 +76,7 @@ class AccesoComputoExternoController extends Controller
     public function generateQRExternoMasivo(Request $request)
     {
         $request->validate([
-            'tipo' => 'required|in:prensa,observador,candidato',
+            'tipo' => 'required|in:prensa,observador,candidato,delegado,publico',
             'cantidad' => 'required|integer|min:1|max:1000'
         ]);
 
@@ -108,6 +108,8 @@ class AccesoComputoExternoController extends Controller
             $resultados[] = [
                 'token_access' => $code,
                 'tipo' => $type,
+                'qr' => $qr ? base64_encode($qr) : null,
+                'barcode' => $codigoBarra ? base64_encode($codigoBarra) : null,
             ];
         }
 
@@ -120,7 +122,6 @@ class AccesoComputoExternoController extends Controller
 
     public function listarAccesosExternos()
     {
-
         $accesos = DB::table('acceso_computo_externo as a')
                 ->select(
                     'a.id',
@@ -140,7 +141,6 @@ class AccesoComputoExternoController extends Controller
             $arrayAcceso['barcode'] = $acceso->barcode ? base64_encode($acceso->barcode) : null;
             return $arrayAcceso;
         });
-
         return response()->json([
             'res' => true,
             'datos' => $accesosArray
