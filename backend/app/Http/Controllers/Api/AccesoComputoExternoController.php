@@ -20,7 +20,7 @@ class AccesoComputoExternoController extends Controller
         }
 
         $code = Str::upper(Str::random(10));
-        $qrData = url("/externo/{$code}");
+        $qrData = "/externo-{$code}";
         $qr = QrCode::format('svg')->size(pixels: 250)->generate($qrData);
 
         $codigoBarra = DNS1D::getBarcodeSVG($qrData, 'C128', 2, 70, false);

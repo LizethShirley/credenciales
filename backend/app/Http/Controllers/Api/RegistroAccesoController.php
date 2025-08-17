@@ -27,7 +27,7 @@ class RegistroAccesoController extends Controller
 
             if (strpos($token, 'externo') !== false) {
 
-                $token = explode("/", $token)[1];
+                $token = explode("-", $token)[1];
 
                 $acceso = AccesoComputoExterno::where('token_acceso', $token)
                 ->where('activo', true)
