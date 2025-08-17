@@ -71,17 +71,7 @@ const accesosGenerados = useRef([]);
   if (!accesosGenerados.current.length) return alert("No hay datos para mostrar");
 
   // chunkArray para formar las páginas
-  const pages = chunkArray(accesosGenerados.current, 9);
-    console.log("Datos que se van a enviar a preview:", accesosGenerados.current);
-console.log("Páginas chunked:", chunkArray(accesosGenerados.current, 9));
-
-  // Guardar en localStorage exactamente lo que Preview espera
-  localStorage.setItem("credenciales_preview_pages", JSON.stringify(pages));
-  localStorage.setItem("credenciales_preview_acceso", 0);
-  localStorage.setItem("credenciales_preview_ids", JSON.stringify(accesosGenerados.current.map(d => d.token_access)));
-
-  // Abrir ventana
-  window.open("/preview", "_blank", "width=900,height=1400");
+  
 };
 
 

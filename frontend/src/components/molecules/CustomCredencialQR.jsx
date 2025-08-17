@@ -14,49 +14,37 @@ const CustomCredencialQR = ({ persona, lado }) => {
       className="credencial"
       sx={{
         width: "6cm",
-        height: "9.5cm",
+        height: "9cm",
         position: "relative",
         backgroundImage: `url(${lado === 'anverso' 
           ? '/credenciales/CARA_QR_EG2025.png'
           : '/credenciales/ATRAS_QR_EG2025.jpg'})`,
-        backgroundSize: "cover",
+        backgroundSize: "100% 100%", 
+        backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
         fontSize: "8pt",
-        overflow: "hidden"
+        fontFamily: "Times New Roman, serif",
+        overflow: "hidden",
       }}
     >
       {lado === 'anverso' && (
         <>
-          <Typography
-            sx={{
-              position: "absolute",
-              lineHeight:"1",
-              top: "2.9cm",
-              left: 0,
-              width: "100%",
-              fontWeight:780,
-              textAlign: "center",
-              fontSize: "6pt"
-            }}
-          >
-            {safePersona.cargo_nombre}
-          </Typography>
           <img
             src={`data:image/svg+xml;base64,${safePersona.qr}`}
             alt="QR"
             style={{
               position: "absolute",
-              top: "3.2cm",
-              left: "1.8cm",
-              width: "2.6cm",
-              height: "2.6cm",
+              top: "3.05cm",
+              left: "1.9cm",
+              width: "2.4cm",
+              height: "2.4cm",
               objectFit: "cover"
             }}
           />
           <Typography
             sx={{
               position: "absolute",
-              top: "6.6cm",
+              top: "6.1cm",
               left: 0,
               width: "100%",
               textAlign: "center",
@@ -69,10 +57,10 @@ const CustomCredencialQR = ({ persona, lado }) => {
           <Typography
             sx={{
               position: "absolute",
-              bottom: "1.88cm",
+              bottom: "1.95cm",
               left: "3.5cm",
               width: "100%",
-              fontSize: "7pt"
+              fontSize: "7.2pt"
             }}
           >
             {safePersona.ci}
@@ -105,7 +93,7 @@ const CustomCredencialQR = ({ persona, lado }) => {
             alt="Código de barras"
             style={{
               position: "absolute",
-              top: "8.2cm",
+              top: "7.5cm",
               paddingLeft: "0.5cm",
               paddingRight: "0.5cm",
               width: "100%",
