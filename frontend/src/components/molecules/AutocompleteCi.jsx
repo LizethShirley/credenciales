@@ -10,11 +10,11 @@ import {
   CircularProgress
 } from "@mui/material";
 
-const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
+const AutocompleteCi = ({ fetchData, setResultadosFiltrados, accesoComputo, setAccesoComputo}) => {
   const [opciones, setOpciones] = useState([]);
   const [seleccionados, setSeleccionados] = useState([]);
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'info' });
-  const [loading, setLoading] = useState(false); // 👈 Agregado
+  const [loading, setLoading] = useState(false); 
 
   useEffect(() => {
     obtenerPersonal();
@@ -39,25 +39,28 @@ const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
   };
   const closeAlert = () => setAlert({ ...alert, open: false });
 
-  const handleBuscar = async () => {
+  const handleBuscar = async () => {   // 👈 ya no recibe accesoValue
     if (seleccionados.length === 0) return;
-
     setLoading(true);
 
     const params = new URLSearchParams();
     seleccionados.forEach(ci => params.append('personal[]', ci));
+    
+    // 👇 Usar directamente la prop accesoComputo
+    if (accesoComputo === 1) params.append('accesoComputo', 1);
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/list/personal-filter?${params.toString()}`);
       const data = await res.json();
       if (data.res && Array.isArray(data.personal)) {
         setResultadosFiltrados(data.personal);
+        setAccesoComputo(accesoComputo);  
       } else {
         showAlert("No se encontraron resultados.", "warning");
       }
     } catch (error) {
-      console.error("Error al buscar detalles:", error);
-      showAlert("Hubo un error al buscar los detalles.", "error");
+      console.error(error);
+      showAlert("Error al buscar detalles.", "error");
     } finally {
       setLoading(false);
     }
@@ -89,16 +92,12 @@ const AutocompleteCi = ({ fetchData, setResultadosFiltrados }) => {
       />
 
       <Button
-        onClick={handleBuscar}
+        onClick={handleBuscar}   // 👈 ya no le pasas nada
         variant="contained"
         sx={{ mt: 2 }}
-        disabled={seleccionados.length === 0 || loading} // desactivar durante loading
+        disabled={seleccionados.length === 0 || loading}
       >
-        {loading ? (
-          <CircularProgress size={24} color="inherit" />
-        ) : (
-          "Buscar detalles"
-        )}
+        {loading ? <CircularProgress size={24} color="inherit" /> : "Buscar detalles"}
       </Button>
     </Box>
   );

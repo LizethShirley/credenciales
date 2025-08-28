@@ -276,7 +276,6 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
           <Button variant="contained" onClick={generarQR}>Generar QR</Button>
         </DialogActions>
       </Dialog>
-
       {/* Filtros */}
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <TextField
@@ -417,10 +416,10 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
             <TableBody>
               {paginatedData.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell padding="checkbox">
+                  <TableCell align="center">
                     <Checkbox
-                      checked={selectedRows.includes(item.id)}
-                      onChange={() => toggleSelectRow(item.id)}
+                      checked={item.accesoComputo === 1}
+                      onChange={() => handleToggleAcceso(item)}
                     />
                   </TableCell>
                   <TableCell>

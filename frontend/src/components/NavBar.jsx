@@ -1,5 +1,6 @@
 import { AppBar, Toolbar, Typography, Box, Stack, Button} from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useNavigate } from 'react-router-dom';
 
 const NavBar = (anchoCaja) => {
@@ -39,6 +40,26 @@ const NavBar = (anchoCaja) => {
             backgroundColor: 'primary.main',
           }}
         >
+          <Button
+            sx={{
+              color: '#FFFFFF',
+              position: 'absolute',
+              right: 8,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              minWidth: 'auto',
+              backgroundColor: 'transparent',
+              '&:hover': {
+                color: 'rgba(0, 0, 0, 0.2)',
+              },
+              '&:active': {
+                color: 'rgba(0, 0, 0, 0.3)',
+              },
+            }}
+            onClick={handleLogout}
+          >
+            <NotificationsIcon />
+          </Button>
           <Typography
             variant="h6"
             noWrap
@@ -55,7 +76,7 @@ const NavBar = (anchoCaja) => {
             sx={{
               color: '#FFFFFF',
               position: 'absolute',
-              right: 8,
+              left: 8,
               top: '50%',
               transform: 'translateY(-50%)',
               minWidth: 'auto',

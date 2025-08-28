@@ -37,7 +37,6 @@ const CredentialPrintPage = ({ fetchData }) => {
   const [accesoComputo, setAccesoComputo] = useState(0);
   const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
   const printRef = useRef();
-
   const showAlert = (message, severity = "info") => {
     setAlert({ open: true, message, severity });
   };
@@ -62,32 +61,20 @@ const CredentialPrintPage = ({ fetchData }) => {
   const handleFiltrar = async (accesoValue = accesoComputo) => {
     setLoading(true);
 
-    if (!dateRange.start || !dateRange.end) {
-      showAlert("Selecciona fechas.", "warning");
-      setLoading(false);
-      return;
-    }
-
-    if (!selectedCargo) {
-      showAlert("Selecciona un cargo.", "warning");
-      setLoading(false);
-      return;
-    }
-
-    if (selectedCargo.nombre === "NOTARIO ELECTORAL" && !selectedRecinto) {
-      showAlert("Selecciona una circunscripción.", "warning");
-      setLoading(false);
-      return;
-    }
-
-    const inicio = dateRange.start.toISOString().slice(0, 10);
-    const fin = dateRange.end.toISOString().slice(0, 10);
-    const cargo = selectedCargo.id;
-    const circunscripcion = selectedCargo.nombre === "NOTARIO ELECTORAL" ? selectedRecinto : "";
+    // Construir parámetros solo si existen
+    const inicio = dateRange.start ? dateRange.start.toISOString().slice(0, 10) : "";
+    const fin = dateRange.end ? dateRange.end.toISOString().slice(0, 10) : "";
+    const cargo = selectedCargo ? selectedCargo.id : "";
+    const circunscripcion =
+      selectedCargo && selectedCargo.nombre === "NOTARIO ELECTORAL" && selectedRecinto
+        ? selectedRecinto
+        : "";
 
     try {
       const result = await fetchData(inicio, fin, cargo, circunscripcion, accesoValue);
+
       await new Promise((res) => setTimeout(res, 2000));
+
       if (result.res && Array.isArray(result.personal)) {
         setResultadosFiltrados(result.personal);
         if (result.personal.length === 0) {
@@ -105,6 +92,7 @@ const CredentialPrintPage = ({ fetchData }) => {
       setLoading(false);
     }
   };
+
 
   const handleDownloadPDF = () => {
     if (!printRef.current || loading || resultadosFiltrados.length === 0) return;
@@ -189,6 +177,8 @@ const CredentialPrintPage = ({ fetchData }) => {
         <AutocompleteCi
           fetchData={fetchData}
           setResultadosFiltrados={setResultadosFiltrados}
+          accesoComputo={checked ? 1 : 0}
+          setAccesoComputo={setAccesoComputo} 
         />
       </Box>
 
@@ -222,7 +212,7 @@ const CredentialPrintPage = ({ fetchData }) => {
       </Grid>
 
       <Grid container spacing={2} justifyContent="center">
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
               <CircularProgress />
