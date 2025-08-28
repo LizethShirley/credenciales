@@ -71,13 +71,14 @@ Route::delete('recintos/{id}', [RecintoController::class, 'destroy']);
 
 //Rutas Accesso Computo
 //Generar token y QR
-Route::post('/acceso-computo/generar-qr', [AccesoComputoController::class, 'generarTokenQR']);
-Route::post('/registro-acceso/registrar', [RegistroAccesoController::class, 'registrarAcceso']);
-Route::get('/registro-acceso/listar', [RegistroAccesoController::class, 'listarRegistros']);
+Route::post('acceso-computo/generar-qr', [AccesoComputoController::class, 'generarTokenQR']);
+Route::post('registro-acceso/registrar', [RegistroAccesoController::class, 'registrarAcceso']);
+Route::get('registro-acceso/listar', [RegistroAccesoController::class, 'listarRegistros']);
 
-Route::post('/generar-accesos', [AccesoComputoExternoController::class, 'generateQRExternoMasivo']);
-Route::post('/registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAccesoExterno']);
-Route::get('/acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']);
+Route::post('generar-accesos', [AccesoComputoExternoController::class, 'generateQRExternoMasivo']);
+Route::post('registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAccesoExterno']);
+Route::get('acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']);
+Route::post('activarQr/{id}', [AccesoComputoExternoController::class, 'activarAccesoComputoExterno']);
 
 
 

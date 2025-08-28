@@ -9,6 +9,7 @@ use Milon\Barcode\Facades\DNS1DFacade as DNS1D;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
+use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\DB;
 
 class AccesoComputoExternoController extends Controller
@@ -123,22 +124,22 @@ class AccesoComputoExternoController extends Controller
     public function listarAccesosExternos()
     {
         $accesos = DB::table('acceso_computo_externo as a')
-                ->select(
-                    'a.id',
-                    'a.tipo',
-                    'a.activo',
-                    'a.nombre_completo',
-                    'a.ci',
-                    'a.foto',
-                    'a.identificador',
-                    'a.organizacion_politica',
-                    'a.qr',
-                    'a.barcode',
-                    'a.created_at',
-                    'a.updated_at'
-                )
-                ->orderBy('a.created_at', 'desc')
-                ->get();
+            ->select(
+                'a.id',
+                'a.tipo',
+                'a.activo',
+                'a.nombre_completo',
+                'a.ci',
+                'a.foto',
+                'a.identificador',
+                'a.organizacion_politica',
+                'a.qr',
+                'a.barcode',
+                'a.created_at',
+                'a.updated_at'
+            )
+            ->orderBy('a.created_at', 'desc')
+            ->get();
 
         $accesosArray = $accesos->map(function ($acceso) {
             $arrayAcceso = (array) $acceso;
@@ -180,16 +181,24 @@ class AccesoComputoExternoController extends Controller
         $acceso->organizacion_politica = $request->organizacion_politica;
 
         if ($request->hasFile('foto')) {
-            $acceso->foto = file_get_contents($request->file('foto')->getRealPath());
+            $file = $request->file('foto');
+            $manager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+            $image = $manager->read($file->getPathname());
+            $compressed = $image->scale(width: 600)->toJpeg(quality: 70);
+
+            $acceso->foto = $compressed->toString();
         }
+
         $acceso->activo = true;
         $acceso->save();
-        
+
         return response()->json([
             'res' => true,
             'msg' => 'Datos actualizados correctamente',
             'status' => 200,
-            'data' => $acceso
+            'data' => $acceso->makeHidden(['foto'])->toArray() + [
+                'foto_base64' => $acceso->foto ? base64_encode($acceso->foto) : null
+            ]
         ]);
     }
 }
