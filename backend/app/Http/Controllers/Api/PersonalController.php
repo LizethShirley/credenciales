@@ -39,6 +39,7 @@ class PersonalController extends Controller
                     'p.ciexterno',
                     'p.photo',
                     'p.updated_at',
+                    'p.created_at',
                     'c.id as cargo_id',
                     'c.nombre as cargo_nombre',
                     's.id as seccion_id',
@@ -51,6 +52,7 @@ class PersonalController extends Controller
                     // 'r.nombreLocalidad as recinto_localidad',
                     // 'r.circun as recinto_circun',
                 )
+                ->orderBy('p.created_at', 'desc')
                 ->get();
 
             $personalsArray = $personal->map(function ($personal) {
@@ -124,7 +126,7 @@ class PersonalController extends Controller
             }
 
             if ($cargo) {
-                $personal->where('c.nombre','like', "%{$cargo}%");
+                $personal->where('c.nombre', 'like', "%{$cargo}%");
             }
 
             if ($fecha) {
@@ -594,32 +596,58 @@ class PersonalController extends Controller
         try {
 
             if (!empty($accesoComputo) && $accesoComputo == 1) {
-                 $personal = DB::table('personal as p')
+                $personal = DB::table('personal as p')
                     ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
                     ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
                     ->leftJoin('acceso_computo as a', 'p.id', '=', 'a.personal_id')
                     ->select(
-                        'p.id', 'p.nombre', 'p.paterno', 'p.materno', 'p.ci', 'a.qr', 'a.barcode'
+                        'p.id',
+                        'p.nombre',
+                        'p.paterno',
+                        'p.materno',
+                        'p.ci',
+                        'a.qr',
+                        'a.barcode',
+                        'p.created_at',
+                        'c.nombre as cargo_nombre'
                     )->where('p.accesoComputo', $accesoComputo);
             } else {
                 $personal = DB::table('personal as p')
                     ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
                     ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
                     ->select(
-                        'p.id', 'p.nombre', 'p.paterno', 'p.materno', 'p.ci',
-                        'p.estado', 'p.complemento', 'p.extencion', 'p.token',
-                        'p.email', 'p.celular', 'p.accesoComputo', 'p.ciexterno',
+                        'p.id',
+                        'p.nombre',
+                        'p.paterno',
+                        'p.materno',
+                        'p.ci',
+                        'p.estado',
+                        'p.complemento',
+                        'p.extencion',
+                        'p.token',
+                        'p.email',
+                        'p.celular',
+                        'p.accesoComputo',
+                        'p.ciexterno',
                         'p.photo',
-                        'c.id as cargo_id', 'c.nombre as cargo_nombre',
-                        's.id as seccion_id', 's.nombre as seccion_nombre'
+                        'p.created_at',
+                        'c.id as cargo_id',
+                        'c.nombre as cargo_nombre',
+                        's.id as seccion_id',
+                        's.nombre as seccion_nombre'
                     );
             }
 
             if (!empty($date_ini) && !empty($date_fin)) {
-                $personal->whereBetween('p.updated_at', [
+                $personal->whereBetween('p.created_at', [
                     $date_ini . ' 00:00:00',
                     $date_fin . ' 23:59:59',
                 ]);
+            } elseif (!empty($date_ini) && empty($date_fin)) {
+                $personal->whereDate('p.created_at', '>=', $date_ini . ' 00:00:00');
+            } elseif (empty($date_ini) && !empty($date_fin)) {
+                // $personal->whereDate('p.created_at', '<=', $date_fin . ' 23:59:59');
+                $personal->whereDate('p.created_at', '=', $date_fin);
             }
 
             if (!empty($cargo)) {
@@ -667,7 +695,8 @@ class PersonalController extends Controller
         }
     }
 
-    public function updateStatus(Request $request) {
+    public function updateStatus(Request $request)
+    {
         $request->validate([
             'ids' => 'required|array',
             'estado' => 'required|integer|in:0,1',
@@ -680,7 +709,7 @@ class PersonalController extends Controller
 
             return response()->json([
                 'res' => true,
-                'msg' => 'Estado de Impresión del personal actualizado exitosamente', 
+                'msg' => 'Estado de Impresión del personal actualizado exitosamente',
                 'status' => 200,
                 'updated_count' => $updatedCount,
             ]);
