@@ -102,7 +102,7 @@ class AccesoComputoExternoController extends Controller
                 'tipo' => $type,
                 'qr' => $qr,
                 'barcode' => $codigoBarra,
-                'activo' => true,
+                'activo' => false,
             ]);
 
             $resultados[] = [
@@ -127,6 +127,11 @@ class AccesoComputoExternoController extends Controller
                     'a.id',
                     'a.tipo',
                     'a.activo',
+                    'a.nombre_completo',
+                    'a.ci',
+                    'a.foto',
+                    'a.identificador',
+                    'a.organizacion_politica',
                     'a.qr',
                     'a.barcode',
                     'a.created_at',
@@ -144,6 +149,47 @@ class AccesoComputoExternoController extends Controller
         return response()->json([
             'res' => true,
             'datos' => $accesosArray
+        ]);
+    }
+
+    public function activarAccesoComputoExterno(Request $request, $id)
+    {
+        $rules = [
+            'nombre_completo' => 'required|string|max:255',
+            'ci' => 'required|string|max:50|unique:acceso_computo_externo,ci,' . $id,
+            'foto' => 'nullable|file|image|max:2048',
+            'identificador' => 'nullable|string|max:255',
+            'organizacion_politica' => 'nullable|string|max:255',
+        ];
+
+        if ($request->tipo === 'prensa') {
+            $rules['identificador'] = 'required|string|max:255';
+        }
+
+        if (in_array($request->tipo, ['delegado', 'candidato'])) {
+            $rules['organizacion_politica'] = 'required|string|max:255';
+        }
+
+        $request->validate($rules);
+
+        $acceso = AccesoComputoExterno::findOrFail($id);
+
+        $acceso->nombre_completo = $request->nombre_completo;
+        $acceso->ci = $request->ci;
+        $acceso->identificador = $request->identificador;
+        $acceso->organizacion_politica = $request->organizacion_politica;
+
+        if ($request->hasFile('foto')) {
+            $acceso->foto = file_get_contents($request->file('foto')->getRealPath());
+        }
+        $acceso->activo = true;
+        $acceso->save();
+        
+        return response()->json([
+            'res' => true,
+            'msg' => 'Datos actualizados correctamente',
+            'status' => 200,
+            'data' => $acceso
         ]);
     }
 }

@@ -10,6 +10,11 @@ class AccesoComputoExterno extends Model
     protected $fillable = [
         'token_acceso',
         'tipo',
+        'nombre_completo',
+        'ci',
+        'foto',
+        'identificador',
+        'organizacion_politica',
         'qr',
         'barcode',
         'activo',

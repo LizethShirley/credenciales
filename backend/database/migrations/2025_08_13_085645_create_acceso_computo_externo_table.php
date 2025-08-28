@@ -15,9 +15,14 @@ return new class extends Migration {
             $table->id();
             $table->string('token_acceso')->unique();
             $table->enum('tipo', ['prensa', 'observador', 'candidato', 'delegado', 'publico']);
+            $table->string('nombre_completo');       
+            $table->string('ci')->unique();          
+            $table->binary('foto')->nullable();
+            $table->string('identificador')->nullable(); 
+            $table->string('organizacion_politica')->nullable(); 
             $table->longText('qr')->nullable();
             $table->longText('barcode')->nullable();
-            $table->boolean('activo')->default(true);
+            $table->boolean('activo')->default(false);
             $table->timestamps();
         });
     }
