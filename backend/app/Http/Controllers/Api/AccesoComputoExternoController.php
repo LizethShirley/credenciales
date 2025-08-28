@@ -143,6 +143,7 @@ class AccesoComputoExternoController extends Controller
 
         $accesosArray = $accesos->map(function ($acceso) {
             $arrayAcceso = (array) $acceso;
+            $arrayAcceso['foto'] = $acceso->foto ? base64_encode($acceso->foto) : null;
             $arrayAcceso['qr'] = $acceso->qr ? base64_encode($acceso->qr) : null;
             $arrayAcceso['barcode'] = $acceso->barcode ? base64_encode($acceso->barcode) : null;
             return $arrayAcceso;

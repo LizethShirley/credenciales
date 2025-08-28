@@ -80,6 +80,4 @@ Route::post('registro-acceso-externo/registrar', [RegistroAccesoExternoControlle
 Route::get('acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']);
 Route::post('activarQr/{id}', [AccesoComputoExternoController::class, 'activarAccesoComputoExterno']);
 
-
-
 //});

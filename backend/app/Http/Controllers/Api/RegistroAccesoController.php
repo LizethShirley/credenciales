@@ -36,7 +36,7 @@ class RegistroAccesoController extends Controller
                 if (!$acceso) {
                     return response()->json([
                         'res' => false,
-                        'msg' => 'Usuario Inactivo.',
+                        'msg' => 'Usuario Inactivo. Para Activar el acceso, por favor registre sus datos.',
                         'status' => 404
                     ]);
                 }
