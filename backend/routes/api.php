@@ -58,6 +58,7 @@ Route::get('list/personal-filter', [PersonalController::class, 'filtroPersonal']
 Route::patch('updateEstado', [PersonalController::class, 'updateStatus']);
 Route::get('list/personalCI', [PersonalController::class, 'getPersonalCI']);
 Route::get('list/personalPaginated', [PersonalController::class, 'listPaginated']);
+Route::patch('updateEstadoComputo', [PersonalController::class, 'updateStatusComputo']);
 
 
 //Rutas recintos

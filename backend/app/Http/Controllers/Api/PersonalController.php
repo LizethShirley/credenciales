@@ -722,5 +722,43 @@ class PersonalController extends Controller
             ]);
         }
     }
+
+    public function updateStatusComputo(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer|exists:personal,id',
+            'accesoComputo' => 'required|integer|in:0,1',
+        ]);
+
+        $id = $request->input('id');
+        $computo = $request->input('accesoComputo');
+
+        try {
+            $updatedCount = Personal::where('id', $id)->update(['accesoComputo' => $computo]);
+
+            if ($updatedCount > 0) {
+                return response()->json([
+                    'res' => true,
+                    'msg' => 'Acceso a cómputo del personal actualizado exitosamente',
+                    'status' => 200,
+                    'updated_count' => $updatedCount,
+                ]);
+            } else {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'No se encontró un registro con el ID proporcionado',
+                    'status' => 404,
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al actualizar el acceso a cómputo del personal',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ]);
+        }
+    }
+
 }
 ;
