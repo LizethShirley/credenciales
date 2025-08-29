@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Models\Recinto;
+use App\Http\Controllers\Controller;
+use App\Models\AccesoComputoObservadores;
 use Illuminate\Http\Request;
 
-class RecintoController extends Controller
+class AccesoComputoObservadoresController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        
     }
 
     /**
@@ -28,13 +29,13 @@ class RecintoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Recinto $recinto)
+    public function show(AccesoComputoObservadores $accesoComputoObservadores)
     {
         //
     }
@@ -42,7 +43,7 @@ class RecintoController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Recinto $recinto)
+    public function edit(AccesoComputoObservadores $accesoComputoObservadores)
     {
         //
     }
@@ -50,7 +51,7 @@ class RecintoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Recinto $recinto)
+    public function update(Request $request, AccesoComputoObservadores $accesoComputoObservadores)
     {
         //
     }
@@ -58,7 +59,7 @@ class RecintoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Recinto $recinto)
+    public function destroy(AccesoComputoObservadores $accesoComputoObservadores)
     {
         //
     }

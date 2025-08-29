@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CargoController;
 use App\Http\Controllers\Api\PersonalController;
 use App\Http\Controllers\Api\RegistroAccesoController;
 use App\Http\Controllers\Api\RegistroAccesoExternoController;
+use App\Http\Controllers\Api\ObservadoresController;
 use App\Http\Controllers\Api\SeccionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Auth\AuthController;
@@ -68,7 +69,6 @@ Route::get('recintos/{id}', [RecintoController::class, 'show']);
 Route::put('recintos/{id}', [RecintoController::class, 'update']);
 Route::delete('recintos/{id}', [RecintoController::class, 'destroy']);
 
-
 //Rutas Accesso Computo
 //Generar token y QR
 Route::post('acceso-computo/generar-qr', [AccesoComputoController::class, 'generarTokenQR']);
@@ -79,5 +79,11 @@ Route::post('generar-accesos', [AccesoComputoExternoController::class, 'generate
 Route::post('registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAccesoExterno']);
 Route::get('acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']);
 Route::post('activarQr/{id}', [AccesoComputoExternoController::class, 'activarAccesoComputoExterno']);
+
+//Observadores
+Route::get('list/observadores', [ObservadoresController::class, 'index']);
+Route::post('observadores', [ObservadoresController::class, 'store']);
+Route::put('observadores/{id}', [ObservadoresController::class, 'update']);
+
 
 //});
