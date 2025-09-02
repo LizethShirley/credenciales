@@ -1,244 +1,148 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   Box,
   Grid,
   Typography,
   Paper,
   CircularProgress,
+  TextField,
+  Button,
 } from '@mui/material';
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 function AccesoObservador() {
-  // Soporta /accesoObservador/:tipo/:codigo y /accesoObservador?token=externo/RIMA7
-  const { tipo, codigo } = useParams();
-  const [search] = useSearchParams();
-  const tokenFromQuery = search.get('token');
-  const token = tokenFromQuery || (tipo && codigo ? `${tipo}/${codigo}` : null);
-
-  const [respuesta, setRespuesta] = useState(null);
+  const { token } = useParams();
+  const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [formData, setFormData] = useState({
+    nombre_completo: '',
+    ci: '',
+    identificador: '',
+    organizacion_politica: '',
+  });
+
   const hasCalled = useRef(false);
-  const [progress, setProgress] = useState(0);
-  const progressIntervalRef = useRef(null);
 
-  // ---- TTS seguro ----
-  const speakText = (text) => {
-    try {
-      if (!text) return;
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'es-ES';
-        window.speechSynthesis.speak(utterance);
-      }
-    } catch (e) {
-      console.warn('speechSynthesis no disponible', e);
-    }
-  };
-
-  useEffect(() => {
-    if (respuesta?.msg) speakText(respuesta.msg);
-    return () => {
-      try {
-        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-        }
-      } catch (_) {}
-    };
-  }, [respuesta?.msg]);
-
-  // ---- Llamada inicial ----
   useEffect(() => {
     if (token && !hasCalled.current) {
-      registrarAcceso(token);
+      consultarAcceso(token);
       hasCalled.current = true;
     }
   }, [token]);
 
-  // ---- Progreso visual mientras carga ----
-  useEffect(() => {
-    if (loading) {
-      setProgress(0);
-      progressIntervalRef.current = setInterval(() => {
-        setProgress((prev) => (prev >= 95 ? 95 : prev + 5));
-      }, 200);
-    } else {
-      setProgress(100);
-      clearInterval(progressIntervalRef.current);
-    }
-    return () => clearInterval(progressIntervalRef.current);
-  }, [loading]);
-
-  const registrarAcceso = async (tokenParam) => {
+  const consultarAcceso = async (tokenParam) => {
     setLoading(true);
-    setError(null);
-    setRespuesta(null);
-
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 10000);
-
     try {
-      // 🔑 Aquí va el token como query param
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/registro-acceso/registrar/?token=${encodeURIComponent(
-          tokenParam
-        )}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: controller.signal,
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/registro-acceso/registrar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tokenParam }),
+      });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.msg || 'Error al registrar acceso');
+      if (data.res === false && data.status === 404) {
+        setMostrarFormulario(true);
+      } else if (data.res === true) {
+        setDatos(data);
       } else {
-        setRespuesta(data);
+        setError(data.msg || 'Error desconocido');
       }
     } catch (err) {
-      if (err.name === 'AbortError') {
-        setError('Tiempo de espera agotado. Intente nuevamente.');
-      } else {
-        setError('Error de conexión con el servidor');
-      }
+      setError('Error de conexión');
     } finally {
-      clearTimeout(id);
       setLoading(false);
     }
   };
-  console.log(respuesta);
+
+  const registrarDatos = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/activarQr/${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (data.res === true) {
+        setDatos(data);
+        setMostrarFormulario(false);
+      } else {
+        setError(data.msg || 'Error al registrar');
+      }
+    } catch (err) {
+      setError('Error al enviar datos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const colorFondo = datos?.tipo === 'entrada' ? '#1AB394' : '#F8AC59';
+
   return (
-    <Grid
-      padding={1}
-      margin={1}
-      minHeight={'95vh'}
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-    >
-      <Paper
-        elevation={3}
-        style={{
-          borderRadius: '15px',
-          backgroundColor: '#f9f9f9',
-          width: '100%',
-          height: '100%',
-          maxWidth: 600,
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
+    <Grid padding={2} minHeight="95vh" display="flex" justifyContent="center" alignItems="center">
+      <Paper elevation={3} style={{ borderRadius: 15, padding: 20, maxWidth: 600, width: '100%' }}>
         {loading && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              my: 2,
-              position: 'relative',
-            }}
-          >
-            <CircularProgress
-              variant="determinate"
-              value={progress}
-              size={80}
-              thickness={4}
-            />
-            <Typography
-              variant="h6"
-              sx={{
-                position: 'absolute',
-                color: 'black',
-              }}
-            >
-              {`${progress}%`}
-            </Typography>
+          <Box display="flex" justifyContent="center" alignItems="center" my={2}>
+            <CircularProgress />
           </Box>
         )}
 
         {error && (
-          <Typography
-            variant="body1"
-            align="center"
-            style={{ color: 'red', marginBottom: 8 }}
-          >
+          <Typography color="error" align="center" mb={2}>
             {error}
           </Typography>
         )}
 
-        {respuesta && (
-          <Box padding={1} style={{ textAlign: 'center' }}>
+        {mostrarFormulario && (
+          <Box component="form" display="flex" flexDirection="column" gap={2}>
+            <Typography variant="h6" align="center">Registro de Observador</Typography>
+            <TextField label="Nombre completo" name="nombre_completo" value={formData.nombre_completo} onChange={handleChange} fullWidth />
+            <TextField label="CI" name="ci" value={formData.ci} onChange={handleChange} fullWidth />
+            <TextField label="Identificador" name="identificador" value={formData.identificador} onChange={handleChange} fullWidth />
+            <TextField label="Organización Política" name="organizacion_politica" value={formData.organizacion_politica} onChange={handleChange} fullWidth />
+            <Button variant="contained" color="primary" onClick={registrarDatos}>Registrar</Button>
+          </Box>
+        )}
+
+        {datos && (
+          <Box textAlign="center">
             <Box
-              marginBottom={1}
-              backgroundColor={
-                respuesta.tipo === 'entrada' ? '#1AB394' : '#F8AC59'
-              }
+              marginBottom={2}
+              backgroundColor={colorFondo}
               padding={2}
               borderRadius={3}
+              color="#FFFFFF"
             >
-              <Typography
-                color="#FFFFFF"
-                sx={{ fontWeight: 'bold', letterSpacing: 3, fontSize: "25pt" }}
-              >
-                {`${respuesta.tipo_credencial}`.toUpperCase()}
+              <Typography variant="h6" sx={{ fontWeight: 'bold', letterSpacing: 2 }}>
+                {datos.nombre_completo}
               </Typography>
+              <Typography><strong>CI:</strong> {datos.ci}</Typography>
+              <Typography><strong>Identificador:</strong> {datos.identificador}</Typography>
+              <Typography><strong>Organización:</strong> {datos.organizacion_politica}</Typography>
+              <Typography><strong>Tipo:</strong> {datos.tipo_credencial}</Typography>
             </Box>
 
-            <Grid
-              container
-              spacing={0.5}
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Grid container spacing={0.5} flexDirection="row">
-                <img
-                  src={`/TEDLogo.jpg`}
-                  alt="Logo TED"
-                  style={{ width: '70px', height: '100%' }}
-                />
-                <Box backgroundColor="primary.main" width="1.5px"></Box>
-                <img
-                  src={`/EleccionesLogo.png`}
-                  alt="Logo Elecciones"
-                  style={{ width: '90px', height: '100%' }}
-                />
-              </Grid>
-
-              <Grid container spacing={0.5} flexDirection="row" color="#FFFFFF">
-                <Box
-                  backgroundColor={
-                    respuesta.tipo === 'entrada' ? '#1AB394' : '#F8AC59'
-                  }
-                  padding={1}
-                  borderRadius={2}
-                  height="100%"
-                  mr={1}
-                >
-                  <CalendarMonthIcon />
-                  <Typography variant="body1">
-                    {new Date().toLocaleDateString()}
-                  </Typography>
-                </Box>
-                <Box
-                  backgroundColor={
-                    respuesta.tipo === 'entrada' ? '#1AB394' : '#F8AC59'
-                  }
-                  padding={1}
-                  borderRadius={2}
-                  height="100%"
-                >
-                  <AccessAlarmsIcon />
-                  <Typography variant="body1">
-                    {new Date().toLocaleTimeString()}
-                  </Typography>
-                </Box>
-              </Grid>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Box display="flex" alignItems="center" gap={1} backgroundColor={colorFondo} padding={1} borderRadius={2} color="#FFFFFF">
+                <CalendarMonthIcon />
+                <Typography>{new Date().toLocaleDateString()}</Typography>
+              </Box>
+              <Box display="flex" alignItems="center" gap={1} backgroundColor={colorFondo} padding={1} borderRadius={2} color="#FFFFFF">
+                <AccessAlarmsIcon />
+                <Typography>{new Date().toLocaleTimeString()}</Typography>
+              </Box>
             </Grid>
           </Box>
         )}

@@ -72,6 +72,7 @@ const LateralBar = ({anchoCaja, open, setOpen}) => {
             subItems={[
               { label: 'Lista de Credenciales', path: 'Lista_Credenciales' },
               { label: 'Crear Credencial Individual', path: 'Credencial_Individual' },
+              { label: 'Lista de Externo', path: 'Lista_Externo' },
             ]}
           />
 

@@ -10,6 +10,7 @@ import CredencialIndividual from '../pages/Usuarios/CredencialIndividual';
 import GestionarUnidad from '../pages/Organizacion/GestionarUnidad';
 import GestionarCargo from '../pages/Organizacion/GestionarCargo';
 import GestionarExterno from '../pages/Organizacion/GestionarExterno';
+import ListaCredencialesExterno from '../pages/Usuarios/ListaCredencialesExterno';
 import AccesoComputo from '../pages/AccesoComputo';
 import AccesoObservador from '../pages/AccesoObservador';
 import QRScanner from '../pages/QRScanner'; // 👈 Asegúrate de importar el componente
@@ -25,7 +26,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/preview" element={<PreviewPage />} />
         <Route path="/accesoComputo/:token" element={<AccesoComputo />} />
-        <Route path="/accesoObservador/:tipo/:codigo" element={<AccesoObservador />} />
+        <Route path="/accesoObservador/:token" element={<AccesoObservador />} />
         <Route path="/qr" element={<QRScanner />} /> {/* 👈 Ruta al escáner */}
 
         {/* Redirección según tipo de dispositivo */}
@@ -44,6 +45,7 @@ const App = () => {
             <Route path="/" element={<Layout />}>
               <Route path="/Inicio" element={<CredencialPage />} />
               <Route path="/Lista_Credenciales" element={<ListaCredenciales />} />
+              <Route path="/Lista_Externo" element={<ListaCredencialesExterno />} />
               <Route path="/Credencial_Individual" element={<CredencialIndividual />} />
               <Route path="/Gestionar_Unidad" element={<GestionarUnidad />} />
               <Route path="/Gestionar_Cargo" element={<GestionarCargo />} />
