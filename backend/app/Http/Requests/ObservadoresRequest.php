@@ -24,7 +24,7 @@ class ObservadoresRequest extends FormRequest
         return [
             'nombre_completo' => 'required|string|max:255',
             'ci' => 'nullable|string|max:255',
-            'photo' => 'nullable|image|max:2048',
+            'foto' => 'nullable|image|max:2048',
             'identificador' => 'nullable|string|max:255',
             'organizacion_politica' => 'nullable|string|max:255',
         ];

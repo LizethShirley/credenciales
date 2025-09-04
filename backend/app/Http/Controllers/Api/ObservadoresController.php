@@ -14,7 +14,8 @@ class ObservadoresController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index() {
+    public function index()
+    {
         $observadores = Observadores::all();
 
         return response()->json([
@@ -23,7 +24,7 @@ class ObservadoresController extends Controller
             'status' => 200,
             'observadores' => $observadores->map(function ($observador) {
                 return $observador->makeHidden(['foto'])->toArray() + [
-                    'foto_base64' => $observador->foto ? base64_encode($observador->foto) : null
+                    'foto' => $observador->foto ? base64_encode($observador->foto) : null
                 ];
             })
         ]);
@@ -39,15 +40,27 @@ class ObservadoresController extends Controller
      */
     public function store(ObservadoresRequest $request)
     {
-        $observador = Observadores::create($request->all());
 
-        return response()->json([
-        'res' => true,
-        'msg' => 'Lista de observadores obtenida exitosamente',
-        'status' => 200,
-        'observadores' => $observador->makeHidden(['foto'])->toArray() + [
-            'foto_base64' => $observador->foto ? base64_encode($observador->foto) : null]   
-        ]);
+        try {
+            $validated = $request->validated();
+            $observador = Observadores::create($validated);
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Observador creado exitosamente',
+                'status' => 200,
+                'observadores' => $observador->makeHidden(['foto'])->toArray() + [
+                    'foto' => $observador->foto ? base64_encode($observador->foto) : null
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al crear Observador',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
     }
 
     /**
@@ -72,46 +85,38 @@ class ObservadoresController extends Controller
     public function update(ObservadoresRequest $request, $id)
     {
         try {
-            $observador = Observadores::find($id);
+            $validated = $request->validated();
 
+            $observador = Observadores::find($id);
             if (!$observador) {
                 return response()->json([
                     'res' => false,
                     'msg' => 'Observador no encontrado',
-                    'status' => 404
+                    'status' => 404,
                 ], 404);
             }
-
-            $validated = $request->validated();
-
-            // if ($request->hasFile('photo')) {
-            //     $image = $request->file('photo');
-            //     $binary = file_get_contents($image->getRealPath());
-
-            //     $validated['photo'] = $binary;
-            // }
-
             $observador->update($validated);
-            // $responseData = $observador->toArray();
-            // $responseData['photo'] = $observador->photo ? base64_encode($observador->photo) : null;
 
             return response()->json([
                 'res' => true,
                 'msg' => 'Observador actualizado exitosamente',
                 'status' => 200,
-                'observador' => $observador->makeHidden(['foto'])->toArray() + [
-                    'foto_base64' => $observador->foto ? base64_encode($observador->foto) : null
+                'observadores' => $observador->makeHidden(['foto'])->toArray() + [
+                    'foto' => $observador->foto ? base64_encode($observador->foto) : null
                 ]
             ]);
+
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
-                'msg' => 'Error al actualizar observador',
+                'msg' => 'Error al actualizar Observador',
                 'error' => $e->getMessage(),
                 'status' => 500,
             ], 500);
         }
     }
+
+
 
     /**
      * Remove the specified resource from storage.

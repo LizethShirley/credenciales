@@ -83,7 +83,7 @@ Route::post('activarQr/{id}', [AccesoComputoExternoController::class, 'activarAc
 //Observadores
 Route::get('list/observadores', [ObservadoresController::class, 'index']);
 Route::post('observadores', [ObservadoresController::class, 'store']);
-Route::put('observadores/{id}', [ObservadoresController::class, 'update']);
+Route::post('actualizar-observadores/{id}', [ObservadoresController::class, 'update']);
 
 
 //});
