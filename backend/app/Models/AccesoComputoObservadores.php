@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AccesoComputoObservadores extends Model
 {
+    public $timestamps = false;
     protected $table = 'acceso_computo_observadores';
 
     protected $fillable = [

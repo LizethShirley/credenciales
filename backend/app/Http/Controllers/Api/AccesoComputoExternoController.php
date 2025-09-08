@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\AccesoComputoExterno;
+use App\Models\Observadores;
+use App\Models\AccesoComputoObservadores;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Milon\Barcode\Facades\DNS1DFacade as DNS1D;
@@ -33,7 +35,7 @@ class AccesoComputoExternoController extends Controller
         Storage::put("public/barcode/{$fileNameBC}", $codigoBarra);
 
         $accessCode = AccesoComputoExterno::create([
-            'token_access' => $code,
+            'token_acceso' => $code,
             'tipo' => $type,
             'activo' => true,
             'qr' => $qr,
@@ -54,7 +56,7 @@ class AccesoComputoExternoController extends Controller
 
     public function verify($code)
     {
-        $accessCode = AccesoComputoExterno::where('token_access', $code)
+        $accessCode = AccesoComputoExterno::where('token_acceso', $code)
             ->where('activo', true)
             ->first();
 
@@ -72,7 +74,7 @@ class AccesoComputoExternoController extends Controller
             'msg' => 'Acceso denegado',
             'status' => 403
         ]);
-    }
+    } 
 
     public function generateQRExternoMasivo(Request $request)
     {
@@ -107,7 +109,7 @@ class AccesoComputoExternoController extends Controller
             ]);
 
             $resultados[] = [
-                'token_access' => $code,
+                'token_acceso' => $code,
                 'tipo' => $type,
                 'qr' => $qr ? base64_encode($qr) : null,
                 'barcode' => $codigoBarra ? base64_encode($codigoBarra) : null,
@@ -154,32 +156,33 @@ class AccesoComputoExternoController extends Controller
         ]);
     }
 
-    public function activarAccesoComputoExterno(Request $request, $id)
+    public function activarAccesoComputoExterno(Request $request, $token)
     {
+        $token = AccesoComputoExterno::where('token_acceso', $token)->firstOrFail();
+        $id = $token->id;
+
+         if ($token->tipo === 'prensa') {
+            $rules['identificador'] = 'required|string|max:255';
+        }
+
+        if (in_array($token->tipo, ['delegado', 'candidato'])) {
+            $rules['organizacion_politica'] = 'required|string|max:255';
+        }
         $rules = [
             'nombre_completo' => 'required|string|max:255',
-            'ci' => 'required|string|max:50|unique:acceso_computo_externo,ci,' . $id,
+            'ci' => 'required|string|max:50|unique:observadores,ci',
             'foto' => 'nullable|file|image|max:2048',
             'identificador' => 'nullable|string|max:255',
             'organizacion_politica' => 'nullable|string|max:255',
         ];
 
-        if ($request->tipo === 'prensa') {
-            $rules['identificador'] = 'required|string|max:255';
-        }
+        $validated = $request->validate($rules);
 
-        if (in_array($request->tipo, ['delegado', 'candidato'])) {
-            $rules['organizacion_politica'] = 'required|string|max:255';
-        }
-
-        $request->validate($rules);
-
-        $acceso = AccesoComputoExterno::findOrFail($id);
-
-        $acceso->nombre_completo = $request->nombre_completo;
-        $acceso->ci = $request->ci;
-        $acceso->identificador = $request->identificador;
-        $acceso->organizacion_politica = $request->organizacion_politica;
+        $observador = new Observadores();
+        $observador->nombre_completo = $validated['nombre_completo'];
+        $observador->ci = $validated['ci'];
+        $observador->identificador = $validated['identificador'] ?? null;
+        $observador->organizacion_politica = $validated['organizacion_politica'] ?? null;
 
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
@@ -187,19 +190,26 @@ class AccesoComputoExternoController extends Controller
             $image = $manager->read($file->getPathname());
             $compressed = $image->scale(width: 600)->toJpeg(quality: 70);
 
-            $acceso->foto = $compressed->toString();
+            $observador->foto = $compressed->toString();
         }
 
-        $acceso->activo = true;
-        $acceso->save();
+        $observador->save();
+
+        $asignacion = AccesoComputoObservadores::create([
+            'token_id' => $token->id,
+            'observador_id' => $observador->id,
+            'asignado' => now(),
+            'liberado' => null,
+        ]);
 
         return response()->json([
             'res' => true,
-            'msg' => 'Datos actualizados correctamente',
+            'msg' => 'Observador registrado y token asignado correctamente',
             'status' => 200,
-            'data' => $acceso->makeHidden(['foto'])->toArray() + [
-                'foto_base64' => $acceso->foto ? base64_encode($acceso->foto) : null
-            ]
+            'observador' => $observador->makeHidden(['foto'])->toArray() + [
+                'foto' => $observador->foto ? base64_encode($observador->foto) : null
+            ],
+            'asignacion' => $asignacion
         ]);
     }
 }

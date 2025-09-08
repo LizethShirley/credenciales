@@ -33,14 +33,15 @@ class ObservadoresController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create() {}
+    public function create() {
+        
+    }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(ObservadoresRequest $request)
     {
-
         try {
             $validated = $request->validated();
             $observador = Observadores::create($validated);
@@ -105,7 +106,6 @@ class ObservadoresController extends Controller
                     'foto' => $observador->foto ? base64_encode($observador->foto) : null
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
@@ -116,13 +116,36 @@ class ObservadoresController extends Controller
         }
     }
 
-
-
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Observadores $observadores)
+    public function destroy($id)
     {
-        //
+        try {
+            $observador = Observadores::find($id);
+
+            if (!$observador) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'Observador no encontrado',
+                    'status' => 404
+                ], 404);
+            }
+
+            $observador->delete();
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Observador eliminado exitosamente',
+                'status' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al eliminar observador',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
     }
 }

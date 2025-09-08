@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('registrarPersonal', [PersonalController::class, 'storePublic'])->withoutMiddleware(['auth:sanctum']);
-;
 Route::post('auth/login', [AuthController::class, 'login']);
 
 //Route::middleware('auth:sanctum')->group(function () {
@@ -61,7 +60,6 @@ Route::get('list/personalCI', [PersonalController::class, 'getPersonalCI']);
 Route::get('list/personalPaginated', [PersonalController::class, 'listPaginated']);
 Route::patch('updateEstadoComputo', [PersonalController::class, 'updateStatusComputo']);
 
-
 //Rutas recintos
 Route::get('list/recintos', [RecintoController::class, 'list']);
 Route::post('recintos', [RecintoController::class, 'store']);
@@ -75,15 +73,16 @@ Route::post('acceso-computo/generar-qr', [AccesoComputoController::class, 'gener
 Route::post('registro-acceso/registrar', [RegistroAccesoController::class, 'registrarAcceso']);
 Route::get('registro-acceso/listar', [RegistroAccesoController::class, 'listarRegistros']);
 
-Route::post('generar-accesos', [AccesoComputoExternoController::class, 'generateQRExternoMasivo']);
-Route::post('registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAccesoExterno']);
-Route::get('acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']);
-Route::post('activarQr/{id}', [AccesoComputoExternoController::class, 'activarAccesoComputoExterno']);
+Route::post('generar-accesos', [AccesoComputoExternoController::class, 'generateQRExternoMasivo']); //Generar varios QR externos
+Route::post('registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAccesoExterno']); //Registrar acceso externo
+Route::get('acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']); //listar accesos generados
+Route::post('activarQr/{id}', [AccesoComputoExternoController::class, 'activarAccesoComputoExterno']); //Registrar user que usara el qr
 
 //Observadores
 Route::get('list/observadores', [ObservadoresController::class, 'index']);
 Route::post('observadores', [ObservadoresController::class, 'store']);
 Route::post('actualizar-observadores/{id}', [ObservadoresController::class, 'update']);
+Route::delete('eliminar-observadores/{id}', [ObservadoresController::class, 'destroy']);
 
 
 //});
