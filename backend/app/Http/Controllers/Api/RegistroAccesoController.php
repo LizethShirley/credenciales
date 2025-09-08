@@ -9,6 +9,8 @@ use App\Models\RegistroAcceso;
 use App\Models\RegistroAccesoExterno;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Psy\Command\WhereamiCommand;
 
 class RegistroAccesoController extends Controller
 {
@@ -41,6 +43,26 @@ class RegistroAccesoController extends Controller
                     ]);
                 }
 
+               $observador = DB::table('acceso_computo_observadores')
+                ->join('observadores', 'acceso_computo_observadores.observador_id', '=', 'observadores.id')
+                ->join('acceso_computo_externo', 'acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
+                ->select('acceso_computo_observadores.*', 
+                    'observadores.nombre_completo',
+                    'observadores.ci',
+                    'observadores.identificador',
+                    'observadores.organizacion_politica', 
+                    'acceso_computo_externo.token_acceso', 'acceso_computo_externo.tipo', 'acceso_computo_externo.activo')
+                ->get()
+                ->map(function ($item) { 
+                    $arr = (array) $item;
+                    if (!empty($arr['foto'])) {
+                        $arr['foto'] = base64_encode($arr['foto']);
+                    }
+                    return $arr;
+                });
+
+
+
                 $ultimoRegistro = RegistroAccesoExterno::where('acceso_computo_externo_id', $acceso->id)
                     ->orderBy('fecha_hora', 'desc')
                     ->first();
@@ -57,6 +79,7 @@ class RegistroAccesoController extends Controller
                     'res' => true,
                     'msg' => "Acceso a área de Observación, {$nuevoTipo}",
                     'tipo' => $nuevoTipo,
+                    'observador' => $observador,
                     'tipo_credencial' => $acceso->tipo,
                     'status' => 200,
                 ]);

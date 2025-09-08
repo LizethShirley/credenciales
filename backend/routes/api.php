@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AccesoComputoController;
 use App\Http\Controllers\Api\AccesoComputoExternoController;
+use App\Http\Controllers\Api\AccesoComputoObservadoresController;
 use App\Http\Controllers\Api\CargoController;
 use App\Http\Controllers\Api\PersonalController;
 use App\Http\Controllers\Api\RegistroAccesoController;
@@ -58,7 +59,7 @@ Route::get('list/personal-filter', [PersonalController::class, 'filtroPersonal']
 Route::patch('updateEstado', [PersonalController::class, 'updateStatus']);
 Route::get('list/personalCI', [PersonalController::class, 'getPersonalCI']);
 Route::get('list/personalPaginated', [PersonalController::class, 'listPaginated']);
-Route::patch('updateEstadoComputo', [PersonalController::class, 'updateStatusComputo']);
+Route::put('updateEstadoComputo', [PersonalController::class, 'updateStatusComputo']);
 
 //Rutas recintos
 Route::get('list/recintos', [RecintoController::class, 'list']);
@@ -76,7 +77,11 @@ Route::get('registro-acceso/listar', [RegistroAccesoController::class, 'listarRe
 Route::post('generar-accesos', [AccesoComputoExternoController::class, 'generateQRExternoMasivo']); //Generar varios QR externos
 Route::post('registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAccesoExterno']); //Registrar acceso externo
 Route::get('acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']); //listar accesos generados
-Route::post('activarQr/{id}', [AccesoComputoExternoController::class, 'activarAccesoComputoExterno']); //Registrar user que usara el qr
+Route::post('activarQr/{token}', [AccesoComputoExternoController::class, 'activarAccesoComputoExterno']); //Registrar user que usara el qr
+
+Route::post('liberarToken/{token}', [AccesoComputoObservadoresController::class, 'updateLiberarToken']);
+Route::get('list/acceso-computo-observadores', [AccesoComputoObservadoresController::class, 'list']);
+
 
 //Observadores
 Route::get('list/observadores', [ObservadoresController::class, 'index']);

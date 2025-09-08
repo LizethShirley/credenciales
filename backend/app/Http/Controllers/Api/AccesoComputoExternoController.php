@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\AccesoComputoExterno;
 use App\Models\Observadores;
 use App\Models\AccesoComputoObservadores;
+use App\Http\Requests\ActivarAccesoComputoExternoRequest;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Milon\Barcode\Facades\DNS1DFacade as DNS1D;
@@ -74,7 +75,7 @@ class AccesoComputoExternoController extends Controller
             'msg' => 'Acceso denegado',
             'status' => 403
         ]);
-    } 
+    }
 
     public function generateQRExternoMasivo(Request $request)
     {
@@ -156,27 +157,11 @@ class AccesoComputoExternoController extends Controller
         ]);
     }
 
-    public function activarAccesoComputoExterno(Request $request, $token)
+    public function activarAccesoComputoExterno(ActivarAccesoComputoExternoRequest $request, $token)
     {
         $token = AccesoComputoExterno::where('token_acceso', $token)->firstOrFail();
-        $id = $token->id;
-
-         if ($token->tipo === 'prensa') {
-            $rules['identificador'] = 'required|string|max:255';
-        }
-
-        if (in_array($token->tipo, ['delegado', 'candidato'])) {
-            $rules['organizacion_politica'] = 'required|string|max:255';
-        }
-        $rules = [
-            'nombre_completo' => 'required|string|max:255',
-            'ci' => 'required|string|max:50|unique:observadores,ci',
-            'foto' => 'nullable|file|image|max:2048',
-            'identificador' => 'nullable|string|max:255',
-            'organizacion_politica' => 'nullable|string|max:255',
-        ];
-
-        $validated = $request->validate($rules);
+        
+        $validated = $request->validated();
 
         $observador = new Observadores();
         $observador->nombre_completo = $validated['nombre_completo'];
@@ -201,6 +186,9 @@ class AccesoComputoExternoController extends Controller
             'asignado' => now(),
             'liberado' => null,
         ]);
+
+        $token->activo = 1;
+        $token->save();
 
         return response()->json([
             'res' => true,

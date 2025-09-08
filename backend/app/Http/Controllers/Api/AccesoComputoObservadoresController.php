@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AccesoComputoObservadores;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\AccesoComputoExterno;
 
 class AccesoComputoObservadoresController extends Controller
 {
@@ -18,10 +19,19 @@ class AccesoComputoObservadoresController extends Controller
             $observadores = DB::table('acceso_computo_observadores')
                 ->join('observadores', 'acceso_computo_observadores.observador_id', '=', 'observadores.id')
                 ->join('acceso_computo_externo', 'acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
-                ->select('acceso_computo_observadores.*', 'observadores.*', 'acceso_computo_externo.*')
+                ->select('acceso_computo_observadores.*', 
+                    'observadores.nombre_completo',
+                    'observadores.ci',
+                    'observadores.identificador',
+                    'observadores.organizacion_politica', 
+                    'acceso_computo_externo.token_acceso', 'acceso_computo_externo.tipo', 'acceso_computo_externo.activo')
                 ->get()
-                ->map(function ($item) {
-                    return (array) $item;
+                ->map(function ($item) { 
+                    $arr = (array) $item;
+                    if (!empty($arr['foto'])) {
+                        $arr['foto'] = base64_encode($arr['foto']);
+                    }
+                    return $arr;
                 });
 
             return response()->json([
@@ -38,7 +48,6 @@ class AccesoComputoObservadoresController extends Controller
                 'error' => $e->getMessage()
             ]);
         }
-        
     }
 
     /**
@@ -58,7 +67,6 @@ class AccesoComputoObservadoresController extends Controller
             $data = $request->validate([
                 'token_id' => 'required|exists:acceso_computo_externo,id',
                 'observador_id' => 'required|exists:observadores,id',
-                
             ]);
 
             $data['asignado'] = now();
@@ -101,39 +109,53 @@ class AccesoComputoObservadoresController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function updateLiberarToken($token)
     {
         try {
-            $data = $request->validate([
-                'liberado' => 'nullable|date',
-            ]);
+            $tokenModel = AccesoComputoExterno::where('token_acceso', $token)->first();
 
-            if (isset($data['liberado'])) {
-                $data['liberado'] = now();
-            }
-
-            $accesoComputoObservadores =AccesoComputoObservadores::find($id);
-            if (!$accesoComputoObservadores) { 
+            if (!$tokenModel) {
                 return response()->json([
                     'res' => false,
-                    'msg' => 'Acceso a computo para observador no encontrado',
+                    'msg' => 'Token no encontrado',
                     'status' => 404,
                 ], 404);
             }
-            $accesoComputoObservadores->update($data);  
+
+            $accesoComputoObservadores = AccesoComputoObservadores::where('token_id', $tokenModel->id)->where('liberado', null)->first();
+
+            if (!$accesoComputoObservadores) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'Acceso a cómputo para observador no encontrado o ya está liberado',
+                    'status' => 404,
+                ], 404);
+            }
+
+            // Liberar token (poner fecha actual)
+            $accesoComputoObservadores->update([
+                'liberado' => now()
+            ]);
+
+            $tokenModel->update([
+                'activo' => 1 
+            ]);
+
+            $tokenModel->activo = false;
+            $tokenModel->save();
 
             return response()->json([
                 'res' => true,
-                'msg' => 'Token liberardo exitosamente',
+                'msg' => 'Token liberado exitosamente',
                 'status' => 200,
-                'acceso_computo_observador' => $accesoComputoObservadores
+                'acceso_computo_observador' => $accesoComputoObservadores,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
                 'msg' => 'Error al liberar el token',
                 'status' => 500,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
