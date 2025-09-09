@@ -7,6 +7,7 @@ use App\Models\AccesoComputoObservadores;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\AccesoComputoExterno;
+use Illuminate\Validation\Rule;
 
 class AccesoComputoObservadoresController extends Controller
 {
@@ -16,17 +17,26 @@ class AccesoComputoObservadoresController extends Controller
     public function list()
     {
         try {
-            $observadores = DB::table('acceso_computo_observadores')
-                ->join('observadores', 'acceso_computo_observadores.observador_id', '=', 'observadores.id')
-                ->join('acceso_computo_externo', 'acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
-                ->select('acceso_computo_observadores.*', 
+            $observadores = DB::table('acceso_computo_externo')
+                ->leftJoin('acceso_computo_observadores', 'acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
+                ->leftJoin('observadores', 'acceso_computo_observadores.observador_id', '=', 'observadores.id')
+                ->select(
+                    'acceso_computo_externo.id as acceso_externo_id',
+                    'acceso_computo_externo.token_acceso',
+                    'acceso_computo_externo.tipo',
+                    'acceso_computo_externo.activo',
+                    'acceso_computo_observadores.id as acceso_observador_id',
+                    'acceso_computo_observadores.asignado',
+                    'acceso_computo_observadores.liberado',
+                    'observadores.id as observador_id',
                     'observadores.nombre_completo',
                     'observadores.ci',
                     'observadores.identificador',
-                    'observadores.organizacion_politica', 
-                    'acceso_computo_externo.token_acceso', 'acceso_computo_externo.tipo', 'acceso_computo_externo.activo')
+                    'observadores.organizacion_politica',
+                    'observadores.foto'
+                )
                 ->get()
-                ->map(function ($item) { 
+                ->map(function ($item) {
                     $arr = (array) $item;
                     if (!empty($arr['foto'])) {
                         $arr['foto'] = base64_encode($arr['foto']);
@@ -36,18 +46,19 @@ class AccesoComputoObservadoresController extends Controller
 
             return response()->json([
                 'res' => true,
-                'msg' => 'Lista de acceso a computo para observadores obtenida exitosamente',
+                'msg' => 'Lista de acceso a cómputo para observadores obtenida exitosamente',
                 'status' => 200,
                 'acceso_computo_observadores' => $observadores
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
-                'msg' => 'Error al obtener la lista de acceso a computo para observadores',
+                'msg' => 'Error al obtener la lista de acceso a cómputo para observadores',
                 'status' => 500,
                 'error' => $e->getMessage()
             ]);
         }
+
     }
 
     /**
@@ -61,34 +72,49 @@ class AccesoComputoObservadoresController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        try {
-            $data = $request->validate([
-                'token_id' => 'required|exists:acceso_computo_externo,id',
-                'observador_id' => 'required|exists:observadores,id',
-            ]);
+public function store(Request $request)
+{
+    try {
+        $data = $request->validate([
+            'token_id' => [
+                'required',
+                Rule::exists('acceso_computo_externo', 'id')->where('activo', 0),
+            ],
+            'observador_id' => 'required|exists:observadores,id',
+        ]);
 
-            $data['asignado'] = now();
-            $data['liberado'] = null;
+        $observador = AccesoComputoObservadores::where('observador_id', $data['observador_id'])
+            ->whereNull('liberado')
+            ->first();
 
-            $accesoComputoObservador = AccesoComputoObservadores::create($data);
-
-            return response()->json([
-                'res' => true,
-                'msg' => 'Acceso a computo para observador creado exitosamente',
-                'status' => 200,
-                'acceso_computo_observador' => $accesoComputoObservador
-            ]);
-        } catch (\Exception $e) {
+        if ($observador) {
             return response()->json([
                 'res' => false,
-                'msg' => 'Error al crear acceso a computo para observador',
-                'status' => 500,
-                'error' => $e->getMessage()
-            ]);
+                'msg' => 'El observador ya tiene un acceso a cómputo activo',
+                'status' => 422
+            ], 422);
         }
+
+        $data['asignado'] = now();
+        $data['liberado'] = null;
+
+        $accesoComputoObservador = AccesoComputoObservadores::create($data);
+
+        return response()->json([
+            'res' => true,
+            'msg' => 'Acceso a cómputo para observador creado exitosamente',
+            'status' => 200,
+            'acceso_computo_observador' => $accesoComputoObservador
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'res' => false,
+            'msg' => 'Error al crear acceso a cómputo para observador',
+            'status' => 500,
+            'error' => $e->getMessage()
+        ]);
     }
+}
 
     /**
      * Display the specified resource.

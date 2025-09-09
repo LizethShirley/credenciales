@@ -72,6 +72,40 @@ class ObservadoresController extends Controller
         //
     }
 
+    public function getByCi($ci)
+    {
+        try {
+            $observador = Observadores::where('ci', $ci)->first();
+
+            if (!$observador) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'Observador no encontrado',
+                    'status' => 404
+                ], 404);
+            }
+
+            // si tiene foto en blob, la convertimos
+            if (!empty($observador->foto)) {
+                $observador->foto = base64_encode($observador->foto);
+            }
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Observador encontrado',
+                'status' => 200,
+                'data' => $observador
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al buscar observador',
+                'status' => 500,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
     /**
      * Show the form for editing the specified resource.
      */

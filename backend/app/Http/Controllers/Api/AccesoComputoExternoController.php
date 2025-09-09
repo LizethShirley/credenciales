@@ -6,6 +6,7 @@ use App\Models\AccesoComputoExterno;
 use App\Models\Observadores;
 use App\Models\AccesoComputoObservadores;
 use App\Http\Requests\ActivarAccesoComputoExternoRequest;
+use App\Http\Requests\ActualizarObservadorRequest;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Milon\Barcode\Facades\DNS1DFacade as DNS1D;
@@ -200,4 +201,61 @@ class AccesoComputoExternoController extends Controller
             'asignacion' => $asignacion
         ]);
     }
+
+
+    public function updateObservador(ActualizarObservadorRequest $request, $token)
+    {
+        try {
+            $tokenModel = AccesoComputoExterno::where('token_acceso', $token)->firstOrFail();
+
+            $asignacion = AccesoComputoObservadores::where('token_id', $tokenModel->id)
+                ->whereNull('liberado')
+                ->first();
+
+            if (!$asignacion) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'No hay un observador asignado a este token o ya fue liberado',
+                    'status' => 404,
+                ], 404);
+            }
+
+            $observador = Observadores::findOrFail($asignacion->observador_id);
+
+            $validated = $request->validated();
+
+            $observador->nombre_completo = $validated['nombre_completo'] ?? $observador->nombre_completo;
+            $observador->ci = $validated['ci'] ?? $observador->ci;
+            $observador->identificador = $validated['identificador'] ?? $observador->identificador;
+            $observador->organizacion_politica = $validated['organizacion_politica'] ?? $observador->organizacion_politica;
+
+            if ($request->hasFile('foto')) {
+                $file = $request->file('foto');
+                $manager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                $image = $manager->read($file->getPathname());
+                $compressed = $image->scale(width: 600)->toJpeg(quality: 70);
+
+                $observador->foto = $compressed->toString();
+            }
+
+            $observador->save();
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Datos del observador actualizados correctamente',
+                'status' => 200,
+                'observador' => $observador->makeHidden(['foto'])->toArray() + [
+                    'foto' => $observador->foto ? base64_encode($observador->foto) : null
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al actualizar los datos del observador',
+                'status' => 500,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
 }

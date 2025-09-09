@@ -75,19 +75,19 @@ Route::post('registro-acceso/registrar', [RegistroAccesoController::class, 'regi
 Route::get('registro-acceso/listar', [RegistroAccesoController::class, 'listarRegistros']);
 
 Route::post('generar-accesos', [AccesoComputoExternoController::class, 'generateQRExternoMasivo']); //Generar varios QR externos
-Route::post('registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAccesoExterno']); //Registrar acceso externo
-Route::get('acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']); //listar accesos generados
+Route::post('registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAccesoExterno']); //Registrar acceso externo entrada/salida
+Route::get('acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']); 
 Route::post('activarQr/{token}', [AccesoComputoExternoController::class, 'activarAccesoComputoExterno']); //Registrar user que usara el qr
+Route::post('actualizar-observador/{token}', [AccesoComputoExternoController::class, 'updateOservador']); //Actualizar datos del user que usara el qr
 
-Route::post('liberarToken/{token}', [AccesoComputoObservadoresController::class, 'updateLiberarToken']);
-Route::get('list/acceso-computo-observadores', [AccesoComputoObservadoresController::class, 'list']);
-
+Route::post('liberarToken/{token}', [AccesoComputoObservadoresController::class, 'updateLiberarToken']);//Liberar token de observador
+Route::get('list/acceso-computo-observadores', [AccesoComputoObservadoresController::class, 'list']);//listar accesos generados
+Route::post('enlazar-qr-observador', [AccesoComputoObservadoresController::class, 'store']);//En lazar token con observador por ids
 
 //Observadores
 Route::get('list/observadores', [ObservadoresController::class, 'index']);
 Route::post('observadores', [ObservadoresController::class, 'store']);
 Route::post('actualizar-observadores/{id}', [ObservadoresController::class, 'update']);
 Route::delete('eliminar-observadores/{id}', [ObservadoresController::class, 'destroy']);
+Route::get('observador/{ci}', [ObservadoresController::class, 'getByCi']);
 
-
-//});
