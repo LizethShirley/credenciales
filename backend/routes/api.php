@@ -78,7 +78,7 @@ Route::post('generar-accesos', [AccesoComputoExternoController::class, 'generate
 Route::post('registro-acceso-externo/registrar', [RegistroAccesoExternoController::class, 'registrarAccesoExterno']); //Registrar acceso externo entrada/salida
 Route::get('acceso-externo/listar', [AccesoComputoExternoController::class, 'listarAccesosExternos']); 
 Route::post('activarQr/{token}', [AccesoComputoExternoController::class, 'activarAccesoComputoExterno']); //Registrar user que usara el qr
-Route::post('actualizar-observador/{token}', [AccesoComputoExternoController::class, 'updateOservador']); //Actualizar datos del user que usara el qr
+Route::post('actualizar-observador/{token}', [AccesoComputoExternoController::class, 'updateObservador']); //Actualizar datos del user que usara el qr
 
 Route::post('liberarToken/{token}', [AccesoComputoObservadoresController::class, 'updateLiberarToken']);//Liberar token de observador
 Route::get('list/acceso-computo-observadores', [AccesoComputoObservadoresController::class, 'list']);//listar accesos generados

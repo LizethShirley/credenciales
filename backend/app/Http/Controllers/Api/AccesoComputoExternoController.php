@@ -226,8 +226,8 @@ class AccesoComputoExternoController extends Controller
 
             $observador->nombre_completo = $validated['nombre_completo'] ?? $observador->nombre_completo;
             $observador->ci = $validated['ci'] ?? $observador->ci;
-            $observador->identificador = $validated['identificador'] ?? $observador->identificador;
-            $observador->organizacion_politica = $validated['organizacion_politica'] ?? $observador->organizacion_politica;
+            $observador->identificador = $validated['identificador'] ?? null;
+            $observador->organizacion_politica = $validated['organizacion_politica'] ?? null;
 
             if ($request->hasFile('foto')) {
                 $file = $request->file('foto');

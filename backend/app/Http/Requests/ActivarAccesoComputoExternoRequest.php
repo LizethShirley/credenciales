@@ -15,15 +15,13 @@ class ActivarAccesoComputoExternoRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            // 'token' => 'required|string|max:255|exists:acceso_computo_externo,token_acceso,activo,0',
             'nombre_completo' => 'required|string|max:255',
             'ci' => 'nullable|string|max:50|unique:observadores,ci',
             'foto' => 'nullable|file|image|max:2048',
-            // 'identificador' => 'nullable|string|max:255',
-            // 'organizacion_politica' => 'nullable|string|max:255',
+            'identificador' => 'nullable|string|max:255',
+            'organizacion_politica' => 'nullable|string|max:255',
         ];
 
-        // $tokenInput = $this->input('token');
         $tokenInput = $this->route('token');
 
         if ($tokenInput) {
