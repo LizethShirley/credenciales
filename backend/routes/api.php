@@ -91,3 +91,11 @@ Route::post('actualizar-observadores/{id}', [ObservadoresController::class, 'upd
 Route::delete('eliminar-observadores/{id}', [ObservadoresController::class, 'destroy']);
 Route::get('observador/{ci}', [ObservadoresController::class, 'getByCi']);
 
+//Notificaciones
+Route::get('personal-notificacion/{lastId?}', [PersonalController::class, 'ultimos']);
+
+//Comparar con excel
+
+
+
+

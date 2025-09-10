@@ -760,5 +760,70 @@ class PersonalController extends Controller
         }
     }
 
+    public function ultimos($lastId = null)
+    {
+        try {
+            $query = DB::table('personal as p')
+                ->leftJoin('cargos as c', 'p.id_cargo', '=', 'c.id')
+                ->leftJoin('secciones as s', 'c.idseccion', '=', 's.id')
+                ->select(
+                    'p.id',
+                    'p.nombre',
+                    'p.paterno',
+                    'p.materno',
+                    'p.ci',
+                    'p.estado',
+                    'p.complemento',
+                    'p.extencion',
+                    'p.token',
+                    'p.email',
+                    'p.celular',
+                    'p.accesoComputo',
+                    'p.ciexterno',
+                    'p.photo',
+                    'p.updated_at',
+                    'p.created_at',
+                    'c.id as cargo_id',
+                    'c.nombre as cargo_nombre',
+                    's.id as seccion_id',
+                    's.nombre as seccion_nombre',
+                    's.abreviatura'
+                );
+
+            if ($lastId) {
+                $results = $query
+                    ->where('p.id', '>', $lastId)
+                    ->orderBy('p.id', 'asc')
+                    ->get();
+            } else {
+                $results = $query
+                    ->where('p.estado', '=', 0)
+                    ->orderBy('p.id', 'asc')
+                    ->get();
+            }
+
+            // Transformar colección
+            $personalsArray = $results->map(function ($personal) {
+                $arrayPersonal = (array) $personal;
+                $arrayPersonal['photo'] = $personal->photo ? base64_encode($personal->photo) : null;
+                return $arrayPersonal;
+            });
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Lista de personal obtenida exitosamente',
+                'status' => 200,
+                'count' => $personalsArray->count(),
+                'personal' => $personalsArray,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al listar personal',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
 }
-;
