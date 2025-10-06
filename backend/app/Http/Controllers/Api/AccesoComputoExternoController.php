@@ -130,24 +130,26 @@ class AccesoComputoExternoController extends Controller
         $accesos = DB::table('acceso_computo_externo as a')
             ->select(
                 'a.id',
+                'a.token_acceso',
                 'a.tipo',
                 'a.activo',
-                'a.nombre_completo',
-                'a.ci',
-                'a.foto',
-                'a.identificador',
-                'a.organizacion_politica',
+                // 'a.nombre_completo',
+                // 'a.ci',
+                // 'a.foto',
+                // 'a.identificador',
+                // 'a.organizacion_politica',
                 'a.qr',
                 'a.barcode',
                 'a.created_at',
                 'a.updated_at'
             )
+            ->leftJoin('acceso_computo_observadores as ao', 'a.id', '=', 'ao.token_id')
             ->orderBy('a.created_at', 'desc')
             ->get();
 
         $accesosArray = $accesos->map(function ($acceso) {
             $arrayAcceso = (array) $acceso;
-            $arrayAcceso['foto'] = $acceso->foto ? base64_encode($acceso->foto) : null;
+            // $arrayAcceso['foto'] = $acceso->foto ? base64_encode($acceso->foto) : null;
             $arrayAcceso['qr'] = $acceso->qr ? base64_encode($acceso->qr) : null;
             $arrayAcceso['barcode'] = $acceso->barcode ? base64_encode($acceso->barcode) : null;
             return $arrayAcceso;

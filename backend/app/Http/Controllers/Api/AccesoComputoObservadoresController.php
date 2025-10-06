@@ -62,6 +62,65 @@ class AccesoComputoObservadoresController extends Controller
     }
 
     /**
+     * Display a listing of the resource.
+     */
+    public function filtrar(Request $request)
+    {
+        $request->validate([
+            'tipo' => 'nullable|in:interno,externo',
+            'activo' => 'nullable|boolean',
+            'asignado' => 'nullable|date',
+            'ci' => 'nullable|string',
+            'nombre_completo' => 'nullable|string',
+        ]);
+
+        try {
+            $observadores = DB::table('acceso_computo_externo')
+                ->leftJoin('acceso_computo_observadores', 'acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
+                ->leftJoin('observadores', 'acceso_computo_observadores.observador_id', '=', 'observadores.id')
+                ->select(
+                    'acceso_computo_externo.id as acceso_externo_id',
+                    'acceso_computo_externo.token_acceso',
+                    'acceso_computo_externo.tipo',
+                    'acceso_computo_externo.activo',
+                    'acceso_computo_observadores.id as acceso_observador_id',
+                    'acceso_computo_observadores.asignado',
+                    'acceso_computo_observadores.liberado',
+                    'observadores.id as observador_id',
+                    'observadores.nombre_completo',
+                    'observadores.ci',
+                    'observadores.identificador',
+                    'observadores.organizacion_politica',
+                    'observadores.foto'
+                )
+                ->get()
+                ->where('liberado', null)
+                ->map(function ($item) {
+                    $arr = (array) $item;
+                    if (!empty($arr['foto'])) {
+                        $arr['foto'] = base64_encode($arr['foto']);
+                    }
+                    return $arr;
+                });
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Lista de acceso a cómputo para observadores obtenida exitosamente',
+                'status' => 200,
+                'acceso_computo_observadores' => $observadores
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al obtener la lista de acceso a cómputo para observadores',
+                'status' => 500,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
