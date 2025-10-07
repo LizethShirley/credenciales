@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\AccesoComputoExterno;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class ActivarAccesoComputoExternoRequest extends FormRequest
 {
@@ -52,4 +54,15 @@ class ActivarAccesoComputoExternoRequest extends FormRequest
             }
         });
     }
+
+    public function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'res' => false,
+            'msg' => 'Error de validación',
+            'status' => 422,
+            'errors' => $validator->errors(),
+        ], 422));
+    }
+
 }
