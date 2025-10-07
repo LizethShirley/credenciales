@@ -33,14 +33,14 @@ class RegistroAccesoController extends Controller
                 $token = explode("-", $token)[1];
 
                 $acceso = AccesoComputoExterno::where('token_acceso', $token)
-                ->where('activo', true)
                 ->first();
 
-                if (!$acceso) {
+                if ($acceso && !$acceso->activo) {
                     return response()->json([
                         'res' => false,
+                        'tipo_credencial' => $acceso ? $acceso->tipo : null,
                         'msg' => 'Token inactivo. No se puede registrar acceso, tiene que ser activado primero.',
-                        'status' => 404
+                        'status' => 404,
                     ]);
                 }
 

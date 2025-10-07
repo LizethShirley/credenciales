@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\AccesoComputoObservadores;
 use App\Models\AccesoComputoExterno;
+use App\Models\Observadores;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -246,6 +247,68 @@ class AccesoComputoObservadoresController extends Controller
                 'msg' => 'Token liberado exitosamente',
                 'status' => 200,
                 'acceso_computo_observador' => $accesoComputoObservadores,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al liberar el token',
+                'status' => 500,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+
+    public function updateLiberarObservador($ci_observador)
+    {
+        try {
+            // Buscar observador por CI
+            $observador = Observadores::where('ci', $ci_observador)->first();
+            if (!$observador) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'Observador no encontrado',
+                    'status' => 404,
+                ], 404);
+            }
+            // Buscar acceso a cómputo activo para el observador
+            $accesoComputoObservadores = AccesoComputoObservadores::where('observador_id', $observador->id)->where('liberado', null)->first();
+            // Verificar si se encontró el acceso
+            if (!$accesoComputoObservadores) {
+                return response()->json([
+                    'res' => true,
+                    'msg' => 'El observador se encontraba sin token asignado. Ahora puede asignarle otro token.',
+                    'status' => 200,
+                    'observadores' => $observador->makeHidden(['foto'])->toArray() + [
+                        'foto' => $observador->foto ? base64_encode($observador->foto) : null
+                    ]
+                ]);
+            }
+            // Buscar token asociado
+            $tokenModel = AccesoComputoExterno::where('id', $accesoComputoObservadores->token_id)->first();
+            if (!$tokenModel) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'Token no encontrado',
+                    'status' => 404,
+                ], 404);
+            }
+
+            // Liberar token (poner fecha actual)
+            $accesoComputoObservadores->update([
+                'liberado' => now()
+            ]);
+
+            $tokenModel->activo = false;
+            $tokenModel->save();
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Observador y token liberado exitosamente',
+                'status' => 200,
+                'observadores' => $observador->makeHidden(['foto'])->toArray() + [
+                    'foto' => $observador->foto ? base64_encode($observador->foto) : null
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

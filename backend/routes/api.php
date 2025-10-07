@@ -81,6 +81,7 @@ Route::post('activarQr/{token}', [AccesoComputoExternoController::class, 'activa
 Route::post('actualizar-observador/{token}', [AccesoComputoExternoController::class, 'updateObservador']); //Actualizar datos del user que usara el qr
 
 Route::post('liberarToken/{token}', [AccesoComputoObservadoresController::class, 'updateLiberarToken']);//Liberar token de observador
+Route::post('liberarObservador/{ci_observador}', [AccesoComputoObservadoresController::class, 'updateLiberarObservador']);//Liberar token de observador
 Route::get('list/acceso-computo-observadores', [AccesoComputoObservadoresController::class, 'list']);//listar accesos generados -  historial
 Route::get('acceso-computo-observadores/filter', [AccesoComputoObservadoresController::class, 'filtrar']);//filtrar accesos externos generados
 Route::post('enlazar-qr-observador', [AccesoComputoObservadoresController::class, 'store']);//En lazar token con observador por ids
