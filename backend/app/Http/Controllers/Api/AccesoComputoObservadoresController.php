@@ -18,7 +18,11 @@ class AccesoComputoObservadoresController extends Controller
     {
         try {
             $observadores = DB::table('acceso_computo_externo')
-                ->leftJoin('acceso_computo_observadores', 'acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
+                ->leftJoin('acceso_computo_observadores', function ($join) {
+                    $join->on('acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
+                        ->where('acceso_computo_externo.activo', 1) // solo une si está activo
+                        ->whereNull('acceso_computo_observadores.liberado');
+                })
                 ->leftJoin('observadores', 'acceso_computo_observadores.observador_id', '=', 'observadores.id')
                 ->select(
                     'acceso_computo_externo.id as acceso_externo_id',
