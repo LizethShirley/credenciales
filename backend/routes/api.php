@@ -69,7 +69,7 @@ Route::put('recintos/{id}', [RecintoController::class, 'update']);
 Route::delete('recintos/{id}', [RecintoController::class, 'destroy']);
 
 //Rutas Accesso Computo
-//Generar token y QR
+//Generar token y QRgit 
 Route::post('acceso-computo/generar-qr', [AccesoComputoController::class, 'generarTokenQR']);
 Route::post('registro-acceso/registrar', [RegistroAccesoController::class, 'registrarAcceso']);
 Route::get('registro-acceso/listar', [RegistroAccesoController::class, 'listarRegistros']);

@@ -204,11 +204,11 @@ class AccesoComputoExternoController extends Controller
         ]);
     }
 
-
     public function updateObservador(ActualizarObservadorRequest $request, $token)
     {
         try {
             $tokenModel = AccesoComputoExterno::where('token_acceso', $token)->firstOrFail();
+            
 
             $asignacion = AccesoComputoObservadores::where('token_id', $tokenModel->id)
                 ->whereNull('liberado')

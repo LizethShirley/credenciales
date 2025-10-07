@@ -17,6 +17,7 @@ class ActualizarObservadorRequest extends FormRequest
     {
         $observadorCI = $this->input('ci');
         $rules = [
+            'id' => 'required|exists:observadores,id',
             'nombre_completo' => 'required|string|max:255',
             'ci' => [
                 'sometimes',
@@ -33,7 +34,15 @@ class ActualizarObservadorRequest extends FormRequest
         $tokenInput = $this->route('token');
 
         if ($tokenInput) {
-            $tipoToken = AccesoComputoExterno::where('token_acceso', $tokenInput)->value('tipo');
+            $tokenModel = AccesoComputoExterno::where('token_acceso', $tokenInput)->first();
+            if (!$tokenModel) {
+                return $rules;
+            }
+            $tipoToken = $tokenModel ? $tokenModel->value('tipo') : null;
+
+            if ($tipoToken === null) {
+                return $rules;
+            }
 
             if ($tipoToken === 'prensa') {
                 $rules['identificador'] = 'required|string|max:255';
