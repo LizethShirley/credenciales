@@ -133,11 +133,6 @@ class AccesoComputoExternoController extends Controller
                 'a.token_acceso',
                 'a.tipo',
                 'a.activo',
-                // 'a.nombre_completo',
-                // 'a.ci',
-                // 'a.foto',
-                // 'a.identificador',
-                // 'a.organizacion_politica',
                 'a.qr',
                 'a.barcode',
                 'a.created_at',
@@ -207,11 +202,13 @@ class AccesoComputoExternoController extends Controller
     public function updateObservador(ActualizarObservadorRequest $request, $token)
     {
         try {
+            $validated = $request->validated();
+
             $tokenModel = AccesoComputoExterno::where('token_acceso', $token)->firstOrFail();
-            
 
             $asignacion = AccesoComputoObservadores::where('token_id', $tokenModel->id)
                 ->whereNull('liberado')
+                ->where('observador_id', $validated['id'])
                 ->first();
 
             if (!$asignacion) {
@@ -223,8 +220,6 @@ class AccesoComputoExternoController extends Controller
             }
 
             $observador = Observadores::findOrFail($asignacion->observador_id);
-
-            $validated = $request->validated();
 
             $observador->nombre_completo = $validated['nombre_completo'] ?? $observador->nombre_completo;
             $observador->ci = $validated['ci'] ?? $observador->ci;

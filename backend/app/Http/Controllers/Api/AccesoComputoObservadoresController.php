@@ -19,11 +19,7 @@ class AccesoComputoObservadoresController extends Controller
     {
         try {
             $observadores = DB::table('acceso_computo_externo')
-                ->leftJoin('acceso_computo_observadores', function ($join) {
-                    $join->on('acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
-                        ->where('acceso_computo_externo.activo', 1) // solo une si está activo
-                        ->whereNull('acceso_computo_observadores.liberado');
-                })
+                ->leftJoin('acceso_computo_observadores', 'acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
                 ->leftJoin('observadores', 'acceso_computo_observadores.observador_id', '=', 'observadores.id')
                 ->select(
                     'acceso_computo_externo.id as acceso_externo_id',
@@ -71,16 +67,23 @@ class AccesoComputoObservadoresController extends Controller
     public function filtrar(Request $request)
     {
         $request->validate([
-            'tipo' => 'nullable|in:interno,externo',
+            'cantidad' => 'nullable|integer|min:1|max:100',
+            'tipo' => 'nullable|in:candidato,delegado,prensa,observador,publico',
             'activo' => 'nullable|boolean',
             'asignado' => 'nullable|date',
             'ci' => 'nullable|string',
             'nombre_completo' => 'nullable|string',
+            'tokens' => 'nullable|array',
+            'tokens.*' => 'string',
         ]);
 
         try {
             $observadores = DB::table('acceso_computo_externo')
-                ->leftJoin('acceso_computo_observadores', 'acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
+                ->leftJoin('acceso_computo_observadores', function ($join) {
+                    $join->on('acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
+                        ->where('acceso_computo_externo.activo', 1)
+                        ->whereNull('acceso_computo_observadores.liberado');
+                })
                 ->leftJoin('observadores', 'acceso_computo_observadores.observador_id', '=', 'observadores.id')
                 ->select(
                     'acceso_computo_externo.id as acceso_externo_id',
@@ -97,8 +100,26 @@ class AccesoComputoObservadoresController extends Controller
                     'observadores.organizacion_politica',
                     'observadores.foto'
                 )
+                ->when($request->filled('tipo'), function ($query) use ($request) {
+                    $query->where('acceso_computo_externo.tipo', $request->input('tipo'));
+                })
+                ->when($request->filled('activo'), function ($query) use ($request) {   
+                    $query->where('acceso_computo_externo.activo', $request->input('activo'));
+                })
+                ->when($request->filled('asignado'), function ($query) use ($request) {
+                    $query->whereDate('acceso_computo_observadores.asignado', $request->input('asignado'));
+                })
+                ->when($request->filled('ci'), function ($query) use ($request) {
+                    $query->where('observadores.ci', 'like', '%' . $request->input('ci') . '%');
+                })
+                ->when($request->filled('nombre_completo'), function ($query) use ($request) {
+                    $query->where('observadores.nombre_completo', 'like', '%' . $request->input('nombre_completo') . '%');
+                })
+                ->when($request->filled('tokens'), function ($query) use ($request) {
+                    $query->whereIn('acceso_computo_externo.token_acceso', $request->input('tokens'));
+                })
+                ->limit($request->input('cantidad', 50))
                 ->get()
-                ->where('liberado', null)
                 ->map(function ($item) {
                     $arr = (array) $item;
                     if (!empty($arr['foto'])) {
