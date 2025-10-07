@@ -125,8 +125,15 @@ class AccesoComputoExternoController extends Controller
         ]);
     }
 
-    public function listarAccesosExternos()
+    public function listarAccesosExternos(Request $request)
     {
+        $request->validate([
+            'cantidad' => 'nullable|integer|min:1|max:500',
+            'tipo' => 'nullable|in:candidato,delegado,prensa,observador,publico',
+            'activo' => 'nullable|boolean',
+            'tokens.*' => 'string',
+        ]);
+
         $accesos = DB::table('acceso_computo_externo as a')
             ->select(
                 'a.id',
@@ -138,7 +145,18 @@ class AccesoComputoExternoController extends Controller
                 'a.created_at',
                 'a.updated_at'
             )
-            ->leftJoin('acceso_computo_observadores as ao', 'a.id', '=', 'ao.token_id')
+            ->when($request->filled('tipo'), function ($query) use ($request) {
+                $query->where('a.tipo', $request->input('tipo'));
+            })
+            ->when($request->filled('activo'), function ($query) use ($request) {
+                $query->where('a.activo', $request->input('activo'));
+            })
+            ->when($request->filled('tokens'), function ($query) use ($request) {
+                $query->whereIn('a.token_acceso', $request->input('tokens'));
+            })
+            ->when($request->filled('cantidad'), function ($query) use ($request) {
+                $query->limit($request->input('cantidad'));
+            })
             ->orderBy('a.created_at', 'desc')
             ->get();
 
