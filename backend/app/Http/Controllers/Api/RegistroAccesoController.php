@@ -7,6 +7,7 @@ use App\Models\AccesoComputo;
 use App\Models\AccesoComputoExterno;
 use App\Models\RegistroAcceso;
 use App\Models\RegistroAccesoExterno;
+use Doctrine\Common\Lexer\Token;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +52,11 @@ class RegistroAccesoController extends Controller
                     'observadores.ci',
                     'observadores.identificador',
                     'observadores.organizacion_politica', 
+                    'observadores.foto', 
                     'acceso_computo_externo.token_acceso', 'acceso_computo_externo.tipo', 'acceso_computo_externo.activo')
+                ->where('acceso_computo_externo.id', $acceso->id)
+                ->where('acceso_computo_observadores.liberado', NULL) // Asegurarse de que no esté liberado    
+                ->where('acceso_computo_externo.activo', true) // Asegurarse de que esté asignado
                 ->get()
                 ->map(function ($item) { 
                     $arr = (array) $item;

@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccesoComputoObservadores;
+use App\Models\AccesoComputoExterno;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\AccesoComputoExterno;
 use Illuminate\Validation\Rule;
 
 class AccesoComputoObservadoresController extends Controller
@@ -58,7 +58,6 @@ class AccesoComputoObservadoresController extends Controller
                 'error' => $e->getMessage()
             ]);
         }
-
     }
 
     /**
@@ -117,7 +116,6 @@ class AccesoComputoObservadoresController extends Controller
                 'error' => $e->getMessage()
             ]);
         }
-
     }
 
     /**
@@ -131,49 +129,63 @@ class AccesoComputoObservadoresController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-public function store(Request $request)
-{
-    try {
-        $data = $request->validate([
-            'token_id' => [
-                'required',
-                Rule::exists('acceso_computo_externo', 'id')->where('activo', 0),
-            ],
-            'observador_id' => 'required|exists:observadores,id',
-        ]);
+    public function store(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'token_id' => [
+                    'required',
+                    Rule::exists('acceso_computo_externo', 'id')->where('activo', 0),
+                ],
+                'observador_id' => 'required|exists:observadores,id',
+            ]);
 
-        $observador = AccesoComputoObservadores::where('observador_id', $data['observador_id'])
-            ->whereNull('liberado')
-            ->first();
+            $observador = AccesoComputoObservadores::where('observador_id', $data['observador_id'])
+                ->whereNull('liberado')
+                ->first();
 
-        if ($observador) {
+            if ($observador) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'El observador ya tiene un acceso a cómputo activo',
+                    'status' => 422
+                ], 422);
+            }
+
+            $data['asignado'] = now();
+            $data['liberado'] = null;
+
+            $accesoComputoExterno = AccesoComputoExterno::where('id', $request['token_id'])->first();
+
+            if (!$accesoComputoExterno) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'Token no encontrado',
+                    'status' => 404,
+                ], 404);
+            }
+
+            $accesoComputoExterno->activo = 1;
+            $accesoComputoExterno->save();
+
+            $accesoComputoObservador = AccesoComputoObservadores::create($data);
+
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Acceso a cómputo para observador creado exitosamente',
+                'status' => 200,
+                'acceso_computo_observador' => $accesoComputoObservador
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
-                'msg' => 'El observador ya tiene un acceso a cómputo activo',
-                'status' => 422
-            ], 422);
+                'msg' => 'Error al crear acceso a cómputo para observador',
+                'status' => 500,
+                'error' => $e->getMessage()
+            ]);
         }
-
-        $data['asignado'] = now();
-        $data['liberado'] = null;
-
-        $accesoComputoObservador = AccesoComputoObservadores::create($data);
-
-        return response()->json([
-            'res' => true,
-            'msg' => 'Acceso a cómputo para observador creado exitosamente',
-            'status' => 200,
-            'acceso_computo_observador' => $accesoComputoObservador
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'res' => false,
-            'msg' => 'Error al crear acceso a cómputo para observador',
-            'status' => 500,
-            'error' => $e->getMessage()
-        ]);
     }
-}
 
     /**
      * Display the specified resource.
@@ -220,10 +232,6 @@ public function store(Request $request)
             // Liberar token (poner fecha actual)
             $accesoComputoObservadores->update([
                 'liberado' => now()
-            ]);
-
-            $tokenModel->update([
-                'activo' => 1 
             ]);
 
             $tokenModel->activo = false;
