@@ -609,7 +609,8 @@ class PersonalController extends Controller
                         'a.qr',
                         'a.barcode',
                         'p.created_at',
-                        'c.nombre as cargo_nombre'
+                        'c.nombre as cargo_nombre',
+                        'c.color as cargo_color'
                     )->where('p.accesoComputo', $accesoComputo);
             } else {
                 $personal = DB::table('personal as p')
@@ -633,6 +634,7 @@ class PersonalController extends Controller
                         'p.created_at',
                         'c.id as cargo_id',
                         'c.nombre as cargo_nombre',
+                        'c.color as cargo_color',
                         's.id as seccion_id',
                         's.nombre as seccion_nombre'
                     );
