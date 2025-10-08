@@ -182,4 +182,25 @@ class ObservadoresController extends Controller
             ], 500);
         }
     }
+
+    public function getCisObservadores()
+    {
+        try {
+            $cis = Observadores::pluck('ci');
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'CIs de observadores obtenidos exitosamente',
+                'status' => 200,
+                'cis' => $cis
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al obtener CIs de observadores',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
 }

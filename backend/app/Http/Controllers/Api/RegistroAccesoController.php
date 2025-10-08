@@ -25,7 +25,7 @@ class RegistroAccesoController extends Controller
         ]);
 
         try {
-            
+
             $token = $request->input('token');
 
             if (strpos($token, 'externo') !== false) {
@@ -33,7 +33,7 @@ class RegistroAccesoController extends Controller
                 $token = explode("-", $token)[1];
 
                 $acceso = AccesoComputoExterno::where('token_acceso', $token)
-                ->first();
+                    ->first();
 
                 if ($acceso && !$acceso->activo) {
                     return response()->json([
@@ -44,27 +44,29 @@ class RegistroAccesoController extends Controller
                     ]);
                 }
 
-               $observador = DB::table('acceso_computo_observadores')
-                ->join('observadores', 'acceso_computo_observadores.observador_id', '=', 'observadores.id')
-                ->join('acceso_computo_externo', 'acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
-                ->select('acceso_computo_observadores.*', 
-                    'observadores.nombre_completo',
-                    'observadores.ci',
-                    'observadores.identificador',
-                    'observadores.organizacion_politica', 
-                    'observadores.foto', 
-                    'acceso_computo_externo.token_acceso', 'acceso_computo_externo.tipo', 'acceso_computo_externo.activo')
-                ->where('acceso_computo_externo.id', $acceso->id)
-                ->where('acceso_computo_observadores.liberado', NULL) // Asegurarse de que no esté liberado    
-                ->where('acceso_computo_externo.activo', true) // Asegurarse de que esté asignado
-                ->get()
-                ->map(function ($item) { 
-                    $arr = (array) $item;
-                    if (!empty($arr['foto'])) {
-                        $arr['foto'] = base64_encode($arr['foto']);
-                    }
-                    return $arr;
-                });
+                $observador = DB::table('acceso_computo_observadores')
+                    ->join('observadores', 'acceso_computo_observadores.observador_id', '=', 'observadores.id')
+                    ->join('acceso_computo_externo', 'acceso_computo_observadores.token_id', '=', 'acceso_computo_externo.id')
+                    ->select(
+                        'acceso_computo_observadores.*',
+                        'observadores.nombre_completo',
+                        'observadores.ci',
+                        'observadores.identificador',
+                        'observadores.organizacion_politica',
+                        'observadores.foto',
+                        'acceso_computo_externo.token_acceso',
+                        'acceso_computo_externo.tipo',
+                        'acceso_computo_externo.activo'
+                    )
+                    ->where('acceso_computo_externo.id', $acceso->id)
+                    ->where('acceso_computo_observadores.liberado', NULL)   
+                    ->where('acceso_computo_externo.activo', true)
+                    ->get()
+                    ->first();
+
+                if ($observador && !empty($observador->foto)) {
+                    $observador->foto = base64_encode($observador->foto);
+                }
 
 
 
@@ -88,7 +90,6 @@ class RegistroAccesoController extends Controller
                     'tipo_credencial' => $acceso->tipo,
                     'status' => 200,
                 ]);
-
             } else {
                 $acceso = AccesoComputo::where('token_acceso', $token)
                     ->where('activo', true)
@@ -127,7 +128,6 @@ class RegistroAccesoController extends Controller
                     'status'   => 200,
                 ]);
             }
-
         } catch (\Exception $e) {
             Log::error('Error al registrar acceso desde QR: ' . $e->getMessage());
 
@@ -135,7 +135,7 @@ class RegistroAccesoController extends Controller
                 'res'   => false,
                 'msg'   => 'Error procesando el token',
                 'error' => $e->getMessage(),
-                'status'=> 400
+                'status' => 400
             ], 400);
         }
     }

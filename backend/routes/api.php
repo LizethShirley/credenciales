@@ -92,6 +92,7 @@ Route::post('observadores', [ObservadoresController::class, 'store']);
 Route::post('actualizar-observadores/{id}', [ObservadoresController::class, 'update']);
 Route::delete('eliminar-observadores/{id}', [ObservadoresController::class, 'destroy']);
 Route::get('observador/{ci}', [ObservadoresController::class, 'getByCi']);
+Route::get('list/observador-cis', [ObservadoresController::class, 'getCisObservadores']);
 
 //Notificaciones
 Route::get('personal-notificacion/{lastId?}', [PersonalController::class, 'ultimos']);
