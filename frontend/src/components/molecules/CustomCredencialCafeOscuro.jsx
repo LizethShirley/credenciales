@@ -63,11 +63,11 @@ const CustomCredencialCafeOscuro = ({ persona, lado }) => {
             alt="Código de barras"
             style={{
               position: "absolute",
-              top: "7.4cm",
-              paddingLeft: "0.1cm",
-              paddingRight: "0.1cm",
+              top: "7.5cm",
+              paddingLeft: "0.5cm",
+              paddingRight: "0.5cm",
               width: "100%",
-              height: "0.9cm",
+              height: "0.75cm",
               objectFit: "cover",
               backgroundColor: "#fff",
             }}

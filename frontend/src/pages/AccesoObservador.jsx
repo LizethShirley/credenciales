@@ -6,11 +6,10 @@ import {
   Typography,
   Paper,
   CircularProgress,
-  TextField,
-  Button,
 } from '@mui/material';
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import FormularioObservador from '../components/organisms/FormularioObservador'; 
 
 function AccesoObservador() {
   const { token } = useParams();
@@ -18,21 +17,39 @@ function AccesoObservador() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [formData, setFormData] = useState({
-    nombre_completo: '',
-    ci: '',
-    identificador: '',
-    organizacion_politica: '',
-  });
 
   const hasCalled = useRef(false);
+  const speakText = (text) => {
+    try {
+      if (!text) return;
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        window.speechSynthesis.speak(utterance);
+      }
+    } catch (e) {
+      console.warn('speechSynthesis no disponible', e);
+    }
+  };
 
   useEffect(() => {
+    if (datos?.msg) {
+      speakText(datos.msg);
+    }
+
     if (token && !hasCalled.current) {
       consultarAcceso(token);
       hasCalled.current = true;
     }
-  }, [token]);
+
+    return () => {
+      try {
+        if (typeof window !== "undefined" && "speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+        }
+      } catch (_) {}
+    };
+  }, [datos?.msg, token]);
 
   const consultarAcceso = async (tokenParam) => {
     setLoading(true);
@@ -40,11 +57,10 @@ function AccesoObservador() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/registro-acceso/registrar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: tokenParam }),
+        body: JSON.stringify({ token: "externo-" + tokenParam }),
       });
-
+      
       const data = await res.json();
-
       if (data.res === false && data.status === 404) {
         setMostrarFormulario(true);
       } else if (data.res === true) {
@@ -59,13 +75,21 @@ function AccesoObservador() {
     }
   };
 
-  const registrarDatos = async () => {
+  const registrarDatos = async (formData) => {
     setLoading(true);
+    setError(null);
+
     try {
+      const body = new FormData();
+      body.append('nombre_completo', formData.nombre_completo);
+      body.append('ci', formData.ci);
+      body.append('identificador', formData.identificador);
+      body.append('organizacion_politica', formData.organizacion_politica);
+      if (formData.foto) body.append('foto', formData.foto);
+
       const res = await fetch(`${import.meta.env.VITE_API_URL}/activarQr/${token}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body, 
       });
 
       const data = await res.json();
@@ -81,11 +105,6 @@ function AccesoObservador() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const colorFondo = datos?.tipo === 'entrada' ? '#1AB394' : '#F8AC59';
@@ -106,14 +125,7 @@ function AccesoObservador() {
         )}
 
         {mostrarFormulario && (
-          <Box component="form" display="flex" flexDirection="column" gap={2}>
-            <Typography variant="h6" align="center">Registro de Observador</Typography>
-            <TextField label="Nombre completo" name="nombre_completo" value={formData.nombre_completo} onChange={handleChange} fullWidth />
-            <TextField label="CI" name="ci" value={formData.ci} onChange={handleChange} fullWidth />
-            <TextField label="Identificador" name="identificador" value={formData.identificador} onChange={handleChange} fullWidth />
-            <TextField label="Organización Política" name="organizacion_politica" value={formData.organizacion_politica} onChange={handleChange} fullWidth />
-            <Button variant="contained" color="primary" onClick={registrarDatos}>Registrar</Button>
-          </Box>
+          <FormularioObservador onSubmit={registrarDatos} loading={loading} tipo={datos?.tipo_credencial}/>
         )}
 
         {datos && (
@@ -128,9 +140,30 @@ function AccesoObservador() {
               <Typography variant="h6" sx={{ fontWeight: 'bold', letterSpacing: 2 }}>
                 {datos.nombre_completo}
               </Typography>
-              <Typography><strong>CI:</strong> {datos.ci}</Typography>
-              <Typography><strong>Identificador:</strong> {datos.identificador}</Typography>
-              <Typography><strong>Organización:</strong> {datos.organizacion_politica}</Typography>
+              <Typography><strong>CI:</strong> {datos.observador[0].ci}</Typography>
+              {datos.observador[0].foto && (
+                <img
+                  src={`data:image/jpeg;base64,${datos.observador[0].foto}`}
+                  alt="Foto del personal"
+                  style={{
+                    width: '150px',
+                    borderRadius: '10px',
+                    marginTop: '5px',
+                  }}
+                />
+              )}
+              <Typography><strong>Nombre Completo:</strong> {datos.observador[0].nombre_completo}</Typography>
+              <Typography>
+                {datos.tipo_credencial === "delegado" || datos.tipo_credencial === "candidato" || datos.tipo_credencial === "observador"? (
+                  <>
+                    <strong>Organización:</strong> {datos.observador?.[0]?.organizacion_politica}
+                  </>
+                ) : datos.tipo_credencial === "prensa" ? (
+                  <>
+                    <strong>Identificador:</strong> {datos.identificador}
+                  </>
+                ) : null}
+              </Typography>
               <Typography><strong>Tipo:</strong> {datos.tipo_credencial}</Typography>
             </Box>
 

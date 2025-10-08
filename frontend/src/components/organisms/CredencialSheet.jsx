@@ -17,9 +17,8 @@ export default function CredentialSheet({ persons, side, cargos = [], accesoComp
     const cargoPersona = cargos.find(c => c.id === persona.cargo_id);
     const color = cargoPersona?.color?.toLowerCase();
     const tipo = persona?.tipo?.toLowerCase?.() || "";
-    const colorAC = persona.color?.toLowerCase() || color;
+    const colorAC = persona.cargo_color?.toLowerCase() || "";
     if (accesoComputo === 1) {
-      console.log("CARGO PERSONA", colorAC, persona);
       if (colorAC === "externo") {
         console.log("CARGO COMPUTO", persona);
         return <CustomCredencialExternoAtras persona={persona} lado={side}/>;

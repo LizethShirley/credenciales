@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   Box,
   Grid,
@@ -8,29 +8,31 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Button
+  Button,
+  Alert
 } from '@mui/material';
 import CustomSendIcon from '../../components/atoms/CustomSendIcon';
 
-// Función para dividir un array en chunks de tamaño `size`
-const chunkArray = (array, size = 9) => {
-  const chunks = [];
-  for (let i = 0; i < array.length; i += size) {
-    chunks.push(array.slice(i, i + size));
-  }
-  return chunks;
-};
-
+// Evita llamar la variable "alert", para no chocar con el alert() global del navegador
 const GestionarExterno = () => {
   const [cargoSeleccionado, setCargoSeleccionado] = useState('');
   const [cantidad, setCantidad] = useState('');
+  const [alerta, setAlerta] = useState({ open: false, message: '', severity: '' });
+  const accesosGenerados = useRef([]);
+
+  const chunkArray = (array, size = 9) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  };
 
   const handleChangeCargo = (event) => setCargoSeleccionado(event.target.value);
-const accesosGenerados = useRef([]);
 
   const handleEnviar = async () => {
     if (!cantidad || !cargoSeleccionado) {
-      return alert('Debe completar todos los campos');
+      return setAlerta({ open: true, message: "Debe completar todos los campos", severity: "error" });
     }
 
     try {
@@ -51,37 +53,46 @@ const accesosGenerados = useRef([]);
       const data = await response.json();
 
       if (!data.res || !Array.isArray(data.datos)) {
-        alert("La API no devolvió un array válido");
+        setAlerta({ open: true, message: "La API no devolvió un array válido", severity: "error" });
         return;
       }
 
-      // Guardamos los datos en la variable ref
       accesosGenerados.current = data.datos;
+      setCargoSeleccionado('');
+      setCantidad('');
 
-      // Llamamos al método que abre la ventana
-      abrirPreview();
-
+      setAlerta({ open: true, message: "Accesos generados correctamente", severity: "success" });
     } catch (error) {
       console.error(error);
-      alert('Ocurrió un error al enviar los datos');
+      setAlerta({ open: true, message: "Error al cargar datos", severity: "error" });
     }
   };
 
-  const abrirPreview = () => {
-  if (!accesosGenerados.current.length) return alert("No hay datos para mostrar");
+  const abrirPreview = useCallback((array) => {
+    if (!array?.length) {
+      setAlerta({ open: true, message: "No hay datos para mostrar", severity: "warning" });
+      return;
+    }
 
-  // chunkArray para formar las páginas
-  
-};
+    localStorage.setItem("credenciales_preview_pages", JSON.stringify(chunkArray(array, 9)));
+    localStorage.setItem("credenciales_preview_acceso", 0);
+    localStorage.setItem("credenciales_preview_ids", JSON.stringify(array.map(d => d.qr || d.barcode)));
 
-
-
-
-
+    window.open("/preview", "_blank", "width=900,height=1400");
+  }, [setAlerta]);
 
   const handlePrevisualizar = async () => {
+    if (!cargoSeleccionado || !cantidad) {
+      return setAlerta({ open: true, message: "Debe seleccionar tipo y cantidad", severity: "error" });
+    }
+
     try {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/acceso-externo/listar`, {
+      const query = new URLSearchParams({
+        tipo: cargoSeleccionado,
+        cantidad: cantidad
+      });
+
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/acceso-externo/listar?${query.toString()}`, {
         method: "GET",
         headers: { "Accept": "application/json" }
       });
@@ -91,19 +102,18 @@ const accesosGenerados = useRef([]);
       const data = await resp.json();
       const personsArray = Array.isArray(data) ? data : data.datos;
 
-      if (!Array.isArray(personsArray)) {
-        alert("La API no devolvió un array válido");
+      if (!Array.isArray(personsArray) || personsArray.length === 0) {
+        setAlerta({ open: true, message: "No se encontraron credenciales para esta selección", severity: "warning" });
         return;
       }
 
-      localStorage.setItem("credenciales_preview_pages", JSON.stringify(chunkArray(personsArray, 9)));
-      localStorage.setItem("credenciales_preview_acceso", 0);
-      localStorage.setItem("credenciales_preview_ids", JSON.stringify(personsArray.map(d => d.qr || d.barcode)));
-
-      window.open("/preview", "_blank", "width=900,height=1400");
+      abrirPreview(personsArray);
+      setCargoSeleccionado('');
+      setCantidad('');
+      setAlerta({ open: true, message: "Vista previa generada correctamente", severity: "success" });
     } catch (error) {
       console.error(error);
-      alert("Error al obtener los datos para previsualizar");
+      setAlerta({ open: true, message: "Error al obtener los datos para previsualizar", severity: "error" });
     }
   };
 
@@ -115,9 +125,13 @@ const accesosGenerados = useRef([]);
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, justifyContent: 'center' }}>
-          <Grid sx={{ display: 'grid', gap: 2, width: '100%' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-              <Typography sx={{ width: 350 }}>Cantidad de Credenciales:</Typography>
+          <Grid container spacing={2}>
+            <Box sx={{ display: 'grid', alignItems: 'center', gap: 2 }}>
+              <Typography sx={{ width: 200 }}>Cantidad de Credenciales:</Typography>
+              <Typography sx={{ width: 200 }}>Cargo Externo:</Typography>
+            </Box>
+
+            <Box sx={{ display: 'grid', alignItems: 'center', gap: 2, width: 400 }}>
               <TextField
                 fullWidth
                 placeholder="Cantidad"
@@ -125,9 +139,6 @@ const accesosGenerados = useRef([]);
                 value={cantidad}
                 onChange={e => setCantidad(e.target.value)}
               />
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography sx={{ minWidth: 218 }}>Cargo Externo:</Typography>
               <FormControl fullWidth>
                 <InputLabel id="cargo-label">Cargo Externo</InputLabel>
                 <Select
@@ -144,20 +155,32 @@ const accesosGenerados = useRef([]);
                 </Select>
               </FormControl>
             </Box>
-          </Grid>
 
-          <Box sx={{ ml: 10 }}>
-            <CustomSendIcon onClick={handleEnviar} />
-            <Button
-              variant="outlined"
-              onClick={handlePrevisualizar}
-              sx={{ ml: 2 }}
-            >
-              Previsualizar
-            </Button>
-          </Box>
+            <Box sx={{ display: 'grid', alignItems: 'center', gap: 2, width: 150 }}>
+              <CustomSendIcon onClick={handleEnviar} />
+              <Button
+                variant="outlined"
+                onClick={handlePrevisualizar}
+              >
+                Previsualizar
+              </Button>
+            </Box>
+          </Grid>
         </Box>
       </Box>
+      {alerta.open && (
+  <Box sx={{ position: "fixed", bottom: 20, right: 20 }}>
+    <Alert
+      severity={alerta.severity}
+      onClose={() => setAlerta({ ...alerta, open: false })}
+      variant="filled"
+      sx={{ width: '100%' }}
+    >
+      {alerta.message}
+    </Alert>
+  </Box>
+)}
+
     </Box>
   );
 };

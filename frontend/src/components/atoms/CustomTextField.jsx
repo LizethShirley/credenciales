@@ -21,6 +21,22 @@ const CustomTextField = ({ label, required = false, onlyNumbers = false, onlyLet
     }
   };
 
+  const handleChange = (e) => {
+    let value = e.target.value.toUpperCase(); // ✅ Fuerza a mayúsculas
+
+    // Filtros adicionales opcionales
+    if (onlyNumbers) {
+      value = value.replace(/[^0-9]/g, '');
+    }
+
+    if (onlyLetters) {
+      value = value.replace(/[^A-ZÁÉÍÓÚÑ\s]/g, '');
+    }
+
+    helpers.setValue(value);
+  };
+
+
   return (
     <div style={{ marginBottom: 16 }}>
       {label && (
@@ -39,7 +55,10 @@ const CustomTextField = ({ label, required = false, onlyNumbers = false, onlyLet
         type={onlyNumbers ? 'number' : 'text'}
         inputProps={{
           inputMode: onlyNumbers ? 'numeric' : 'text',
-          style: onlyNumbers ? { MozAppearance: 'textfield' } : undefined,
+          style: {
+            ...(onlyNumbers ? { MozAppearance: 'textfield' } : {}),
+            textTransform: 'uppercase',
+          },
         }}
         sx={
           onlyNumbers
@@ -59,6 +78,7 @@ const CustomTextField = ({ label, required = false, onlyNumbers = false, onlyLet
             : {}
         }
         onKeyDown={handleKeyDown}
+        onChange={handleChange}
         error={meta.touched && Boolean(meta.error)}
         helperText={meta.touched && meta.error}
         fullWidth
