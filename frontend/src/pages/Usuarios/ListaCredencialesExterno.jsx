@@ -21,13 +21,12 @@ const ListaCredencialesExterno = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/acceso-externo/listar`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/acceso-computo-observadores/filter`);
       if (!response.ok) {
         throw new Error(`Error ${response.status} al obtener personal`);
       }
       const data = await response.json();
-      console.log("DATA EXTERNO", data.datos);
-      setPersonal(data.datos || []);
+      setPersonal(data.acceso_computo_observadores || []);
     } catch (err) {
       setError(err.message);
     } finally {

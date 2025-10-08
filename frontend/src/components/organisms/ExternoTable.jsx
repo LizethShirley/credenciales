@@ -10,17 +10,19 @@ import {
   TablePagination,
   TableSortLabel,
   Paper,
-  Checkbox,
   Button,
   Snackbar,
   Alert,
-  Typography,
   TextField,
   FormControl,
   Select,
   MenuItem,
   InputLabel,
-  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Tab,
 } from "@mui/material";
 
 import * as XLSX from "xlsx";
@@ -29,6 +31,17 @@ import autoTable from "jspdf-autotable";
 
 import CustomDeleteIcon from "../atoms/CustomDeleteIcon";
 import CustomEditIcon from "../atoms/CustomEditIcon";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import FormularioObservador from "../organisms/FormularioObservador";
+import EditarObservador from "./EditObservador";
+import { Checkbox } from "@mui/material";
+const chunkArray = (array, size = 9) => {
+  const chunks = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+};
 
 const ExternoTable = ({ data, onDeleteSuccess }) => {
   const [filters, setFilters] = useState({ tipo: "", activo: "" });
@@ -36,20 +49,38 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
   const [order, setOrder] = useState("asc");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
   const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
+  const [selectedTokens, setSelectedTokens] = useState([]);
 
-  const showAlert = (msg, sev = "info") => setAlert({ open: true, message: msg, severity: sev });
+  const [openForm, setOpenForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [selectedToken, setSelectedToken] = useState(null);
+  const [selectedCi, setSelectedCi] = useState(null);
+  const [selectedTipo, setSelectedTipo] = useState(null);
+
+  const handleOpenForm = (item) => {
+    setSelectedToken(item.token_acceso);
+    setSelectedTipo(item.tipo);
+    setOpenForm(true);
+  };
+
+  const handleSelectRow = (token) => {
+    setSelectedTokens((prev) =>
+      prev.includes(token)
+        ? prev.filter((t) => t !== token)
+        : [...prev, token] 
+    );
+  };
+
+  const handleCloseForm = () => setOpenForm(false);
   const closeAlert = () => setAlert({ ...alert, open: false });
-
-  // ---- Ordenamiento
+  // Ordenamiento
   const handleSort = (field) => {
     const isAsc = orderBy === field && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(field);
   };
-
-  // ---- Filtrado
+  // Filtrado
   const handleFilterChange = (field) => (e) => {
     setFilters({ ...filters, [field]: e.target.value });
     setPage(0);
@@ -82,7 +113,7 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
     return sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }, [sortedData, page, rowsPerPage]);
 
-  // ---- Exportaciones
+  // Exportaciones
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
       sortedData.map((item) => ({
@@ -113,6 +144,114 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
     doc.save("prensa.pdf");
   };
 
+  const registrarDatos = async (formData) => {
+    if (!selectedToken) {
+      setAlert({ open: true, message: "No se encontró el token del registro", severity: "error" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const body = new FormData();
+      body.append("nombre_completo", formData.nombre_completo);
+      body.append("ci", formData.ci);
+      body.append("identificador", formData.identificador);
+      body.append("organizacion_politica", formData.organizacion_politica);
+      if (formData.foto) body.append("foto", formData.foto);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/activarQr/${selectedToken}`,
+        { method: "POST", body }
+      );
+      const data = await response.json();
+      if (data.res === true) {
+        setAlert({ open: true, message: "Observador registrado correctamente", severity: "success" });
+        handleCloseForm();
+
+        setTimeout(() => {
+          onDeleteSuccess?.();
+        }, 4000);
+      } else {
+        setAlert({ open: true, message: data.msg || "Error al registrar", severity: "error" });
+      }
+    } catch (err) {
+      console.error(err);
+      setAlert({ open: true, message: "Error al registrar observador", severity: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const eliminarDatos = async (item) => {
+    const token = item?.token_acceso;
+
+    if (!token) {
+      setAlert({ open: true, message: "No se encontró el token del registro", severity: "error" });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/liberarToken/${token}`,
+        { method: "POST" }
+      );
+      const data = await response.json();
+
+      if (data.res === true) {
+        setAlert({ open: true, message: data.msg, severity: "success" });
+        setTimeout(() => {
+          onDeleteSuccess?.();
+        }, 3000);
+      } else {
+        setAlert({ open: true, message: data.msg || "Error al eliminar", severity: "error" });
+      }
+    } catch (err) {
+      console.error("Error al eliminar:", err);
+      setAlert({ open: true, message: "Error al eliminar Personal", severity: "error" });
+    }
+  };
+
+  const handlePrevisualizar = async () => {
+    if (selectedTokens.length === 0) {
+      return setAlert({ open: true, message: "Seleccione al menos un registro", severity: "info" });
+    }
+
+    try {
+      const query = new URLSearchParams();
+      selectedTokens.forEach(token => query.append("tokens[]", token)); 
+
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_URL}/acceso-externo/listar?${query.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!resp.ok) throw new Error("Error al obtener datos para previsualizar");
+
+      const data = await resp.json();
+      const personsArray = Array.isArray(data) ? data : data.datos;
+      console.log("Datos obtenidos para previsualizar:", personsArray);
+      if (!Array.isArray(personsArray)) {
+        setAlert({ open: true, message: "La API no devolvió un array válido", severity: "error" });
+        return;
+      }
+
+      // Guardamos localStorage igual que antes
+      localStorage.setItem("credenciales_preview_pages", JSON.stringify(chunkArray(personsArray, 9)));
+      localStorage.setItem("credenciales_preview_acceso", 0);
+      localStorage.setItem("credenciales_preview_ids", JSON.stringify(personsArray.map(d => d.qr || d.barcode)));
+
+      window.open("/preview", "_blank", "width=900,height=1400");
+    } catch (error) {
+      console.error(error);
+      setAlert({ open: true, message: "Error al previsualizar", severity: "error" });
+    }
+  };
+
   return (
     <Box>
       {/* Snackbar */}
@@ -124,12 +263,7 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
 
       {/* Filtros */}
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <TextField
-          size="small"
-          label="Filtrar por Tipo"
-          value={filters.tipo}
-          onChange={handleFilterChange("tipo")}
-        />
+        <TextField size="small" label="Filtrar por Tipo" value={filters.tipo} onChange={handleFilterChange("tipo")} />
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel>Activo</InputLabel>
           <Select value={filters.activo} onChange={handleFilterChange("activo")}>
@@ -139,12 +273,9 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
           </Select>
         </FormControl>
         <Box sx={{ ml: "auto" }}>
-          <Button onClick={exportToExcel} variant="outlined" size="small" sx={{ mr: 1 }}>
-            Excel
-          </Button>
-          <Button onClick={exportToPDF} variant="outlined" size="small">
-            PDF
-          </Button>
+          <Button onClick={exportToExcel} variant="outlined" size="small" sx={{ mr: 1 }}>Excel</Button>
+          <Button onClick={exportToPDF} variant="outlined" size="small">PDF</Button>
+          <Button onClick={handlePrevisualizar} variant="outlined" size="small">Previsualizar</Button>
         </Box>
       </Box>
 
@@ -154,44 +285,120 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
           <Table size="small">
             <TableHead>
               <TableRow>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    indeterminate={
+                      selectedTokens.length > 0 &&
+                      selectedTokens.length < paginatedData.length
+                    }
+                    checked={
+                      paginatedData.length > 0 &&
+                      selectedTokens.length === paginatedData.length
+                    }
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedTokens(paginatedData.map((item) => item.token_acceso));
+                      } else {
+                        setSelectedTokens([]);
+                      }
+                    }}
+                  />
+                </TableCell>
                 <TableCell>
-                  <TableSortLabel
-                    active={orderBy === "id"}
-                    direction={orderBy === "id" ? order : "asc"}
-                    onClick={() => handleSort("id")}
-                  >
-                   C. I. 
+                  <TableSortLabel active={orderBy === "id"} direction={orderBy === "id" ? order : "asc"} onClick={() => handleSort("id")}>
+                    C. I.
                   </TableSortLabel>
                 </TableCell>
                 <TableCell>
-                  <TableSortLabel
-                    active={orderBy === "tipo"}
-                    direction={orderBy === "tipo" ? order : "asc"}
-                    onClick={() => handleSort("tipo")}
-                  >
+                  <TableSortLabel active={orderBy === "tipo"} direction={orderBy === "tipo" ? order : "asc"} onClick={() => handleSort("tipo")}>
                     Tipo
                   </TableSortLabel>
                 </TableCell>
                 <TableCell>Nombre Completo</TableCell>
-                <TableCell>Identificador</TableCell>
-                <TableCell>Org. Política</TableCell>
+                <TableCell>Foto</TableCell>
+                <TableCell>Token</TableCell>
                 <TableCell>Activo</TableCell>
+                <TableCell>Sigla</TableCell>
                 <TableCell>Opciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {paginatedData.map((item) => (
-                <TableRow key={item.ci}>
-                  <TableCell>{item.ci}</TableCell>
+                <TableRow key={item.token_acceso}>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selectedTokens.includes(item.token_acceso)}
+                      onChange={() => handleSelectRow(item.token_acceso)}
+                    />
+                  </TableCell>
+                  <TableCell>{item.ci || "-"}</TableCell>
                   <TableCell>{item.tipo}</TableCell>
                   <TableCell>{item.nombre_completo || "-"}</TableCell>
-                  <TableCell>{item.identificador || "-"}</TableCell>
-                  <TableCell>{item.organizacion_politica || "-"}</TableCell>
+                  <TableCell>
+                    {item.foto ? <img src={`data:image/jpeg;base64,${item.foto}`} alt="foto" width={40} height={40} style={{ borderRadius: "20%" }} /> : item.ci?"Sin foto": "-"}
+                  </TableCell>
+                  <TableCell>{item.token_acceso || "-"}</TableCell>
                   <TableCell>{item.activo === 1 ? "Sí" : "No"}</TableCell>
                   <TableCell>
+                    {item.tipo === "delegado" || item.tipo === "candidato" || item.tipo === "observador"
+                      ? item.organizacion_politica || "-"
+                      : item.tipo === "prensa"
+                      ? item.identificador || "-"
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
                     <Box sx={{ display: "flex", gap: 1 }}>
-                      <CustomEditIcon onClick={() => console.log("Editar", item.id)} />
-                      <CustomDeleteIcon onClick={() => console.log("Eliminar", item.id)} />
+                      <PersonAddIcon
+                        color="primary"
+                        onClick={() => {
+                          if (item.ci === null || item.ci === "-") {
+                            setSelectedCi(null);
+                            handleOpenForm(item);
+                          } else {
+                            setAlert({
+                              open: true,
+                              message: `Ya está asociado a un ${item.tipo}`,
+                              severity: "info",
+                            });
+                          }
+                        }}
+                        style={{
+                          cursor: item.ci === null || item.ci === "-" ? "pointer" : "not-allowed",
+                          opacity: item.ci === null || item.ci === "-" ? 1 : 0.5,
+                        }}
+                        titleAccess={
+                          item.ci === null || item.ci === "-"
+                            ? "Agregar Persona"
+                            : `Ya está asociado a un personal de ${item.tipo}`
+                        }
+                      />
+                      <CustomEditIcon 
+                        onClick={() => {
+                          if (item.ci !== null && item.ci !== "-") {
+                            setSelectedCi(item.ci);
+                            handleOpenForm(item);
+                          } else {
+                            setAlert({
+                              open: true,
+                              message: `No existe personal de ${item.tipo}`,
+                              severity: "info",
+                            });
+                          }
+                        }}
+                      />
+                      <CustomDeleteIcon 
+                        onClick={() => {
+                          if (item.ci !== null && item.ci !== "-") {
+                            eliminarDatos(item)
+                          } else {
+                            setAlert({
+                              open: true,
+                              message: `No existe personal de ${item.tipo}`,
+                              severity: "info",
+                            });
+                          }
+                        }} 
+                      />
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -206,13 +413,35 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
           page={page}
           onPageChange={(e, newPage) => setPage(newPage)}
           rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
+          onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
           rowsPerPageOptions={[5, 10, 25]}
         />
       </Paper>
+
+      
+      <Dialog open={openForm} onClose={handleCloseForm} fullWidth maxWidth="sm">
+        <DialogTitle>{selectedCi!=="-" ? "Editar Observador" : "Nuevo Observador"}</DialogTitle>
+        <DialogContent>
+          {selectedCi!=="-" && selectedCi!==null? (
+            <EditarObservador
+              ci={selectedCi}
+              tipo={selectedTipo}
+              token={selectedToken}
+              onClose={handleCloseForm}
+              onUpdate={onDeleteSuccess}
+            />
+          ) : (
+            <FormularioObservador
+              onSubmit={registrarDatos}
+              loading={loading}
+              tipo={selectedTipo}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseForm} color="secondary">Cancelar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
