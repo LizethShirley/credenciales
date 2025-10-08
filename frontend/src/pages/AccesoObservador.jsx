@@ -13,10 +13,12 @@ import FormularioObservador from '../components/organisms/FormularioObservador';
 
 function AccesoObservador() {
   const { token } = useParams();
+  const cleanToken = token?.replace(/^externo-/, '');
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [tipo_credencial, setTipo_credencial] = useState(null);
 
   const hasCalled = useRef(false);
   const speakText = (text) => {
@@ -38,9 +40,10 @@ function AccesoObservador() {
     }
 
     if (token && !hasCalled.current) {
-      consultarAcceso(token);
-      hasCalled.current = true;
-    }
+  consultarAcceso(cleanToken);
+  hasCalled.current = true;
+}
+
 
     return () => {
       try {
@@ -52,63 +55,73 @@ function AccesoObservador() {
   }, [datos?.msg, token]);
 
   const consultarAcceso = async (tokenParam) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/registro-acceso/registrar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: "externo-" + tokenParam }),
-      });
-      
-      const data = await res.json();
-      if (data.res === false && data.status === 404) {
-        setMostrarFormulario(true);
-      } else if (data.res === true) {
-        setDatos(data);
-      } else {
-        setError(data.msg || 'Error desconocido');
-      }
-    } catch (err) {
-      setError('Error de conexión');
-    } finally {
-      setLoading(false);
+    console.log("Consultando acceso con token:", tokenParam);
+  setLoading(true);
+  try {
+    const formData = new FormData();
+    formData.append('token', "externo-"+tokenParam); // agregamos el token como campo
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/registro-acceso/registrar`, {
+      method: 'POST',
+      body: formData, // enviamos FormData directamente
+    });
+
+    const data = await res.json();
+
+    if (data.res === false && data.status === 404) {
+      setMostrarFormulario(true);
+      console.log("Se mostrará el formulario para registrar datos."+data.tipo_credencial);
+      //setDatos(data);
+      setTipo_credencial(data.tipo_credencial);
+    } else if (data.res === true) {
+      setDatos(data);
+    } else {
+      setError(data.msg || 'Error desconocido');
     }
-  };
+  } catch (err) {
+    setError('Error de conexión');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const registrarDatos = async (formData) => {
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
+    console.log("Registrando datos del observador:", cleanToken, formData);
+  try {
+    const body = new FormData();
+    body.append('nombre_completo', formData.nombre_completo);
+    body.append('ci', formData.ci);
+    body.append('identificador', formData.identificador);
+    body.append('organizacion_politica', formData.organizacion_politica);
+    if (formData.foto) body.append('foto', formData.foto);
 
-    try {
-      const body = new FormData();
-      body.append('nombre_completo', formData.nombre_completo);
-      body.append('ci', formData.ci);
-      body.append('identificador', formData.identificador);
-      body.append('organizacion_politica', formData.organizacion_politica);
-      if (formData.foto) body.append('foto', formData.foto);
+    // usamos el token limpio
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/activarQr/${cleanToken}`, {
+      method: 'POST',
+      body,
+    });
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/activarQr/${token}`, {
-        method: 'POST',
-        body, 
-      });
+    const data = await res.json();
+    console.log("Respuesta al registrar datos:", data);
 
-      const data = await res.json();
-
-      if (data.res === true) {
-        setDatos(data);
-        setMostrarFormulario(false);
-      } else {
-        setError(data.msg || 'Error al registrar');
-      }
-    } catch (err) {
-      setError('Error al enviar datos');
-    } finally {
-      setLoading(false);
+    if (data.res === true) {
+      setDatos(data);
+      setMostrarFormulario(false);
+    } else {
+      setError(data.msg || 'Error al registrar');
     }
-  };
+  } catch (err) {
+    setError('Error al enviar datos');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const colorFondo = datos?.tipo === 'entrada' ? '#1AB394' : '#F8AC59';
-
+  console.log("Datos del observador:", datos);
   return (
     <Grid padding={2} minHeight="95vh" display="flex" justifyContent="center" alignItems="center">
       <Paper elevation={3} style={{ borderRadius: 15, padding: 20, maxWidth: 600, width: '100%' }}>
@@ -125,7 +138,7 @@ function AccesoObservador() {
         )}
 
         {mostrarFormulario && (
-          <FormularioObservador onSubmit={registrarDatos} loading={loading} tipo={datos?.tipo_credencial}/>
+          <FormularioObservador onSubmit={registrarDatos} loading={loading} tipo={tipo_credencial}/>
         )}
 
         {datos && (
@@ -138,9 +151,9 @@ function AccesoObservador() {
               color="#FFFFFF"
             >
               <Typography variant="h6" sx={{ fontWeight: 'bold', letterSpacing: 2 }}>
-                {datos.nombre_completo}
+                {datos?.nombre_completo}
               </Typography>
-              <Typography><strong>CI:</strong> {datos.observador[0].ci}</Typography>
+              <Typography><strong>CI:</strong> {datos?.observador[0].ci}</Typography>
               {datos.observador[0].foto && (
                 <img
                   src={`data:image/jpeg;base64,${datos.observador[0].foto}`}

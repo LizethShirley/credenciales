@@ -14,7 +14,7 @@ const CustomCredencialVerdeOscuro = ({ persona, lado }) => {
         height: "9cm",
         position: "relative",
         backgroundImage: `url(${lado === 'anverso'
-          ? '/credenciales/CARA_PUBLICO_EG2025.png'
+          ? '/credenciales/CARA_PUBLICO_EG2025.jpg'
           : '/credenciales/ATRAS_PUBLICO_EG2025.png'})`,
         backgroundSize: "100% 100%", 
         backgroundRepeat: "no-repeat",
@@ -54,6 +54,17 @@ const CustomCredencialVerdeOscuro = ({ persona, lado }) => {
               }}
             />
           </Box>
+          <img
+            src={`/EleccionesLogo.png`}
+            alt="foto"
+            style={{
+              position: "absolute",
+              bottom: "0.4cm",
+              left: "1cm",
+              width: "4cm",
+              objectFit: "cover",
+            }}
+          />
         </>
       )}
       {lado === 'reverso' && (

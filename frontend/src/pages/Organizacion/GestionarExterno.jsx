@@ -82,38 +82,49 @@ const GestionarExterno = () => {
   }, [setAlerta]);
 
   const handlePrevisualizar = async () => {
-    if (!cargoSeleccionado || !cantidad) {
-      return setAlerta({ open: true, message: "Debe seleccionar tipo y cantidad", severity: "error" });
-    }
-
     try {
-      const query = new URLSearchParams({
-        tipo: cargoSeleccionado,
-        cantidad: cantidad
-      });
-
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/acceso-externo/listar?${query.toString()}`, {
+      const query = new URLSearchParams();
+      if (cargoSeleccionado) query.append("tipo", cargoSeleccionado);
+      if (cantidad) query.append("cantidad", cantidad);
+  
+      const url = `${import.meta.env.VITE_API_URL}/acceso-externo/listar${
+        query.toString() ? `?${query.toString()}` : ''
+      }`;
+  
+      const resp = await fetch(url, {
         method: "GET",
         headers: { "Accept": "application/json" }
       });
-
+  
       if (!resp.ok) throw new Error("Error al obtener datos");
-
+  
       const data = await resp.json();
       const personsArray = Array.isArray(data) ? data : data.datos;
-
+  
       if (!Array.isArray(personsArray) || personsArray.length === 0) {
-        setAlerta({ open: true, message: "No se encontraron credenciales para esta selección", severity: "warning" });
+        setAlerta({
+          open: true,
+          message: "No se encontraron credenciales para esta selección",
+          severity: "warning"
+        });
         return;
       }
-
+  
       abrirPreview(personsArray);
       setCargoSeleccionado('');
       setCantidad('');
-      setAlerta({ open: true, message: "Vista previa generada correctamente", severity: "success" });
+      setAlerta({
+        open: true,
+        message: "Vista previa generada correctamente",
+        severity: "success"
+      });
     } catch (error) {
       console.error(error);
-      setAlerta({ open: true, message: "Error al obtener los datos para previsualizar", severity: "error" });
+      setAlerta({
+        open: true,
+        message: "Error al obtener los datos para previsualizar",
+        severity: "error"
+      });
     }
   };
 

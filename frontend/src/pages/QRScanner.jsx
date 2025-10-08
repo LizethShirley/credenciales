@@ -1,40 +1,37 @@
 import { useRef, useState } from 'react';
-import AccesoComputo from './AccesoComputo';
-import AccesoObservador from './AccesoObservador';
 import { Box, Typography, Paper, Button, Grid, Dialog, DialogTitle } from '@mui/material';
 import { Html5Qrcode } from 'html5-qrcode';
+import { useNavigate } from 'react-router-dom';
 
 const QRScanner = () => {
   const [error, setError] = useState('');
   const [scanning, setScanning] = useState(false);
-  const [scannedText, setScannedText] = useState('');
   const [openInfo, setOpenInfo] = useState(false);
   const qrCodeRegionId = 'qr-scanner-region';
   const html5QrCodeRef = useRef(null); 
-  
+  const navigate = useNavigate();
+
   const startScanner = async () => {
     setError('');
-    setScannedText('');
     const scannerRegion = document.getElementById(qrCodeRegionId);
     if (scannerRegion) scannerRegion.innerHTML = '';
-  
+
     try {
       const html5QrCode = new Html5Qrcode(qrCodeRegionId);
       html5QrCodeRef.current = html5QrCode;
-  
+
       await html5QrCode.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
-          console.log("QR detectado:", decodedText);
-          setScannedText(decodedText.replace('/', '-')); // convertimos "/" → "-" para URL
           stopScanner();
+          handleScanSuccess(decodedText);
         },
         (scanError) => {
           console.warn("Scan error:", scanError);
         }
       );
-  
+
       setScanning(true);
     } catch (err) {
       setError('No se pudo iniciar la cámara: ' + (err?.message || JSON.stringify(err)));
@@ -66,23 +63,19 @@ const QRScanner = () => {
   };
 
   const handleClear = async () => {
-    setScannedText('');
     setError('');
-    await stopScanner();   // 🔥 ahora sí detiene bien
+    await stopScanner();
   };
 
   const handleInfo = () => setOpenInfo(true);
 
-  // --- decidir componente ---
-  const renderAcceso = () => {
-    if (!scannedText) return null;
-
-    if (scannedText.startsWith('externo-')) {
-      // Observador
-      return <AccesoObservador token={scannedText} />;
+  const handleScanSuccess = (decodedText) => {
+    // Redirigir según tipo de token
+    const encodedToken = encodeURIComponent(decodedText);
+    if (decodedText.startsWith('externo-')) {
+      navigate(`/accesoObservador/${encodedToken}`);
     } else {
-      // Computo
-      return <AccesoComputo token={scannedText} />;
+      navigate(`/accesoComputo/${encodedToken}`);
     }
   };
 
@@ -107,14 +100,6 @@ const QRScanner = () => {
           backgroundImage:`url('/EleccionesLogo.png')`, backgroundSize:'80% auto',
           backgroundRepeat:'no-repeat', backgroundPosition:'center center', position:'relative', overflow:'hidden', opacity:0.5
         }} />
-
-        {scannedText && (
-          <Box sx={{ position:'absolute', inset:0, backgroundColor:'rgba(255,255,255,0.9)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <Box sx={{ backgroundSize: "100% 100%" }}>
-              {renderAcceso()}
-            </Box>
-          </Box>
-        )}
       </Box>
 
       <Box mt={2} display="flex" flexDirection="row" alignItems="center" justifyContent="center" gap={1}>

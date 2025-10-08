@@ -55,6 +55,17 @@ const cleanedSvg = rawSvg.replace(/<text[^>]*>[\s\S]*?<\/text>/g, '');
               }}
             />
           </Box>
+          <img
+            src={`/EleccionesLogo.png`}
+            alt="foto"
+            style={{
+              position: "absolute",
+              bottom: "0.4cm",
+              left: "1cm",
+              width: "4cm",
+              objectFit: "cover",
+            }}
+          />
         </>
       )}
       {lado === 'reverso' && (

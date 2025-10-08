@@ -48,7 +48,8 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
                 lineHeight: 1,
                 fontSize: "9pt",
                 fontFamily: "Source Sans Pro, sans-serif",
-                backgroundColor: "#FFFFFF"
+                backgroundColor: "#FFFFFF",
+                width: "72%",
               }}
             >
               {safePersona.cargo_nombre}
@@ -93,6 +94,17 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
                 left: "1.5cm",
                 width: "3cm",
                 height: "3cm",
+                objectFit: "cover",
+              }}
+            />
+            <img
+              src={`/EleccionesLogo.png`}
+              alt="foto"
+              style={{
+                position: "absolute",
+                bottom: "0.55cm",
+                left: "2cm",
+                width: "2.3cm",
                 objectFit: "cover",
               }}
             />
