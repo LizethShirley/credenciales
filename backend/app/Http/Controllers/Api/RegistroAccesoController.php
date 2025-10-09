@@ -35,7 +35,7 @@ class RegistroAccesoController extends Controller
                 $acceso = AccesoComputoExterno::where('token_acceso', $token)
                     ->first();
 
-                if ($acceso && !$acceso->activo) {
+                if ($acceso && $acceso->activo == 0) {
                     return response()->json([
                         'res' => false,
                         'tipo_credencial' => $acceso ? $acceso->tipo : null,

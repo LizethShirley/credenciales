@@ -261,7 +261,7 @@ class AccesoComputoObservadoresController extends Controller
                 ]);
             }
 
-            $tokenModel->activo = false;
+            $tokenModel->activo = 0;
             $tokenModel->save();
 
             return response()->json([
@@ -321,7 +321,7 @@ class AccesoComputoObservadoresController extends Controller
                 'liberado' => now()
             ]);
 
-            $tokenModel->activo = false;
+            $tokenModel->activo = 0;
             $tokenModel->save();
 
             return response()->json([
