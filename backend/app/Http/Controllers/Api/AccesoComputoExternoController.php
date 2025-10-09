@@ -258,7 +258,7 @@ class AccesoComputoExternoController extends Controller
     {
         try {
 
-            $tokenModel = AccesoComputoExterno::where('token_acceso', $token)->firstOrFail();
+            $tokenModel = AccesoComputoExterno::where('token_acceso', $token)->first();
             if (!$tokenModel) {
                 return response()->json([
                     'res' => false,
@@ -309,6 +309,9 @@ class AccesoComputoExternoController extends Controller
                 $compressed = $image->scale(width: 600)->toJpeg(quality: 70);
 
                 $observador->foto = $compressed->toString();
+            } else {
+                // Si no se proporciona una nueva foto, mantener la existente
+                $observador->foto = $observador->foto;
             }
 
             $observador->save();

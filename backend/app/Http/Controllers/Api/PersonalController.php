@@ -67,7 +67,6 @@ class PersonalController extends Controller
                 'status' => 200,
                 'personal' => $personalsArray,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
@@ -115,9 +114,10 @@ class PersonalController extends Controller
                     'c.nombre as cargo_nombre',
                     's.id as seccion_id',
                     's.nombre as seccion_nombre',
-                    's.abreviatura',
+                    's.abreviatura'
                 );
 
+            // 🔍 Filtros dinámicos
             if ($nombreCI) {
                 $personal->where(function ($query) use ($nombreCI) {
                     $query->where(DB::raw("CONCAT(p.nombre, ' ', p.paterno, ' ', p.materno)"), 'like', "%{$nombreCI}%")
@@ -130,36 +130,41 @@ class PersonalController extends Controller
             }
 
             if ($fecha) {
-                $personal->whereDate('p.created_at', $fecha);
+                $personal->whereDate('p.updated_at', $fecha);
             }
 
             if ($impreso !== '') {
                 $personal->where('p.estado', $impreso);
             }
 
+            // 🔽 Orden dinámico
             if ($orderBy) {
                 if ($orderBy === 'nombre_completo') {
                     $personal->orderBy(DB::raw("CONCAT(p.nombre, ' ', p.paterno, ' ', p.materno)"), $orderByTipo);
                 } elseif ($orderBy === 'cargo_nombre') {
                     $personal->orderBy('c.nombre', $orderByTipo);
-                } elseif ($orderBy === 'created_at') {
-                    $personal->orderBy('p.created_at', $orderByTipo);
+                } elseif ($orderBy === 'updated_at') {
+                    $personal->orderBy('p.updated_at', $orderByTipo);
                 }
             }
 
+            // 📄 Paginación
             $personal = $personal->paginate($perPage);
 
-            $personalsArray = $personal->map(function ($personal) {
-                $arrayPersonal = (array) $personal;
-                $arrayPersonal['photo'] = $personal->photo ? base64_encode($personal->photo) : null;
-                return $arrayPersonal;
+            // 🖼️ Convertir fotos a Base64 sin perder metadatos de paginación
+            $personalsArray = $personal->getCollection()->map(function ($item) {
+                $array = (array) $item;
+                $array['photo'] = $item->photo ? base64_encode($item->photo) : null;
+                return $array;
             });
+
+            $personal->setCollection($personalsArray);
 
             return response()->json([
                 'res' => true,
                 'msg' => 'Lista de personal con recinto, cargo y sección obtenida exitosamente',
                 'status' => 200,
-                'personal' => $personalsArray,
+                'personal' => $personal->items(),
                 'meta' => [
                     'current_page' => $personal->currentPage(),
                     'last_page' => $personal->lastPage(),
@@ -167,7 +172,6 @@ class PersonalController extends Controller
                     'total' => $personal->total(),
                 ],
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
@@ -177,6 +181,7 @@ class PersonalController extends Controller
             ], 500);
         }
     }
+
 
 
     /**
@@ -203,7 +208,6 @@ class PersonalController extends Controller
                 'status' => 200,
                 'personal' => $personalsArray,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
@@ -290,7 +294,6 @@ class PersonalController extends Controller
                 'status' => $personal->wasRecentlyCreated ? 201 : 200,
                 'datos' => $responseData
             ], $personal->wasRecentlyCreated ? 201 : 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
@@ -363,7 +366,6 @@ class PersonalController extends Controller
                 'status' => 200,
                 'personal' => $personal
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
@@ -407,7 +409,6 @@ class PersonalController extends Controller
             $personal['photo'] = $personal['photo'] ? base64_encode($personal['photo']) : null;
 
             return $personal;
-
         } catch (\Exception $e) {
             return null;
         }
@@ -559,7 +560,6 @@ class PersonalController extends Controller
                 'status' => 200,
                 'personal' => $personals
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,
@@ -818,7 +818,6 @@ class PersonalController extends Controller
                 'count' => $personalsArray->count(),
                 'personal' => $personalsArray,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'res' => false,

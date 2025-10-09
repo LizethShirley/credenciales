@@ -186,7 +186,7 @@ class ObservadoresController extends Controller
     public function getCisObservadores()
     {
         try {
-            $cis = Observadores::pluck('ci');
+            $cis = Observadores::whereNotNull('ci')->pluck('ci');
 
             return response()->json([
                 'res' => true,
