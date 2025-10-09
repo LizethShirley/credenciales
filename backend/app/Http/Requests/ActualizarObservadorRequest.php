@@ -19,13 +19,7 @@ class ActualizarObservadorRequest extends FormRequest
         $rules = [
             'id' => 'required|exists:observadores,id',
             'nombre_completo' => 'required|string|max:255',
-            'ci' => [
-                'sometimes',
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('observadores', 'ci')->ignore($observadorCI, 'ci'),
-            ],
+            'ci' => 'sometimes|required|string|max:50',
             'foto' => 'nullable|file|image|max:2048',
             'identificador' => 'nullable|string|max:255',
             'organizacion_politica' => 'nullable|string|max:255'

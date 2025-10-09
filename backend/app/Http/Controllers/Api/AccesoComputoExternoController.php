@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\DB;
+use Psy\Command\WhereamiCommand;
 
 class AccesoComputoExternoController extends Controller
 {
@@ -176,12 +177,77 @@ class AccesoComputoExternoController extends Controller
     public function activarAccesoComputoExterno(ActivarAccesoComputoExternoRequest $request, $token)
     {
         $token = AccesoComputoExterno::where('token_acceso', $token)->firstOrFail();
-        
+        if (!$token) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'Token no encontrado',
+                'status' => 404,
+            ], 404);
+        }
+
+        if (!$token->activo) {
+            return response()->json([
+                'res' => false,
+                'msg' => 'El token ya fue activado previamente.',
+                'status' => 400,
+            ], 400);
+        }
+
         $validated = $request->validated();
+        //Si el CI fue proporcionado, verificar si ya existe en otro observador
+        if (isset($validated['ci'])) {
+            $observadorExistente = Observadores::where('ci', $validated['ci'])->first();
+
+            if ($observadorExistente) {
+                // Verificar si el observador ya tiene un token activo diferente al actual
+                $asignacionActiva = AccesoComputoObservadores::where('observador_id', $observadorExistente->id)
+                    ->whereNull('liberado')
+                    ->first();
+
+                if ($asignacionActiva) {
+                    // Obtener el token activo del observador
+                    $tokenActivo = AccesoComputoExterno::find($asignacionActiva->token_id);
+
+                    //Inactivar el tocken del observador existente
+                    if ($tokenActivo) {
+                        $tokenActivo->activo = 0;
+                        $tokenActivo->save();
+                    }
+
+                    //liberar Observador existente
+                    AccesoComputoObservadores::where('observador_id', $observadorExistente->id)
+                        ->whereNull('liberado')
+                        ->update(['liberado' => now()]);
+                }
+
+                //registrar a observador existente al token
+                $asignacion = AccesoComputoObservadores::create([
+                    'token_id' => $token->id,
+                    'observador_id' => $observadorExistente->id,
+                    'asignado' => now(),
+                    'liberado' => null,
+                ]);
+
+                $token->activo = 1;
+                $token->save();
+
+                return response()->json([
+                    'res' => true,
+                    'msg' => 'Observador existente liberado y token asignado correctamente',
+                    'status' => 200,
+                    'observador' => $observadorExistente->makeHidden(['foto'])->toArray() + [
+                        'foto' => $observadorExistente->foto ? base64_encode($observadorExistente->foto) : null
+                    ],
+                    'asignacion' => $asignacion
+                ]);
+            }
+        }
+
+        // Crear nuevo observador
 
         $observador = new Observadores();
         $observador->nombre_completo = $validated['nombre_completo'];
-        $observador->ci = $validated['ci'];
+        $observador->ci = $validated['ci'] ?? null;
         $observador->identificador = $validated['identificador'] ?? null;
         $observador->organizacion_politica = $validated['organizacion_politica'] ?? null;
 
@@ -220,19 +286,40 @@ class AccesoComputoExternoController extends Controller
     public function updateObservador(ActualizarObservadorRequest $request, $token)
     {
         try {
-            $validated = $request->validated();
 
             $tokenModel = AccesoComputoExterno::where('token_acceso', $token)->firstOrFail();
+            if (!$tokenModel) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'Token no encontrado',
+                    'status' => 404,
+                ], 404);
+            }
 
+            $validated = $request->validated();
+
+            //Si el CI fue proporcionado, verificar si ya existe en otro observador
+            if (isset($validated['ci'])) {
+                $observadorExistente = Observadores::where('ci', $validated['ci'])->first();
+                if ($observadorExistente && $observadorExistente->id != $validated['id']) {
+                    return response()->json([
+                        'res' => false,
+                        'msg' => 'La cédula de identidad ya está en uso por otro observador.',
+                        'status' => 400,
+                    ], 400);
+                }
+            }
+
+            // Verificar si el observador está asignado al token y no ha sido liberado
             $asignacion = AccesoComputoObservadores::where('token_id', $tokenModel->id)
-                ->whereNull('liberado')
                 ->where('observador_id', $validated['id'])
+                ->whereNull('liberado')
                 ->first();
-
+            // Si fue liberado o no existe, retornar error
             if (!$asignacion) {
                 return response()->json([
                     'res' => false,
-                    'msg' => 'No hay un observador asignado a este token o ya fue liberado',
+                    'msg' => 'No hay un observador asignado a este token o ya fue liberado, recargue la página.',
                     'status' => 404,
                 ], 404);
             }
@@ -240,7 +327,7 @@ class AccesoComputoExternoController extends Controller
             $observador = Observadores::findOrFail($asignacion->observador_id);
 
             $observador->nombre_completo = $validated['nombre_completo'] ?? $observador->nombre_completo;
-            $observador->ci = $validated['ci'] ?? $observador->ci;
+            $observador->ci = $validated['ci'] ?? null;
             $observador->identificador = $validated['identificador'] ?? null;
             $observador->organizacion_politica = $validated['organizacion_politica'] ?? null;
 
@@ -272,5 +359,4 @@ class AccesoComputoExternoController extends Controller
             ]);
         }
     }
-
 }

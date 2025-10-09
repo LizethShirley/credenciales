@@ -245,9 +245,9 @@ class AccesoComputoObservadoresController extends Controller
                 ], 404);
             }
 
-            $accesoComputoObservadores = AccesoComputoObservadores::where('token_id', $tokenModel->id)->where('liberado', null)->first();
+            $accesoComputoObservadores = AccesoComputoObservadores::where('token_id', $tokenModel->id)->where('liberado', null)->get();
 
-            if (!$accesoComputoObservadores) {
+            if ($accesoComputoObservadores->isEmpty()) {
                 return response()->json([
                     'res' => false,
                     'msg' => 'Acceso a cómputo para observador no encontrado o ya está liberado',
@@ -255,10 +255,11 @@ class AccesoComputoObservadoresController extends Controller
                 ], 404);
             }
 
-            // Liberar token (poner fecha actual)
-            $accesoComputoObservadores->update([
-                'liberado' => now()
-            ]);
+            foreach ($accesoComputoObservadores as $accesoComputoObservador) {
+                $accesoComputoObservador->update([
+                    'liberado' => now()
+                ]);
+            }
 
             $tokenModel->activo = false;
             $tokenModel->save();

@@ -18,7 +18,7 @@ class ActivarAccesoComputoExternoRequest extends FormRequest
     {
         $rules = [
             'nombre_completo' => 'required|string|max:255',
-            'ci' => 'nullable|string|max:50|unique:observadores,ci',
+            'ci' => 'nullable|string|max:50',
             'foto' => 'nullable|file|image|max:2048',
             'identificador' => 'nullable|string|max:255',
             'organizacion_politica' => 'nullable|string|max:255',
