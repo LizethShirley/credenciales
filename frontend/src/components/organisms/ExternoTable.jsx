@@ -144,43 +144,54 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
     doc.save("prensa.pdf");
   };
 
-  const registrarDatos = async (formData) => {
-    if (!selectedToken) {
-      setAlert({ open: true, message: "No se encontró el token del registro", severity: "error" });
-      return;
+  const registrarDatos = async (values, { resetForm }) => {
+  console.log("Valores del formulario:", values);
+
+  if (!selectedToken) {
+    setAlert({ open: true, message: "No se encontró el token del registro", severity: "error" });
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const body = new FormData();
+    body.append("nombre_completo", values.nombre_completo);
+    body.append("ci", values.ci);
+    if (values.identificador) body.append("identificador", values.identificador);
+    if (values.organizacion_politica) body.append("organizacion_politica", values.organizacion_politica);
+    if (values.foto) body.append("foto", values.foto);
+
+    console.log("Contenido real de FormData:");
+    for (let [key, val] of body.entries()) {
+      console.log(key, val);
     }
 
-    setLoading(true);
-    try {
-      const body = new FormData();
-      body.append("nombre_completo", formData.nombre_completo);
-      body.append("ci", formData.ci);
-      body.append("identificador", formData.identificador);
-      body.append("organizacion_politica", formData.organizacion_politica);
-      if (formData.foto) body.append("foto", formData.foto);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/activarQr/${selectedToken}`, {
+      method: "POST",
+      body,
+    });
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/activarQr/${selectedToken}`,
-        { method: "POST", body }
-      );
-      const data = await response.json();
-      if (data.res === true) {
-        setAlert({ open: true, message: "Observador registrado correctamente", severity: "success" });
-        handleCloseForm();
-
-        setTimeout(() => {
-          onDeleteSuccess?.();
-        }, 4000);
-      } else {
-        setAlert({ open: true, message: data.msg || "Error al registrar", severity: "error" });
-      }
-    } catch (err) {
-      console.error(err);
-      setAlert({ open: true, message: "Error al registrar observador", severity: "error" });
-    } finally {
-      setLoading(false);
+    const data = await response.json();
+    console.log("Respuesta backend:", data);
+    
+    if (data.res === true) {
+      setAlert({ open: true, message: "Observador registrado correctamente", severity: "success" });
+      handleCloseForm();
+      resetForm();
+      setTimeout(() => onDeleteSuccess?.(), 4000);
+    } else {
+      setAlert({ open: true, message: data.msg || "Error al registrar", severity: "error" });
     }
-  };
+  } catch (err) {
+    console.error(err);
+    setAlert({ open: true, message: "Error al registrar observador", severity: "error" });
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
   const eliminarDatos = async (item) => {
     const token = item?.token_acceso;
@@ -420,28 +431,26 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
 
       
       <Dialog open={openForm} onClose={handleCloseForm} fullWidth maxWidth="sm">
-        <DialogTitle>{selectedCi!=="-" ? "Editar Observador" : "Nuevo Observador"}</DialogTitle>
-        <DialogContent>
-          {selectedCi!=="-" && selectedCi!==null? (
-            <EditarObservador
-              ci={selectedCi}
-              tipo={selectedTipo}
-              token={selectedToken}
-              onClose={handleCloseForm}
-              onUpdate={onDeleteSuccess}
-            />
-          ) : (
-            <FormularioObservador
-              onSubmit={registrarDatos}
-              loading={loading}
-              tipo={selectedTipo}
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseForm} color="secondary">Cancelar</Button>
-        </DialogActions>
-      </Dialog>
+  <DialogContent>
+    {selectedCi ? (
+      <EditarObservador
+        ci={selectedCi}
+        tipo={selectedTipo}
+        token={selectedToken}
+        onClose={handleCloseForm}
+        onUpdate={onDeleteSuccess}
+      />
+    ) : (
+      <FormularioObservador
+        onSubmit={registrarDatos}
+        loading={loading}
+        tipo={selectedTipo}
+        onCancel={handleCloseForm}
+      />
+    )}
+  </DialogContent>
+</Dialog>
+
     </Box>
   );
 };

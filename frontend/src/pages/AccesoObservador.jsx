@@ -59,18 +59,17 @@ function AccesoObservador() {
   setLoading(true);
   try {
     const formData = new FormData();
-    formData.append('token', "externo-"+tokenParam); // agregamos el token como campo
+    formData.append('token', "externo-"+tokenParam); 
 
     const res = await fetch(`${import.meta.env.VITE_API_URL}/registro-acceso/registrar`, {
       method: 'POST',
-      body: formData, // enviamos FormData directamente
+      body: formData,
     });
 
     const data = await res.json();
 
     if (data.res === false && data.status === 404) {
       setMostrarFormulario(true);
-      console.log("Se mostrará el formulario para registrar datos."+data.tipo_credencial);
       //setDatos(data);
       setTipo_credencial(data.tipo_credencial);
     } else if (data.res === true) {
@@ -89,7 +88,6 @@ function AccesoObservador() {
   const registrarDatos = async (formData) => {
   setLoading(true);
   setError(null);
-    console.log("Registrando datos del observador:", cleanToken, formData);
   try {
     const body = new FormData();
     body.append('nombre_completo', formData.nombre_completo);
@@ -153,10 +151,10 @@ function AccesoObservador() {
               <Typography variant="h6" sx={{ fontWeight: 'bold', letterSpacing: 2 }}>
                 {datos?.nombre_completo}
               </Typography>
-              <Typography><strong>CI:</strong> {datos?.observador[0].ci}</Typography>
-              {datos.observador[0].foto && (
+              <Typography><strong>CI:</strong> {datos.observador.ci}</Typography>
+              {datos.observador.foto && (
                 <img
-                  src={`data:image/jpeg;base64,${datos.observador[0].foto}`}
+                  src={`data:image/jpeg;base64,${datos.observador.foto}`}
                   alt="Foto del personal"
                   style={{
                     width: '150px',
@@ -165,19 +163,19 @@ function AccesoObservador() {
                   }}
                 />
               )}
-              <Typography><strong>Nombre Completo:</strong> {datos.observador[0].nombre_completo}</Typography>
+              <Typography><strong>Nombre Completo:</strong> {datos.observador.nombre_completo}</Typography>
               <Typography>
-                {datos.tipo_credencial === "delegado" || datos.tipo_credencial === "candidato" || datos.tipo_credencial === "observador"? (
+                {datos.observador.tipo === "delegado" || datos.observador.tipo === "candidato" || datos.observador.tipo === "observador"? (
                   <>
-                    <strong>Organización:</strong> {datos.observador?.[0]?.organizacion_politica}
+                    <strong>Organización:</strong> {datos.observador.organizacion_politica}
                   </>
-                ) : datos.tipo_credencial === "prensa" ? (
+                ) : datos.observador.tipo === "prensa" ? (
                   <>
                     <strong>Identificador:</strong> {datos.identificador}
                   </>
                 ) : null}
               </Typography>
-              <Typography><strong>Tipo:</strong> {datos.tipo_credencial}</Typography>
+              <Typography><strong>Tipo:</strong> {datos.observador.tipo}</Typography>
             </Box>
 
             <Grid container justifyContent="space-between" alignItems="center">

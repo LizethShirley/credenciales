@@ -1,6 +1,9 @@
 // src/components/EditarObservador.jsx
 import React, { useState, useEffect } from "react";
-import { Box, Typography, TextField, Button, CircularProgress } from "@mui/material";
+import { Box, Typography, Button, CircularProgress } from "@mui/material";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import CustomTextField from "../atoms/CustomTextField";
 
 function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
   const [formData, setFormData] = useState({
@@ -13,25 +16,47 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
+  const [preview, setPreview] = useState(null);
 
-  // Cargar datos del observador
+  const validationSchema = Yup.object({
+    nombre_completo: Yup.string().required("Campo obligatorio"),
+    ci: Yup.string().required("Campo obligatorio"),
+    identificador: Yup.string().nullable(),
+    organizacion_politica: Yup.string().nullable(),
+    foto: Yup.mixed().nullable(),
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/observador/${ci}`);
         const data = await res.json();
+        const observador = data.data;
+
         setFormData({
-          id: data.data.id || "",
-          nombre_completo: data.data.nombre_completo || "",
-          ci: data.data.ci || "",
-          identificador: data.data.identificador || "",
-          organizacion_politica: data.data.organizacion_politica || "",
+          id: observador.id || "",
+          nombre_completo: observador.nombre_completo || "",
+          ci: observador.ci || "",
+          identificador: observador.identificador || "",
+          organizacion_politica: observador.organizacion_politica || "",
           foto: null,
         });
+        if (observador.foto) {
+          if (typeof observador.foto === "string") {
+            const base64String = observador.foto.startsWith("data:")
+              ? observador.foto 
+              : `data:image/jpeg;base64,${observador.foto}`;
+            setPreview(base64String);
+          }
+          else if (Array.isArray(observador.foto)) {
+            const byteArray = new Uint8Array(observador.foto);
+            const blob = new Blob([byteArray], { type: "image/jpeg" });
+            const url = URL.createObjectURL(blob);
+            setPreview(url);
+          }
+        }
       } catch (err) {
         console.error("Error al cargar datos:", err);
-        setAlert({ open: true, message: "Error al obtener Observador", severity: "error" });
       } finally {
         setFetching(false);
       }
@@ -40,112 +65,108 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
     if (ci) fetchData();
   }, [ci]);
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (values) => {
     setLoading(true);
     try {
       const body = new FormData();
-      body.append('id', formData.id);
-      body.append('nombre_completo', formData.nombre_completo);
-      body.append('ci', formData.ci);
-      body.append('identificador', formData.identificador);
-      body.append('organizacion_politica', formData.organizacion_politica);
-      if (formData.foto) body.append('foto', formData.foto);
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/actualizar-observador/${token}`, {
-        method: "POST", 
-        body,
-      });
+      body.append("id", formData.id);
+      body.append("nombre_completo", values.nombre_completo);
+      body.append("ci", values.ci);
+      body.append("identificador", values.identificador);
+      body.append("organizacion_politica", values.organizacion_politica);
+      if (values.foto) body.append("foto", values.foto);
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/actualizar-observador/${token}`,
+        {
+          method: "POST",
+          body,
+        }
+      );
+
       const data = await res.json();
       if (data.res === true) {
         onUpdate?.();
         onClose?.();
-        setAlert({open: true, message: data.msg, severity: "success"});
       } else {
         alert(data.msg || "Error al actualizar");
-        setAlert({ open: true, message: "Error al actualizar Observador", severity: "error" });
       }
     } catch (err) {
       console.error(err);
       alert("Error al actualizar observador");
-      setAlert({ open: true, message: "Error al actualizar observador", severity: "error" });
     } finally {
       setLoading(false);
     }
   };
 
   if (fetching) return <CircularProgress />;
+
   return (
-    <Box component="form" display="flex" flexDirection="column" gap={2} onSubmit={handleSubmit}>
-      <Typography variant="h6" align="center">Editar Observador</Typography>
+    <Formik
+      enableReinitialize 
+      initialValues={formData}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+    >
+      {({ setFieldValue, isSubmitting, values }) => (
+        <Form>
+          <Typography variant="h6" align="center" gutterBottom>
+            Editar Observador
+          </Typography>
 
-      <TextField
-        label="Nombre completo"
-        name="nombre_completo"
-        value={formData.nombre_completo}
-        onChange={handleChange}
-        fullWidth
-      />
+          <CustomTextField name="nombre_completo" label="Nombre completo" />
+          <CustomTextField name="ci" label="CI" />
 
-      <TextField
-        label="CI"
-        name="ci"
-        value={formData.ci}
-        onChange={handleChange}
-        fullWidth
-      />
+          {tipo === "delegado" || tipo === "candidato" || tipo === "observador" ? (
+            <CustomTextField
+              name="organizacion_politica"
+              label="Organización Política"
+            />
+          ) : tipo === "prensa" ? (
+            <CustomTextField name="identificador" label="Identificador" />
+          ) : null}
 
-      {tipo === "delegado" || tipo === "candidato" || tipo === "observador" ? (
-        <TextField
-          label="Organización Política"
-          name="organizacion_politica"
-          value={formData.organizacion_politica}
-          onChange={handleChange}
-          fullWidth
-        />
-      ) : tipo === "prensa" ? (
-        <TextField
-          label="Identificador"
-          name="identificador"
-          value={formData.identificador}
-          onChange={handleChange}
-          fullWidth
-        />
-      ) : null}
+          <Button variant="outlined" component="label">
+            Subir Foto
+            <input
+              type="file"
+              name="foto"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setFieldValue("foto", file);
+                setPreview(URL.createObjectURL(file));
+              }}
+            />
+          </Button>
 
-      <Button variant="outlined" component="label">
-        Subir Foto
-        <input
-          type="file"
-          name="foto"
-          accept="image/*"
-          hidden
-          onChange={handleChange}
-        />
-      </Button>
+          {preview && (
+            <Box mt={2} style={{ textAlign: "center" }}>
+              <img
+                src={preview}
+                alt="preview"
+                style={{ width: "100%", maxWidth: 120, borderRadius: 8 }}
+              />
+            </Box>
+          )}
 
-      {formData.foto && (
-        <Typography variant="body2" color="text.secondary">
-          Archivo seleccionado: {formData.foto.name}
-        </Typography>
+          <Box display="flex" justifyContent="space-between" mt={2}>
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              disabled={isSubmitting || loading}
+            >
+              {loading ? "Actualizando..." : "Actualizar"}
+            </Button>
+            <Button variant="outlined" color="secondary" type="button" onClick={onClose}>
+              Cancelar
+            </Button>
+          </Box>
+        </Form>
       )}
-
-      <Button
-        variant="contained"
-        color="primary"
-        type="submit"
-        disabled={loading}
-      >
-        {loading ? "Actualizando..." : "Actualizar"}
-      </Button>
-    </Box>
+    </Formik>
   );
 }
 
