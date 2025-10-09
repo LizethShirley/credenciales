@@ -185,7 +185,7 @@ class AccesoComputoExternoController extends Controller
             ], 404);
         }
 
-        if (!$token->activo) {
+        if ($token->activo == 1) {
             return response()->json([
                 'res' => false,
                 'msg' => 'El token ya fue activado previamente.',
