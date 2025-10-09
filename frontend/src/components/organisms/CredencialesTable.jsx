@@ -21,7 +21,7 @@ import {
   DialogContent,
   DialogActions,
   Typography,
-  MenuItem, Select, FormControl, InputLabel
+  MenuItem, Select, FormControl, InputLabel, Tooltip
 } from '@mui/material';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -185,6 +185,8 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
         showAlert('QR generado exitosamente', 'success');
         setSelectedRows([]);
         setSelectedModalOpen(false);
+
+        if (onDeleteSuccess) onDeleteSuccess();
       } else {
         showAlert(result.msg || 'Error al generar QR', 'error');
       }
@@ -289,7 +291,10 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
           type="date"
           size="small"
           value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
+          onChange={(e) => {
+            setSelectedDate(e.target.value);
+            setPage(0);
+          }}
           InputLabelProps={{ shrink: true }}
         />
         <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -297,7 +302,10 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
           <Select
             value={filters.estado}
             label="Impreso"
-            onChange={(e) => setFilters({ ...filters, estado: e.target.value })}
+            onChange={(e) => {
+              setFilters({ ...filters, estado: e.target.value });
+              setPage(0);
+            }}
           >
             <MenuItem value="">Todos</MenuItem>
             <MenuItem value="1">Sí</MenuItem>
@@ -368,112 +376,120 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
           mb: 2,
         }}
       >
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={allSelected}
-                    onChange={toggleSelectAll}
-                  />
-                </TableCell>
-                <TableCell>Foto</TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={orderBy === 'nombreCompleto'}
-                    direction={orderBy === 'nombreCompleto' ? order : 'asc'}
-                    onClick={() => handleSort('nombreCompleto')}
-                  >
-                    Nombre Completo
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>CI</TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={orderBy === 'cargo_nombre'}
-                    direction={orderBy === 'cargo_nombre' ? order : 'asc'}
-                    onClick={() => handleSort('cargo_nombre')}
-                  >
-                    Cargo
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>Sección</TableCell>
-                <TableCell>A. C.</TableCell>
-                <TableCell>Imp.</TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={orderBy === 'updated_at'}
-                    direction={orderBy === 'updated_at' ? order : 'asc'}
-                    onClick={() => handleSort('updated_at')}
-                  >
-                    Fecha
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>Opciones</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedData.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell align="center">
+        
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell padding="checkbox">
                     <Checkbox
-                      checked={item.accesoComputo === 1}
-                      onChange={() => handleToggleAcceso(item)}
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
                     />
                   </TableCell>
+                  <TableCell>Foto</TableCell>
                   <TableCell>
-                    {item.photo ? (
-                      <img
-                        src={`data:image/jpeg;base64,${item.photo}`}
-                        alt="foto"
-                        width={40}
-                        height={40}
-                        style={{ borderRadius: '20%' }}
-                      />
-                    ) : (
-                      'Sin foto'
-                    )}
+                    <TableSortLabel
+                      active={orderBy === 'nombreCompleto'}
+                      direction={orderBy === 'nombreCompleto' ? order : 'asc'}
+                      onClick={() => handleSort('nombreCompleto')}
+                    >
+                      Nombre Completo
+                    </TableSortLabel>
                   </TableCell>
-                  <TableCell>{getNombreCompleto(item)}</TableCell>
-                  <TableCell>{item.ci}</TableCell>
-                  <TableCell>{item.cargo_nombre}</TableCell>
-                  <TableCell>{item.abreviatura}</TableCell>
+                  <TableCell>CI</TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                      {item.accesoComputo === 1 ? (
-                        <CheckCircleIcon color="success" titleAccess="Acceso Cómputo habilitado" />
-                      ) : (
-                        <CancelIcon color="error" titleAccess="Sin acceso a Cómputo" />
-                      )}
-                    </Box>
+                    <TableSortLabel
+                      active={orderBy === 'cargo_nombre'}
+                      direction={orderBy === 'cargo_nombre' ? order : 'asc'}
+                      onClick={() => handleSort('cargo_nombre')}
+                    >
+                      Cargo
+                    </TableSortLabel>
                   </TableCell>
-                  <TableCell align="center">
-                    {item.estado === 1 ? (
-                      <PrintIcon color="success" titleAccess="Credencial impresa" />
-                    ) : (
-                      <PrintIcon color="disabled" titleAccess="Sin impresión" />
-                    )}
-                  </TableCell>
-                  <TableCell>{new Date(item.updated_at).toLocaleDateString()}</TableCell>
+                  <TableCell>Sección</TableCell>
+                  <TableCell>A. C.</TableCell>
+                  <TableCell>Imp.</TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <IconButton
-                        sx={{ color: '#25D366' }}
-                        onClick={() => window.open(`https://wa.me/${item.celular}`, '_blank')}
-                      >
-                        <WhatsAppIcon />
-                      </IconButton>
-                      <CustomEditIcon onClick={() => openEditPersonal(item.id)} />
-                      <CustomDeleteIcon onClick={() => eliminarPersonal(item.id)} />
-                    </Box>
+                    <TableSortLabel
+                      active={orderBy === 'updated_at'}
+                      direction={orderBy === 'updated_at' ? order : 'asc'}
+                      onClick={() => handleSort('updated_at')}
+                    >
+                      Fecha
+                    </TableSortLabel>
                   </TableCell>
+                  <TableCell>Opciones</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
+              </TableHead>
+              <TableBody>
+                {paginatedData.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell align="center">
+                      <Checkbox
+                        checked={item.accesoComputo === 1 || selectedRows.includes(item.id)}
+                        disabled={item.accesoComputo === 1}
+                        onChange={() => {
+                          if (item.accesoComputo !== 1) {
+                            toggleSelectRow(item.id);
+                          }
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {item.photo ? (
+                        <img
+                          src={`data:image/jpeg;base64,${item.photo}`}
+                          alt="foto"
+                          width={40}
+                          height={40}
+                          style={{ borderRadius: '20%' }}
+                        />
+                      ) : (
+                        'Sin foto'
+                      )}
+                    </TableCell>
+                    <TableCell>{getNombreCompleto(item)}</TableCell>
+                    <TableCell>{item.ci}</TableCell>
+                    <TableCell>{item.cargo_nombre}</TableCell>
+                    <TableCell>{item.abreviatura}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        {item.accesoComputo === 1 ? (
+                          <CheckCircleIcon color="success" titleAccess="Acceso Cómputo habilitado" />
+                        ) : (
+                          <CancelIcon color="error" titleAccess="Sin acceso a Cómputo" />
+                        )}
+                      </Box>
+                    </TableCell>
+                    <TableCell align="center">
+                      {item.estado === 1 ? (
+                        <PrintIcon color="success" titleAccess="Credencial impresa" />
+                      ) : (
+                        <PrintIcon color="disabled" titleAccess="Sin impresión" />
+                      )}
+                    </TableCell>
+                    <TableCell>{new Date(item.updated_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Tooltip title={item.celular} arrow>
+                          <IconButton
+                            sx={{ color: '#25D366' }}
+                            onClick={() => window.open(`https://wa.me/${item.celular}`, '_blank')}
+                          >
+                            <WhatsAppIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <CustomEditIcon onClick={() => openEditPersonal(item.id)} />
+                        <CustomDeleteIcon onClick={() => eliminarPersonal(item.id)} />
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+       
         <TablePagination
           component="div"
           count={sortedData.length}
