@@ -20,15 +20,34 @@ const ListaCredenciales = () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/list/personal`);
       const data = await response.json();
-      setPersonal(data.personal);
+
+      // Mostrar inmediatamente la información básica
+      setPersonal(data.personal.map(p => ({ ...p, foto: null })));
+
+      // Luego, cargar las fotos una por una o en paralelo
+      data.personal.forEach(async (persona, index) => {
+        if (persona.foto_url) {
+          const img = new Image();
+          img.src = persona.foto_url;
+          img.onload = () => {
+            setPersonal(prev => {
+              const actualizado = [...prev];
+              actualizado[index].foto = persona.foto_url;
+              return actualizado;
+            });
+          };
+        }
+      });
     } catch (error) {
       console.error("Error al obtener personal:", error);
     }
   };
 
+
   const personalFiltrado = personal
     .filter((item) => {
       const nombreCompleto = `${item.nombre || ''} ${item.paterno || ''} ${item.materno || ''}`.toLowerCase();
+      //const nombreCompleto = item.nombre_completo?.toLowerCase();
       const ciTexto = item.ci?.toLowerCase() || '';
       return (
         nombreCompleto.includes(filtroNombre.toLowerCase()) &&

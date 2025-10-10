@@ -120,6 +120,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
 
   const getNombreCompleto = (item) =>
     `${item.nombre || ''} ${item.paterno || ''} ${item.materno || ''}`.trim();
+  //`${item.nombre_completo}`.trim();
 
   const sortedData = useMemo(() => {
     return [...filteredData].sort((a, b) => {
@@ -221,6 +222,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
         'CI': item.ci,
         'Sección': item.abreviatura,
         'Cargo': item.cargo_nombre,
+        'Telefono': item.celular,
         'Firma': '',
         // 'Impreso': item.estado === 1 ? 'Sí' : 'No',
       }))
@@ -231,21 +233,69 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
   };
 
   const exportToPDF = () => {
-    const doc = new jsPDF();
+  const doc = new jsPDF('l', 'pt', 'a4'); // P = portrait, pt = puntos, a4
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // --- LOGO ---<img
+  const logoUrl = '/TEDLogo.jpg'; // reemplaza con tu logo
+  doc.addImage(logoUrl, 'JPG', (pageWidth / 2)-75, 50, 70, 50);
+  doc.setLineWidth(1.2);
+  doc.setDrawColor(205, 206, 207);
+  doc.line(pageWidth / 2, 50, pageWidth / 2, 102);
+  const logo = '/EleccionesLogo.png'; // reemplaza con tu logo
+  doc.addImage(logo, 'PNG', (pageWidth / 2)+5, 50, 85, 50);
+  // --- ENCABEZADO ---
+  doc.setFontSize(12);
+  doc.setTextColor(40);
+  doc.text('PLANILLA DE ENTREGA Y DEVOLUCIÓN DE CREDENCIALES ELECCIONES GENERALES SEGUNDA VUELTA 2025', pageWidth / 2, 115, { align: 'center' });
+  doc.setLineWidth(0.1);
+  doc.setDrawColor(0, 0, 0);
+  doc.line(97, 117, pageWidth - 95, 117);
+  doc.setTextColor(40);
+  const today = new Date().toLocaleDateString();
+  doc.text(`FECHA DE ENTREGA: ${today}`, 40, 133, { align: 'left' });
+  doc.text('UNIDAD: ', pageWidth-230, 133, { align: 'right' });
+  
+  const tableColumn = ['NRO', 'NOMBRES Y APELLIDOS', 'CI', 'CELULAR', 'CARGO', 'FIRMA ENTREGA', 'FECHA DEVOLUCIÓN', 'FIRMA DEVOLUCIÓN'];
+  const tableRows = sortedData.map((item, index) => [
+    index + 1, 
+    getNombreCompleto(item),
+    item.ci || '',
+    item.celular || '',
+    item.cargo_nombre || '',
+    '                    ', 
+    '',                    
+    '                    ', 
+  ]);
 
     autoTable(doc, {
-      head: [['Nombre Completo', 'CI', 'Sección', 'Cargo', 'Firma']],
-      body: sortedData.map(item => [
-        getNombreCompleto(item),
-        item.ci,
-        item.abreviatura,
-        item.cargo_nombre,
-        //item.estado === 1 ? 'Sí' : 'No',
-      ]),
-    });
+    startY: 140,
+    head: [tableColumn],
+    body: tableRows,
+    styles: {
+      fontSize: 10,
+      cellPadding: 4,
+      lineColor: [0, 0, 0],
+      lineWidth: 0.01, 
+    },
+    headStyles: {
+      fillColor: [205, 206, 207], 
+      textColor: [0, 0, 0],
+      fontStyle: 'bold',
+      halign: 'center',
+      textalign: 'center',
+    },
+    alternateRowStyles: { fillColor: [250, 250, 250] }, 
+    theme: 'grid', 
+  });
 
-    doc.save('credenciales.pdf');
-  };
+  // --- ABRIR EN NUEVA PESTAÑA ---
+  const pdfBlob = doc.output('blob');
+  const pdfUrl = URL.createObjectURL(pdfBlob);
+  window.open(pdfUrl, '_blank');
+};
+
 
   return (
     <Box>

@@ -171,7 +171,7 @@ function AccesoObservador() {
                   </>
                 ) : datos.observador.tipo === "prensa" ? (
                   <>
-                    <strong>Identificador:</strong> {datos.identificador}
+                    <strong>Identificador:</strong> {datos.observador.identificador}
                   </>
                 ) : null}
               </Typography>
