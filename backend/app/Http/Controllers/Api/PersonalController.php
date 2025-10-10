@@ -148,6 +148,8 @@ class PersonalController extends Controller
                 }
             }
 
+            $personal->orderBy('p.updated_at', 'desc');
+
             // 📄 Paginación
             $personal = $personal->paginate($perPage);
 
