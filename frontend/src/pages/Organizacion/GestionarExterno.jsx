@@ -172,6 +172,14 @@ const GestionarExterno = () => {
               <Button
                 variant="outlined"
                 onClick={handlePrevisualizar}
+                size="small"
+                sx={{
+                    '&:hover': {
+                      backgroundColor: 'primary.main',
+                      color: 'white',
+                      borderColor: 'primary.main',
+                    },
+                  }}
               >
                 Previsualizar
               </Button>

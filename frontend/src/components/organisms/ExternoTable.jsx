@@ -145,53 +145,50 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
   };
 
   const registrarDatos = async (values, { resetForm }) => {
-  console.log("Valores del formulario:", values);
+    console.log("Valores del formulario:", values);
 
-  if (!selectedToken) {
-    setAlert({ open: true, message: "No se encontró el token del registro", severity: "error" });
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const body = new FormData();
-    body.append("nombre_completo", values.nombre_completo);
-    body.append("ci", values.ci);
-    if (values.identificador) body.append("identificador", values.identificador);
-    if (values.organizacion_politica) body.append("organizacion_politica", values.organizacion_politica);
-    if (values.foto) body.append("foto", values.foto);
-
-    console.log("Contenido real de FormData:");
-    for (let [key, val] of body.entries()) {
-      console.log(key, val);
+    if (!selectedToken) {
+      setAlert({ open: true, message: "No se encontró el token del registro", severity: "error" });
+      return;
     }
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/activarQr/${selectedToken}`, {
-      method: "POST",
-      body,
-    });
+    setLoading(true);
+    try {
+      const body = new FormData();
+      body.append("nombre_completo", values.nombre_completo);
+      body.append("ci", values.ci);
+      if (values.identificador) body.append("identificador", values.identificador);
+      if (values.organizacion_politica) body.append("organizacion_politica", values.organizacion_politica);
+      if (values.foto) body.append("foto", values.foto);
 
-    const data = await response.json();
-    console.log("Respuesta backend:", data);
-    
-    if (data.res === true) {
-      setAlert({ open: true, message: "Observador registrado correctamente", severity: "success" });
-      handleCloseForm();
-      resetForm();
-      setTimeout(() => onDeleteSuccess?.(), 4000);
-    } else {
-      setAlert({ open: true, message: data.msg || "Error al registrar", severity: "error" });
+      console.log("Contenido real de FormData:");
+      for (let [key, val] of body.entries()) {
+        console.log(key, val);
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/activarQr/${selectedToken}`, {
+        method: "POST",
+        body,
+      });
+
+      const data = await response.json();
+      console.log("Respuesta backend:", data);
+      
+      if (data.res === true) {
+        setAlert({ open: true, message: "Observador registrado correctamente", severity: "success" });
+        handleCloseForm();
+        resetForm();
+        setTimeout(() => onDeleteSuccess?.(), 4000);
+      } else {
+        setAlert({ open: true, message: data.msg || "Error al registrar", severity: "error" });
+      }
+    } catch (err) {
+      console.error(err);
+      setAlert({ open: true, message: "Error al registrar observador", severity: "error" });
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error(err);
-    setAlert({ open: true, message: "Error al registrar observador", severity: "error" });
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
+  };
 
   const eliminarDatos = async (item) => {
     const token = item?.token_acceso;
@@ -362,7 +359,7 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
                       <PersonAddIcon
                         color="primary"
                         onClick={() => {
-                          if (item.ci === null || item.ci === "-") {
+                          if (item.activo === 0) {
                             setSelectedCi(null);
                             handleOpenForm(item);
                           } else {
@@ -374,18 +371,18 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
                           }
                         }}
                         style={{
-                          cursor: item.ci === null || item.ci === "-" ? "pointer" : "not-allowed",
-                          opacity: item.ci === null || item.ci === "-" ? 1 : 0.5,
+                          cursor: item.activo === 0 || item.activo === 0 ? "pointer" : "not-allowed",
+                          opacity: item.activo === 0 || item.activo === 0 ? 1 : 0.5,
                         }}
                         titleAccess={
-                          item.ci === null || item.ci === "-"
+                          item.activo === 0 || item.activo === 0
                             ? "Agregar Persona"
                             : `Ya está asociado a un personal de ${item.tipo}`
                         }
                       />
                       <CustomEditIcon 
                         onClick={() => {
-                          if (item.ci !== null && item.ci !== "-") {
+                          if (item.activo === 1) {
                             setSelectedCi(item.ci);
                             handleOpenForm(item);
                           } else {
@@ -399,7 +396,7 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
                       />
                       <CustomDeleteIcon 
                         onClick={() => {
-                          if (item.ci !== null && item.ci !== "-") {
+                          if (item.activo === 1) {
                             eliminarDatos(item)
                           } else {
                             setAlert({

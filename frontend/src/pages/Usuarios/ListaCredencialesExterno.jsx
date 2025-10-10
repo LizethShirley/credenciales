@@ -106,7 +106,6 @@ const ListaCredencialesExterno = () => {
           <ExternoTable
             data={personalFiltrado}
             onDeleteSuccess={obtenerPersonal}
-            onEditClick={abrirVentanaEdicion}
           />
         )}
       </Box>

@@ -1,9 +1,52 @@
 // src/components/EditarObservador.jsx
 import React, { useState, useEffect } from "react";
-import { Box, Typography, Button, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  Slider
+} from "@mui/material";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import CustomTextField from "../atoms/CustomTextField";
+import Cropper from "react-easy-crop";
+import imageCompression from "browser-image-compression";
+
+// Helper para recortar y comprimir la imagen
+async function getCroppedImg(imageSrc, cropPixels) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.src = imageSrc;
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = cropPixels.width;
+      canvas.height = cropPixels.height;
+      const ctx = canvas.getContext("2d");
+
+      ctx.drawImage(
+        image,
+        cropPixels.x,
+        cropPixels.y,
+        cropPixels.width,
+        cropPixels.height,
+        0,
+        0,
+        cropPixels.width,
+        cropPixels.height
+      );
+
+      canvas.toBlob(async (blob) => {
+        const compressedBlob = await imageCompression(blob, { maxSizeMB: 0.3 });
+        resolve(new File([compressedBlob], "foto.jpg", { type: "image/jpeg" }));
+      }, "image/jpeg", 0.8);
+    };
+    image.onerror = (err) => reject(err);
+  });
+}
 
 function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
   const [formData, setFormData] = useState({
@@ -18,6 +61,12 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
   const [fetching, setFetching] = useState(true);
   const [preview, setPreview] = useState(null);
 
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [openCropper, setOpenCropper] = useState(false);
+  const [imageSrc, setImageSrc] = useState(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
   const validationSchema = Yup.object({
     nombre_completo: Yup.string().required("Campo obligatorio"),
     ci: Yup.string().required("Campo obligatorio"),
@@ -26,6 +75,7 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
     foto: Yup.mixed().nullable(),
   });
 
+  // Cargar datos existentes
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -41,19 +91,15 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
           organizacion_politica: observador.organizacion_politica || "",
           foto: null,
         });
+
         if (observador.foto) {
-          if (typeof observador.foto === "string") {
-            const base64String = observador.foto.startsWith("data:")
-              ? observador.foto 
-              : `data:image/jpeg;base64,${observador.foto}`;
-            setPreview(base64String);
-          }
-          else if (Array.isArray(observador.foto)) {
-            const byteArray = new Uint8Array(observador.foto);
-            const blob = new Blob([byteArray], { type: "image/jpeg" });
-            const url = URL.createObjectURL(blob);
-            setPreview(url);
-          }
+          const base64String =
+            typeof observador.foto === "string"
+              ? observador.foto.startsWith("data:")
+                ? observador.foto
+                : `data:image/jpeg;base64,${observador.foto}`
+              : null;
+          setPreview(base64String);
         }
       } catch (err) {
         console.error("Error al cargar datos:", err);
@@ -76,13 +122,10 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
       body.append("organizacion_politica", values.organizacion_politica);
       if (values.foto) body.append("foto", values.foto);
 
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/actualizar-observador/${token}`,
-        {
-          method: "POST",
-          body,
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/actualizar-observador/${token}`, {
+        method: "POST",
+        body,
+      });
 
       const data = await res.json();
       if (data.res === true) {
@@ -102,13 +145,8 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
   if (fetching) return <CircularProgress />;
 
   return (
-    <Formik
-      enableReinitialize 
-      initialValues={formData}
-      validationSchema={validationSchema}
-      onSubmit={handleSubmit}
-    >
-      {({ setFieldValue, isSubmitting, values }) => (
+    <Formik enableReinitialize initialValues={formData} validationSchema={validationSchema} onSubmit={handleSubmit}>
+      {({ setFieldValue, isSubmitting }) => (
         <Form>
           <Typography variant="h6" align="center" gutterBottom>
             Editar Observador
@@ -118,51 +156,103 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
           <CustomTextField name="ci" label="CI" />
 
           {tipo === "delegado" || tipo === "candidato" || tipo === "observador" ? (
-            <CustomTextField
-              name="organizacion_politica"
-              label="Organización Política"
-            />
+            <CustomTextField name="organizacion_politica" label="Organización Política" />
           ) : tipo === "prensa" ? (
             <CustomTextField name="identificador" label="Identificador" />
           ) : null}
 
+          {/* Botón subir foto */}
           <Button variant="outlined" component="label">
             Subir Foto
             <input
               type="file"
-              name="foto"
               accept="image/*"
+              capture="environment"
               hidden
               onChange={(e) => {
                 const file = e.target.files[0];
-                setFieldValue("foto", file);
-                setPreview(URL.createObjectURL(file));
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    setImageSrc(reader.result);
+                    setOpenCropper(true);
+                    setZoom(1); // reset zoom
+                  };
+                  reader.readAsDataURL(file);
+                }
               }}
             />
           </Button>
+
+          {/* Cropper Modal */}
+          <Dialog open={openCropper} onClose={() => setOpenCropper(false)} maxWidth="sm" fullWidth>
+            <DialogContent sx={{ position: "relative", height: 400, background: "#333" }}>
+              {imageSrc && (
+                <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
+                  <Cropper
+                    image={imageSrc}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1} // cuadrado
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={(croppedArea, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
+                  />
+                  <Box sx={{ position: "absolute", bottom: 10, left: 20, right: 20 }}>
+                    <Typography variant="body2" color="white">Zoom</Typography>
+                    <Slider
+                      value={zoom}
+                      min={1}
+                      max={3}
+                      step={0.01}
+                      onChange={(e, z) => setZoom(z)}
+                      sx={{ color: "white" }}
+                    />
+                  </Box>
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenCropper(false)}>Cancelar</Button>
+              <Button
+                onClick={async () => {
+                  const croppedFile = await getCroppedImg(imageSrc, croppedAreaPixels);
+                  setFieldValue("foto", croppedFile);
+                  setPreview(URL.createObjectURL(croppedFile));
+                  setOpenCropper(false);
+                }}
+              >
+                Recortar
+              </Button>
+            </DialogActions>
+          </Dialog>
 
           {preview && (
             <Box mt={2} style={{ textAlign: "center" }}>
               <img
                 src={preview}
                 alt="preview"
-                style={{ width: "100%", maxWidth: 120, borderRadius: 8 }}
+                style={{ width: 120, height: 120, borderRadius: 8, objectFit: "cover" }}
               />
             </Box>
           )}
 
           <Box display="flex" justifyContent="space-between" mt={2}>
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              disabled={isSubmitting || loading}
-            >
+            <Button variant="contained" color="primary" type="submit" disabled={isSubmitting || loading}>
               {loading ? "Actualizando..." : "Actualizar"}
             </Button>
-            <Button variant="outlined" color="secondary" type="button" onClick={onClose}>
-              Cancelar
-            </Button>
+            <Button 
+              onClick={onClose}
+              variant="outlined"
+              size="small"
+              sx={{
+                  '&:hover': {
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    borderColor: 'primary.main',
+                  },
+                }}
+              >Cancelar</Button>
           </Box>
         </Form>
       )}
