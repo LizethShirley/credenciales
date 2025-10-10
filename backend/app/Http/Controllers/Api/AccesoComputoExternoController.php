@@ -176,16 +176,10 @@ class AccesoComputoExternoController extends Controller
 
     public function activarAccesoComputoExterno(ActivarAccesoComputoExternoRequest $request, $token)
     {
+        // Buscar token
         $token = AccesoComputoExterno::where('token_acceso', $token)->firstOrFail();
-        if (!$token) {
-            return response()->json([
-                'res' => false,
-                'msg' => 'Token no encontrado',
-                'status' => 404,
-            ], 404);
-        }
 
-        if ($token->activo == 1) {
+        if ($token->activo) {
             return response()->json([
                 'res' => false,
                 'msg' => 'El token ya fue activado previamente.',
@@ -194,74 +188,48 @@ class AccesoComputoExternoController extends Controller
         }
 
         $validated = $request->validated();
-        //Si el CI fue proporcionado, verificar si ya existe en otro observador
-        if (isset($validated['ci'])) {
-            $observadorExistente = Observadores::where('ci', $validated['ci'])->first();
+        $ci = $validated['ci'] ?? null;
 
-            if ($observadorExistente) {
-                // Verificar si el observador ya tiene un token activo diferente al actual
-                $asignacionActiva = AccesoComputoObservadores::where('observador_id', $observadorExistente->id)
-                    ->whereNull('liberado')
-                    ->first();
+        // Buscar o crear observador
+        $observador = $ci ? Observadores::where('ci', $ci)->first() : null;
 
-                if ($asignacionActiva) {
-                    // Obtener el token activo del observador
-                    $tokenActivo = AccesoComputoExterno::find($asignacionActiva->token_id);
+        if ($observador) {
+            // Liberar asignación activa previa si existe
+            $asignacionActiva = AccesoComputoObservadores::where('observador_id', $observador->id)
+                ->whereNull('liberado')
+                ->first();
 
-                    //Inactivar el tocken del observador existente
-                    if ($tokenActivo) {
-                        $tokenActivo->activo = 0;
-                        $tokenActivo->save();
-                    }
-
-                    //liberar Observador existente
-                    AccesoComputoObservadores::where('observador_id', $observadorExistente->id)
-                        ->whereNull('liberado')
-                        ->update(['liberado' => now()]);
-                }
-
-                //registrar a observador existente al token
-                $asignacion = AccesoComputoObservadores::create([
-                    'token_id' => $token->id,
-                    'observador_id' => $observadorExistente->id,
-                    'asignado' => now(),
-                    'liberado' => null,
-                ]);
-
-                $token->activo = 1;
-                $token->save();
-
-                return response()->json([
-                    'res' => true,
-                    'msg' => 'Observador existente liberado y token asignado correctamente',
-                    'status' => 200,
-                    'observador' => $observadorExistente->makeHidden(['foto'])->toArray() + [
-                        'foto' => $observadorExistente->foto ? base64_encode($observadorExistente->foto) : null
-                    ],
-                    'asignacion' => $asignacion
-                ]);
+            if ($asignacionActiva) {
+                // Desactivar token anterior y liberar observador
+                AccesoComputoExterno::where('id', $asignacionActiva->token_id)->update(['activo' => 0]);
+                $asignacionActiva->update(['liberado' => now()]);
             }
+
+            // Actualizar datos del observador existente
+            $observador->fill([
+                'nombre_completo' => $validated['nombre_completo'] ?? $observador->nombre_completo,
+                'ci' => $ci,
+                'identificador' => $validated['identificador'] ?? null,
+                'organizacion_politica' => $validated['organizacion_politica'] ?? null,
+            ]);
+        } else {
+            // Crear nuevo observador
+            $observador = new Observadores([
+                'nombre_completo' => $validated['nombre_completo'],
+                'ci' => $ci,
+                'identificador' => $validated['identificador'] ?? null,
+                'organizacion_politica' => $validated['organizacion_politica'] ?? null,
+            ]);
         }
 
-        // Crear nuevo observador
-
-        $observador = new Observadores();
-        $observador->nombre_completo = $validated['nombre_completo'];
-        $observador->ci = $validated['ci'] ?? null;
-        $observador->identificador = $validated['identificador'] ?? null;
-        $observador->organizacion_politica = $validated['organizacion_politica'] ?? null;
-
+        // Procesar foto (solo si hay una nueva)
         if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $manager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
-            $image = $manager->read($file->getPathname());
-            $compressed = $image->scale(width: 600)->toJpeg(quality: 70);
-
-            $observador->foto = $compressed->toString();
+            $observador->foto = $this->procesarFoto($request->file('foto'));
         }
 
         $observador->save();
 
+        // Registrar asignación
         $asignacion = AccesoComputoObservadores::create([
             'token_id' => $token->id,
             'observador_id' => $observador->id,
@@ -269,17 +237,20 @@ class AccesoComputoExternoController extends Controller
             'liberado' => null,
         ]);
 
-        $token->activo = 1;
-        $token->save();
+        // Activar token
+        $token->update(['activo' => 1]);
 
+        // Respuesta
         return response()->json([
             'res' => true,
-            'msg' => 'Observador registrado y token asignado correctamente',
+            'msg' => $ci
+                ? 'Observador registrado o actualizado y token asignado correctamente'
+                : 'Observador sin CI registrado y token asignado correctamente',
             'status' => 200,
             'observador' => $observador->makeHidden(['foto'])->toArray() + [
-                'foto' => $observador->foto ? base64_encode($observador->foto) : null
+                'foto' => $observador->foto ? base64_encode($observador->foto) : null,
             ],
-            'asignacion' => $asignacion
+            'asignacion' => $asignacion,
         ]);
     }
 
@@ -287,7 +258,7 @@ class AccesoComputoExternoController extends Controller
     {
         try {
 
-            $tokenModel = AccesoComputoExterno::where('token_acceso', $token)->firstOrFail();
+            $tokenModel = AccesoComputoExterno::where('token_acceso', $token)->first();
             if (!$tokenModel) {
                 return response()->json([
                     'res' => false,
@@ -338,6 +309,9 @@ class AccesoComputoExternoController extends Controller
                 $compressed = $image->scale(width: 600)->toJpeg(quality: 70);
 
                 $observador->foto = $compressed->toString();
+            } else {
+                // Si no se proporciona una nueva foto, mantener la existente
+                $observador->foto = $observador->foto;
             }
 
             $observador->save();
@@ -358,5 +332,16 @@ class AccesoComputoExternoController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Procesa y comprime la imagen del observador.
+     */
+    private function procesarFoto($file)
+    {
+        $manager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+        $image = $manager->read($file->getPathname());
+        $compressed = $image->scale(width: 600)->toJpeg(quality: 70);
+        return $compressed->toString();
     }
 }

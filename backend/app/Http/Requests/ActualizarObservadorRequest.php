@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Models\AccesoComputoExterno;
 
 class ActualizarObservadorRequest extends FormRequest
@@ -28,15 +30,16 @@ class ActualizarObservadorRequest extends FormRequest
         $tokenInput = $this->route('token');
 
         if ($tokenInput) {
-            $tokenModel = AccesoComputoExterno::where('token_acceso', $tokenInput)->first();
-            if (!$tokenModel) {
-                return $rules;
-            }
-            $tipoToken = $tokenModel ? $tokenModel->value('tipo') : null;
+            // $tokenModel = AccesoComputoExterno::where('token_acceso', $tokenInput)->first();
+            // if (!$tokenModel) {
+            //     return $rules;
+            // }
+            // $tipoToken = $tokenModel ? $tokenModel->value('tipo') : null;
 
-            if ($tipoToken === null) {
-                return $rules;
-            }
+            // if ($tipoToken === null) {
+            //     return $rules;
+            // }
+             $tipoToken = AccesoComputoExterno::where('token_acceso', $tokenInput)->value('tipo');
 
             if ($tipoToken === 'prensa') {
                 $rules['identificador'] = 'required|string|max:255';
@@ -55,6 +58,16 @@ class ActualizarObservadorRequest extends FormRequest
         return [
             'ci.unique' => 'El número de CI ya está registrado en otro observador.',
         ];
+    }
+
+    public function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'res' => false,
+            'msg' => 'Error de validación',
+            'status' => 422,
+            'errors' => $validator->errors(),
+        ], 422));
     }
 }
 
