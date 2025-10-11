@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Personal;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -65,4 +66,5 @@ class PersonalNotificacion extends Notification
             'fecha' => now()->format('d/m/Y H:i'),
         ];
     }
+
 }

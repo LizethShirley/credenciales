@@ -60,6 +60,7 @@ Route::patch('updateEstado', [PersonalController::class, 'updateStatus']);
 Route::get('list/personalCI', [PersonalController::class, 'getPersonalCI']);
 Route::get('list/personalPaginated', [PersonalController::class, 'listPaginated']);
 Route::put('updateEstadoComputo', [PersonalController::class, 'updateStatusComputo']);
+Route::get('/personal/photo/{id}', [PersonalController::class, 'photo']);
 
 //Rutas recintos
 Route::get('list/recintos', [RecintoController::class, 'list']);

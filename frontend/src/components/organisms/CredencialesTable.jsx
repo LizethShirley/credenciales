@@ -489,7 +489,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
                     <TableCell>
                       {item.photo ? (
                         <img
-                          src={`data:image/jpeg;base64,${item.photo}`}
+                          src={item.photo}
                           alt="foto"
                           width={40}
                           height={40}

@@ -36,8 +36,7 @@ class PersonalController extends Controller
                     'p.celular',
                     'p.accesoComputo',
                     'p.ciexterno',
-                    'p.ciexterno',
-                    'p.photo',
+                    // 'p.photo',
                     'p.updated_at',
                     'p.created_at',
                     'c.id as cargo_id',
@@ -52,12 +51,14 @@ class PersonalController extends Controller
                     // 'r.nombreLocalidad as recinto_localidad',
                     // 'r.circun as recinto_circun',
                 )
-                ->orderBy('p.created_at', 'desc')
+                ->orderBy('p.updated_at', 'desc')
                 ->get();
 
             $personalsArray = $personal->map(function ($personal) {
                 $arrayPersonal = (array) $personal;
-                $arrayPersonal['photo'] = $personal->photo ? base64_encode($personal->photo) : null;
+                $arrayPersonal['photo'] = url('/api/personal/photo/' . $personal->id);
+                // $arrayPersonal['photo'] = $personal->photo ? base64_encode($personal->photo) : null;
+                // $arrayPersonal['photo'] = null;
                 return $arrayPersonal;
             });
 
@@ -108,7 +109,7 @@ class PersonalController extends Controller
                     'p.celular',
                     'p.accesoComputo',
                     'p.ciexterno',
-                    'p.photo',
+                    // 'p.photo',
                     'p.updated_at',
                     'c.id as cargo_id',
                     'c.nombre as cargo_nombre',
@@ -150,13 +151,12 @@ class PersonalController extends Controller
 
             $personal->orderBy('p.updated_at', 'desc');
 
-            // 📄 Paginación
             $personal = $personal->paginate($perPage);
 
-            // 🖼️ Convertir fotos a Base64 sin perder metadatos de paginación
             $personalsArray = $personal->getCollection()->map(function ($item) {
                 $array = (array) $item;
                 $array['photo'] = $item->photo ? base64_encode($item->photo) : null;
+
                 return $array;
             });
 
@@ -827,6 +827,30 @@ class PersonalController extends Controller
                 'error' => $e->getMessage(),
                 'status' => 500,
             ], 500);
+        }
+    }
+
+    public function photo($id)
+    {
+        try {
+            $row = DB::table('personal')->select('photo')->where('id', $id)->first();
+
+            if (!$row || !$row->photo) {
+                return response('', 204);
+            }
+
+            $image = @imagecreatefromstring($row->photo);
+            if (!$image) {
+                return response('', 204);
+            }
+
+            ob_start();
+            imagejpeg($image, null, 60);
+            $compressed = ob_get_clean();
+
+            return response($compressed)->header('Content-Type', 'image/jpeg');
+        } catch (\Exception $e) {
+            return response('', 500);
         }
     }
 }
