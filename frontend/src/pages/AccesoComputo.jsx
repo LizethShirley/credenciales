@@ -1,22 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Grid,
   Typography,
   Paper,
   CircularProgress,
+  Button,
 } from '@mui/material';
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 function AccesoComputo() {
-  // 1) Soporta /accesoComputo/:token y /accesoComputo?token=...
   const { token: tokenFromParams } = useParams();
   const [search] = useSearchParams();
   const tokenFromQuery = search.get('token');
   const token = tokenFromParams || tokenFromQuery;
-
+  const navigate = useNavigate();
   const [respuesta, setRespuesta] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,6 @@ function AccesoComputo() {
   const [progress, setProgress] = useState(0);
   const progressIntervalRef = useRef(null);
 
-  // ---- TTS seguro ----
   const speakText = (text) => {
     try {
       if (!text) return;
@@ -137,6 +136,9 @@ function AccesoComputo() {
           overflow: 'hidden',
         }}
       >
+        <Box mb={1} mt={1} ml={1}>
+          <Button variant="outlined" onClick={() => navigate(-1)}>Atrás</Button>
+        </Box>
         {loading && (
           <Box
           sx={{

@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Typography,
+  Typography, Skeleton,
   MenuItem, Select, FormControl, InputLabel, Tooltip
 } from '@mui/material';
 import * as XLSX from 'xlsx';
@@ -35,9 +35,11 @@ import CustomEditIcon from '../atoms/CustomEditIcon';
 import CustomDeleteIcon from '../atoms/CustomDeleteIcon';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
+import FotoCelda from '../atoms/FotoCelda';
+
 const CredencialesTable = ({ data, onDeleteSuccess }) => {
   const [filters, setFilters] = useState({ cargo: '', estado: '' });
-  const [orderBy, setOrderBy] = useState('nombreCompleto');
+  const [orderBy, setOrderBy] = useState('');
   const [order, setOrder] = useState('asc');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -233,69 +235,68 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
   };
 
   const exportToPDF = () => {
-  const doc = new jsPDF('l', 'pt', 'a4'); // P = portrait, pt = puntos, a4
+    const doc = new jsPDF('l', 'pt', 'a4'); // P = portrait, pt = puntos, a4
 
-  const pageWidth = doc.internal.pageSize.getWidth();
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-  // --- LOGO ---<img
-  const logoUrl = '/TEDLogo.jpg'; // reemplaza con tu logo
-  doc.addImage(logoUrl, 'JPG', (pageWidth / 2)-75, 50, 70, 50);
-  doc.setLineWidth(1.2);
-  doc.setDrawColor(205, 206, 207);
-  doc.line(pageWidth / 2, 50, pageWidth / 2, 102);
-  const logo = '/EleccionesLogo.png'; // reemplaza con tu logo
-  doc.addImage(logo, 'PNG', (pageWidth / 2)+5, 50, 85, 50);
-  // --- ENCABEZADO ---
-  doc.setFontSize(12);
-  doc.setTextColor(40);
-  doc.text('PLANILLA DE ENTREGA Y DEVOLUCIÓN DE CREDENCIALES ELECCIONES GENERALES SEGUNDA VUELTA 2025', pageWidth / 2, 115, { align: 'center' });
-  doc.setLineWidth(0.1);
-  doc.setDrawColor(0, 0, 0);
-  doc.line(97, 117, pageWidth - 95, 117);
-  doc.setTextColor(40);
-  const today = new Date().toLocaleDateString();
-  doc.text(`FECHA DE ENTREGA: ${today}`, 40, 133, { align: 'left' });
-  doc.text('UNIDAD: ', pageWidth-230, 133, { align: 'right' });
-  
-  const tableColumn = ['NRO', 'NOMBRES Y APELLIDOS', 'CI', 'CELULAR', 'CARGO', 'FIRMA ENTREGA', 'FECHA DEVOLUCIÓN', 'FIRMA DEVOLUCIÓN'];
-  const tableRows = sortedData.map((item, index) => [
-    index + 1, 
-    getNombreCompleto(item),
-    item.ci || '',
-    item.celular || '',
-    item.cargo_nombre || '',
-    '                    ', 
-    '',                    
-    '                    ', 
-  ]);
+    // --- LOGO ---<img
+    const logoUrl = '/TEDLogo.jpg'; // reemplaza con tu logo
+    doc.addImage(logoUrl, 'JPG', (pageWidth / 2)-75, 50, 70, 50);
+    doc.setLineWidth(1.2);
+    doc.setDrawColor(205, 206, 207);
+    doc.line(pageWidth / 2, 50, pageWidth / 2, 102);
+    const logo = '/EleccionesLogo.png'; // reemplaza con tu logo
+    doc.addImage(logo, 'PNG', (pageWidth / 2)+5, 50, 85, 50);
+    // --- ENCABEZADO ---
+    doc.setFontSize(12);
+    doc.setTextColor(40);
+    doc.text('PLANILLA DE ENTREGA Y DEVOLUCIÓN DE CREDENCIALES ELECCIONES GENERALES SEGUNDA VUELTA 2025', pageWidth / 2, 115, { align: 'center' });
+    doc.setLineWidth(0.1);
+    doc.setDrawColor(0, 0, 0);
+    doc.line(97, 117, pageWidth - 95, 117);
+    doc.setTextColor(40);
+    const today = new Date().toLocaleDateString();
+    doc.text(`FECHA DE ENTREGA: ${today}`, 40, 133, { align: 'left' });
+    doc.text('UNIDAD: ', pageWidth-230, 133, { align: 'right' });
+    
+    const tableColumn = ['NRO', 'NOMBRES Y APELLIDOS', 'CI', 'CELULAR', 'CARGO', 'FIRMA ENTREGA', 'FECHA DEVOLUCIÓN', 'FIRMA DEVOLUCIÓN'];
+    const tableRows = sortedData.map((item, index) => [
+      index + 1, 
+      getNombreCompleto(item),
+      item.ci || '',
+      item.celular || '',
+      item.cargo_nombre || '',
+      '                    ', 
+      '',                    
+      '                    ', 
+    ]);
 
-    autoTable(doc, {
-    startY: 140,
-    head: [tableColumn],
-    body: tableRows,
-    styles: {
-      fontSize: 10,
-      cellPadding: 4,
-      lineColor: [0, 0, 0],
-      lineWidth: 0.01, 
-    },
-    headStyles: {
-      fillColor: [205, 206, 207], 
-      textColor: [0, 0, 0],
-      fontStyle: 'bold',
-      halign: 'center',
-      textalign: 'center',
-    },
-    alternateRowStyles: { fillColor: [250, 250, 250] }, 
-    theme: 'grid', 
-  });
+      autoTable(doc, {
+      startY: 140,
+      head: [tableColumn],
+      body: tableRows,
+      styles: {
+        fontSize: 10,
+        cellPadding: 4,
+        lineColor: [0, 0, 0],
+        lineWidth: 0.01, 
+      },
+      headStyles: {
+        fillColor: [205, 206, 207], 
+        textColor: [0, 0, 0],
+        fontStyle: 'bold',
+        halign: 'center',
+        textalign: 'center',
+      },
+      alternateRowStyles: { fillColor: [250, 250, 250] }, 
+      theme: 'grid', 
+    });
 
-  // --- ABRIR EN NUEVA PESTAÑA ---
-  const pdfBlob = doc.output('blob');
-  const pdfUrl = URL.createObjectURL(pdfBlob);
-  window.open(pdfUrl, '_blank');
-};
-
+    // --- ABRIR EN NUEVA PESTAÑA ---
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+  };
 
   return (
     <Box>
@@ -486,19 +487,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
                         }}
                       />
                     </TableCell>
-                    <TableCell>
-                      {item.photo ? (
-                        <img
-                          src={item.photo}
-                          alt="foto"
-                          width={40}
-                          height={40}
-                          style={{ borderRadius: '20%' }}
-                        />
-                      ) : (
-                        'Sin foto'
-                      )}
-                    </TableCell>
+                    <FotoCelda photo={item.photo} />
                     <TableCell>{getNombreCompleto(item)}</TableCell>
                     <TableCell>{item.ci}</TableCell>
                     <TableCell>{item.cargo_nombre}</TableCell>
@@ -519,7 +508,10 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
                         <PrintIcon color="disabled" titleAccess="Sin impresión" />
                       )}
                     </TableCell>
-                    <TableCell>{new Date(item.updated_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {new Date(item.updated_at).toLocaleDateString() + " " + 
+                      new Date(item.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                    </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>
                         <Tooltip title={item.celular} arrow>
