@@ -79,7 +79,6 @@ const ListaCredencialesExterno = () => {
           Lista Externo
         </Typography>
 
-        {/* 🟡 Barra de búsqueda */}
         <Box sx={{ my: 2, display: 'flex', gap: 2, justifyContent: 'center' }}>
           <TextField
             label="Buscar por nombre completo..."
@@ -97,11 +96,9 @@ const ListaCredencialesExterno = () => {
           />
         </Box>
 
-        {/* ⏳ Loader y errores */}
         {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 2 }} />}
         {error && <Alert severity="error">{error}</Alert>}
 
-        {/* 📋 Tabla (solo si hay datos) */}
         {!loading && !error && (
           <ExternoTable
             data={personalFiltrado}

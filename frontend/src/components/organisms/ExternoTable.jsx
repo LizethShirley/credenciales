@@ -281,8 +281,8 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
           </Select>
         </FormControl>
         <Box sx={{ ml: "auto" }}>
-          <Button onClick={exportToExcel} variant="outlined" size="small" sx={{ mr: 1 }}>Excel</Button>
-          <Button onClick={exportToPDF} variant="outlined" size="small">PDF</Button>
+          <Button onClick={exportToExcel} variant="outlined" size="small">Excel</Button>
+          <Button onClick={exportToPDF} variant="outlined" size="small" sx={{ mr: 1 }}>PDF</Button>
           <Button onClick={handlePrevisualizar} variant="outlined" size="small">Previsualizar</Button>
         </Box>
       </Box>
@@ -428,25 +428,26 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
 
       
       <Dialog open={openForm} onClose={handleCloseForm} fullWidth maxWidth="sm">
-  <DialogContent>
-    {selectedCi ? (
-      <EditarObservador
-        ci={selectedCi}
-        tipo={selectedTipo}
-        token={selectedToken}
-        onClose={handleCloseForm}
-        onUpdate={onDeleteSuccess}
-      />
-    ) : (
-      <FormularioObservador
-        onSubmit={registrarDatos}
-        loading={loading}
-        tipo={selectedTipo}
-        onCancel={handleCloseForm}
-      />
-    )}
-  </DialogContent>
-</Dialog>
+        <DialogContent>
+          {selectedCi ? (
+            <EditarObservador
+              ci={selectedCi}
+              tipo={selectedTipo}
+              token={selectedToken}
+              onClose={handleCloseForm}
+              onUpdate={onDeleteSuccess}
+            />
+          ) : (
+            <FormularioObservador
+              onSubmit={registrarDatos}
+              loading={loading}
+              tipo={selectedTipo}
+              onCancel={handleCloseForm}
+              celular={false}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
     </Box>
   );

@@ -161,39 +161,60 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
             <CustomTextField name="identificador" label="Identificador" />
           ) : null}
 
-          {/* Botón subir foto */}
-          <Button variant="outlined" component="label">
-            Subir Foto
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onload = () => {
-                    setImageSrc(reader.result);
-                    setOpenCropper(true);
-                    setZoom(1); // reset zoom
-                  };
-                  reader.readAsDataURL(file);
-                }
+          <Box mt={1}>
+            <Button variant="outlined" component="label" sx={{ mr: 1 }} size="small">
+              {preview ? "Cambiar foto" : "Subir foto"}
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      setImageSrc(reader.result);
+                      setOpenCropper(true);
+                      setZoom(1);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </Button>
+            {preview ? (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => {
+                setImageSrc(preview);
+                setOpenCropper(true);
+                setZoom(1);
               }}
-            />
-          </Button>
+            >
+              Editar imagen
+            </Button>) : null}
+          </Box>
+          {preview && (
+            <Box mt={2} textAlign="center">
+              <img
+                src={preview}
+                alt="preview"
+                style={{ width: 120, height: 120, borderRadius: 8, objectFit: "cover" }}
+              />
+              
+            </Box>
+          )}
 
-          {/* Cropper Modal */}
           <Dialog open={openCropper} onClose={() => setOpenCropper(false)} maxWidth="sm" fullWidth>
-            <DialogContent sx={{ position: "relative", height: 400, background: "#333" }}>
+            <DialogContent sx={{ position: "relative", height: 400, background: "#222", borderRadius: 2 }}>
               {imageSrc && (
                 <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
                   <Cropper
                     image={imageSrc}
                     crop={crop}
                     zoom={zoom}
-                    aspect={1} // cuadrado
+                    aspect={1}
                     onCropChange={setCrop}
                     onZoomChange={setZoom}
                     onCropComplete={(croppedArea, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
@@ -226,16 +247,6 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
               </Button>
             </DialogActions>
           </Dialog>
-
-          {preview && (
-            <Box mt={2} style={{ textAlign: "center" }}>
-              <img
-                src={preview}
-                alt="preview"
-                style={{ width: 120, height: 120, borderRadius: 8, objectFit: "cover" }}
-              />
-            </Box>
-          )}
 
           <Box display="flex" justifyContent="space-between" mt={2}>
             <Button variant="contained" color="primary" type="submit" disabled={isSubmitting || loading}>

@@ -49,7 +49,7 @@ async function getCroppedImg(imageSrc, cropPixels) {
   });
 }
 
-function FormularioObservador({ onSubmit, loading, tipo, onCancel }) {
+function FormularioObservador({ onSubmit, loading, tipo, onCancel, celular }) {
   const [preview, setPreview] = useState(null);
   const [ciOptions, setCiOptions] = useState([]);
   const [loadingCis, setLoadingCis] = useState(false);
@@ -223,18 +223,20 @@ function FormularioObservador({ onSubmit, loading, tipo, onCancel }) {
               <Button variant="contained" color="primary" type="submit" disabled={loading}>
                 {loading ? 'Registrando...' : 'Registrar'}
               </Button>
-              <Button 
-                onClick={onCancel}
-                variant="outlined"
-                size="small"
-                sx={{
-                  '&:hover': {
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    borderColor: 'primary.main',
-                  },
-                }}
-              >Cancelar</Button>
+              {celular ? null :
+                <Button 
+                  onClick={onCancel}
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: 'primary.main',
+                      color: 'white',
+                      borderColor: 'primary.main',
+                    },
+                  }}
+                >Cancelar</Button>
+              }
             </Box>
           </Box>
         </Form>
