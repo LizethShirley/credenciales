@@ -228,7 +228,8 @@ class AccesoComputoExternoController extends Controller
         }
 
         $observador->save();
-
+        //añadir un campo a Observadores para saber el tipo token
+        
         // Registrar asignación
         $asignacion = AccesoComputoObservadores::create([
             'token_id' => $token->id,
@@ -237,6 +238,7 @@ class AccesoComputoExternoController extends Controller
             'liberado' => null,
         ]);
 
+        $observador->tipo = $token->tipo;
         // Activar token
         $token->update(['activo' => 1]);
 
